@@ -1,0 +1,54 @@
+{
+  "semantic": {
+    "space": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "12px",
+      "lg": "20px",
+      "xl": "32px",
+      "xxl": "48px",
+      "xxxl": "64px"
+    },
+    "radius": {
+      "sm": "8px",
+      "md": "10px",
+      "lg": "12px",
+      "xl": "16px",
+      "full": "999px"
+    },
+    "fontSize": {
+      "xs": "12px",
+      "sm": "13px",
+      "md": "15px",
+      "lg": "17px",
+      "xl": "20px",
+      "xxl": "32px",
+      "display": "40px"
+    },
+    "fontWeight": {
+      "regular": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    },
+    "font": {
+      "sans": "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif"
+    },
+    "color": {
+      "canvas": "#ffffff",
+      "surface": "#ffffff",
+      "surfaceSunken": "#f2f4f6",
+      "border": "#e5e8eb",
+      "borderStrong": "#d1d6db",
+      "ink": "#212529",
+      "inkMuted": "#6b7684",
+      "inkFaint": "#8b95a1",
+      "accent": "#3182f6",
+      "accentHover": "#1b64da",
+      "onAccent": "#ffffff",
+      "accentSoft": "#e8f3ff",
+      "inkStrong": "#191f28",
+      "brand": "#f63155"
+    }
+  }
+}
