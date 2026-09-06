@@ -1,16 +1,84 @@
 import { style } from '@vanilla-extract/css'
 import { vars } from '@/styles/contract.css'
 
-/** 목록 · 편집 · 미리보기 셋을 한 화면에 둔다 — 고치면서 결과를 봐야 하기 때문이다. */
-export const workbench = style({
+/** 미리보기 / 편집 전환. 오른쪽 패널의 머리에 붙는다. */
+export const tabBar = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: vars.space.xs,
+  marginBottom: vars.space.lg,
+  paddingBottom: vars.space.md,
+  borderBottom: `1px solid ${vars.color.border}`,
+})
+
+export const tab = style({
+  border: 0,
+  background: 'transparent',
+  borderRadius: vars.radius.md,
+  padding: `${vars.space.xs} ${vars.space.md}`,
+  fontSize: vars.fontSize.sm,
+  fontWeight: vars.fontWeight.semibold,
+  color: vars.color.inkMuted,
+  cursor: 'pointer',
+  selectors: { '&:hover': { background: vars.color.surfaceSunken } },
+})
+
+export const tabActive = style({
+  background: vars.color.accentSoft,
+  color: vars.color.accent,
+})
+
+/** 탭 오른쪽 끝으로 저장·공개를 밀어낸다. */
+export const tabSpacer = style({ marginLeft: 'auto' })
+
+/**
+ * 목록 한 줄. 체크(일괄 처리)와 제목(펼치기)은 하는 일이 다르므로 자리를 나눈다 —
+ * 예전에는 label이 줄 전체를 감싸서, 제목을 눌러 글을 열면 체크까지 같이 켜졌다.
+ */
+export const pendingItem = style({
   display: 'grid',
-  gridTemplateColumns: '260px minmax(0, 1fr) minmax(0, 1fr)',
-  gap: vars.space.lg,
+  gridTemplateColumns: 'auto minmax(0, 1fr)',
+  gap: vars.space.sm,
   alignItems: 'start',
-  '@media': {
-    // 좁은 화면에서 세 칸을 우겨넣으면 셋 다 못 쓴다. 세로로 쌓는다.
-    '(max-width: 1100px)': { gridTemplateColumns: '1fr' },
-  },
+  padding: vars.space.sm,
+  borderRadius: vars.radius.sm,
+  transition: 'background 160ms ease-out',
+  selectors: { '&:hover': { background: vars.color.surfaceSunken } },
+  '@media': { '(prefers-reduced-motion: reduce)': { transition: 'none' } },
+})
+
+/** 제목 버튼. 줄 전체를 눌러 열 수 있도록 왼쪽 정렬한 투명 버튼이다. */
+export const pendingOpen = style({
+  display: 'block',
+  width: '100%',
+  border: 0,
+  padding: 0,
+  background: 'transparent',
+  textAlign: 'left',
+  cursor: 'pointer',
+})
+
+/**
+ * 사이트와 같은 글 페이지 모습. postBody.css의 container는 700px 줄 폭을 위해
+ * 좌우 여백을 크게 잡는데, 패널 안에서는 그 여백이 이중이 되므로 위아래만 남긴다.
+ */
+export const articlePreview = style({
+  maxWidth: 700,
+  margin: '0 auto',
+})
+
+/** 카드 미리보기와 글 페이지 미리보기를 가르는 이름표. */
+export const previewLabel = style({
+  margin: `0 0 ${vars.space.sm}`,
+  fontSize: vars.fontSize.xs,
+  fontWeight: vars.fontWeight.semibold,
+  color: vars.color.inkFaint,
+})
+
+export const previewDivider = style({
+  margin: `${vars.space.xl} 0`,
+  border: 0,
+  borderTop: `1px solid ${vars.color.border}`,
 })
 
 export const panel = style({
@@ -35,21 +103,8 @@ export const pendingList = style({
   overflowY: 'auto',
 })
 
-export const pendingRow = style({
-  display: 'flex',
-  gap: vars.space.sm,
-  alignItems: 'flex-start',
-  padding: vars.space.sm,
-  borderRadius: vars.radius.sm,
-  cursor: 'pointer',
-  transition: 'background 160ms ease-out',
-  selectors: { '&:hover': { background: vars.color.surfaceSunken } },
-  '@media': { '(prefers-reduced-motion: reduce)': { transition: 'none' } },
-})
-
-export const pendingRowActive = style({ background: vars.color.accentSoft })
-
 export const pendingTitle = style({
+  display: 'block',
   fontSize: vars.fontSize.sm,
   fontWeight: vars.fontWeight.medium,
   color: vars.color.inkStrong,
@@ -57,6 +112,7 @@ export const pendingTitle = style({
 })
 
 export const pendingMeta = style({
+  display: 'block',
   marginTop: 2,
   fontSize: vars.fontSize.xs,
   color: vars.color.inkMuted,
@@ -193,4 +249,14 @@ export const emptyState = style({
   textAlign: 'center',
   color: vars.color.inkMuted,
   fontSize: vars.fontSize.sm,
+})
+
+
+/** 상세에서 목록으로 돌아가는 길. 페이지가 나뉘었으니 되돌아갈 문이 보여야 한다. */
+export const backLink = style({
+  display: 'inline-block',
+  marginBottom: vars.space.sm,
+  fontSize: vars.fontSize.sm,
+  color: vars.color.inkMuted,
+  selectors: { '&:hover': { color: vars.color.accent } },
 })
