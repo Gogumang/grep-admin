@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import type { Post } from '@/lib/collector'
 import { savePicks, type ActionResult } from './actions'
+import { PickSlide } from '@/components/preview/PickSlide'
 import * as styles from '@/components/shared.css'
 
 /** 히어로에 세우는 글 수. 넘겨 담아도 화면에는 앞에서부터만 올라간다. */
@@ -14,7 +15,11 @@ interface PickEditorProps {
 }
 
 export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
+  /** 저장된 값. 편집을 취소하면 여기로 되돌아간다. */
+  const [savedUrls, setSavedUrls] = useState(initialPickUrls)
   const [pickUrls, setPickUrls] = useState(initialPickUrls)
+  /** 기본은 보기다 — 오늘의 픽은 대개 "지금 뭐가 나가 있지"를 확인하러 들어온다. */
+  const [isEditing, setIsEditing] = useState(false)
   const [query, setQuery] = useState('')
   const [result, setResult] = useState<ActionResult | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -45,13 +50,58 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
   }
 
   function save() {
-    startTransition(async () => setResult(await savePicks(pickUrls)))
+    startTransition(async () => {
+      const outcome = await savePicks(pickUrls)
+      setResult(outcome)
+      // 저장에 실패했는데 보기로 돌아가면 안 나간 값이 나간 것처럼 보인다.
+      if (!outcome.ok) return
+      setSavedUrls(pickUrls)
+      setIsEditing(false)
+    })
   }
+
+  function cancel() {
+    setPickUrls(savedUrls)
+    setQuery('')
+    setResult(null)
+    setIsEditing(false)
+  }
+
+  /** 슬라이드에 세울 글. 앞에서 PICK_LIMIT 개까지만 화면에 올라간다. */
+  const slidePosts = pickUrls
+    .slice(0, PICK_LIMIT)
+    .map((url) => postsByUrl.get(url))
+    .filter((post): post is Post => post !== undefined)
 
   return (
     <>
       {result && <p className={result.ok ? styles.notice : styles.errorNotice}>{result.message}</p>}
 
+      {/* 지금 사이트에 나가 있는 모습. 편집 중에는 고른 값이 그대로 반영된다. */}
+      <div className={styles.card} style={{ marginBottom: 20 }}>
+        {slidePosts.length > 0 ? (
+          <PickSlide picks={slidePosts} />
+        ) : pickUrls.length > 0 ? (
+          // 고른 글은 있는데 못 찾은 경우다. "없다"고 적으면 픽을 지운 것처럼 읽힌다.
+          <p className={styles.errorNotice}>
+            고른 글 {pickUrls.length}개를 글 목록에서 찾지 못했습니다 — 숨겨졌거나 주소가 바뀐 글입니다.
+            아래에서 빼고 다시 고르세요.
+          </p>
+        ) : (
+          <p className={styles.mutedText}>
+            고른 글이 없습니다. 이대로 두면 첫 화면이 자동 선정(최근 7일 · 블로그별 최신 1개)으로 채워집니다.
+          </p>
+        )}
+      </div>
+
+      {!isEditing && (
+        <button type="button" className={styles.button} onClick={() => setIsEditing(true)}>
+          편집
+        </button>
+      )}
+
+      {isEditing && (
+      <>
       {pickUrls.length === 0 ? (
         <p className={styles.mutedText} style={{ marginBottom: 20 }}>
           고른 글이 없습니다. 이 상태로 저장하면 화면이 자동 선정(최근 7일 · 블로그별 최신 1개)으로 돌아갑니다.
@@ -106,6 +156,9 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
         <button type="button" className={styles.button} onClick={save} disabled={isPending}>
           {isPending ? '저장 중…' : '저장'}
         </button>
+        <button type="button" className={styles.quietButton} onClick={cancel} disabled={isPending}>
+          취소
+        </button>
       </div>
 
       {candidates.length > 0 && (
@@ -135,6 +188,8 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
           </tbody>
         </table>
       </div>
+      )}
+      </>
       )}
     </>
   )
