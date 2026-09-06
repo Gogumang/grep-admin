@@ -4,100 +4,108 @@ import { useMemo, useState, useTransition } from 'react'
 import type { Post } from '@/lib/collector'
 import { togglePostHidden, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
+import * as list from './postList.css'
 
 /** 한 번에 그리는 글 수. 667개를 한 화면에 늘어놓으면 브라우저가 버벅인다. */
 const PAGE_SIZE = 40
 
 export function PostManager({ posts }: { posts: Post[] }) {
-  const [query, setQuery] = useState('')
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   const [result, setResult] = useState<ActionResult | null>(null)
+  /**
+   * 방금 누른 스위치의 상태.
+   *
+   * 서버 왕복(collector → 저장소 커밋 → 재검증)이 끝날 때까지 스위치가 제자리에 있으면
+   * 눌리지 않은 것처럼 보인다. 눌린 즉시 여기에 적어 두고, 실패하면 지워서
+   * 서버가 아는 상태로 되돌린다 — 실패를 삼키고 켜진 채 두면 거짓말이 된다.
+   */
+  const [justToggled, setJustToggled] = useState<Map<string, boolean>>(new Map())
 
-  const matched = useMemo(() => {
-    // 낱말이 여럿이면 모두 걸려야 한다 — 공개 사이트의 검색과 같은 규칙이다.
-    const terms = query.toLowerCase().split(/\s+/).filter(Boolean)
-    const byQuery = posts.filter((post) => {
-      if (terms.length === 0) return true
-      const haystack = [post.title, post.summary, post.blogName, ...post.tags].join(' ').toLowerCase()
-      return terms.every((term) => haystack.includes(term))
-    })
-    return showHiddenOnly ? byQuery.filter((post) => post.hidden) : byQuery
-  }, [posts, query, showHiddenOnly])
+  /** 화면이 믿을 상태. 방금 누른 값이 있으면 그것이, 없으면 서버가 준 값이 이긴다. */
+  const isHidden = (post: Post) => justToggled.get(post.id) ?? post.hidden
+
+  const matched = useMemo(
+    () => (showHiddenOnly ? posts.filter((post) => justToggled.get(post.id) ?? post.hidden) : posts),
+    [posts, showHiddenOnly, justToggled],
+  )
 
   const visible = matched.slice(0, visibleCount)
 
   function toggle(post: Post) {
-    // 실패를 삼키면 눌렀는데 아무 일도 안 일어난 것처럼 보인다.
-    startTransition(async () => setResult(await togglePostHidden(post.id, !post.hidden)))
+    const nextHidden = !isHidden(post)
+    setJustToggled((previous) => new Map(previous).set(post.id, nextHidden))
+
+    startTransition(async () => {
+      const outcome = await togglePostHidden(post.id, nextHidden)
+      // 실패를 삼키면 눌렀는데 아무 일도 안 일어난 것처럼 보인다.
+      setResult(outcome)
+      if (!outcome.ok) {
+        setJustToggled((previous) => {
+          const next = new Map(previous)
+          next.delete(post.id)
+          return next
+        })
+      }
+    })
   }
 
   return (
     <>
       {result && <p className={result.ok ? styles.notice : styles.errorNotice}>{result.message}</p>}
 
-      <div className={styles.formRow}>
-        <input
-          className={styles.input}
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value)
-            setVisibleCount(PAGE_SIZE)
-          }}
-          placeholder="제목·요약·블로그로 검색"
-          style={{ flex: 1, minWidth: 260 }}
-        />
+      {/* 갈래 줄. 칠하지 않고 색·굵기로만 고른 것을 표시한다 — 앱인토스 블로그와 같은 방식이다. */}
+      <div className={list.tabs}>
         <button
           type="button"
-          className={showHiddenOnly ? styles.button : styles.quietButton}
-          onClick={() => setShowHiddenOnly((only) => !only)}
+          className={`${list.tab} ${showHiddenOnly ? '' : list.tabActive}`}
+          onClick={() => setShowHiddenOnly(false)}
+        >
+          전체
+        </button>
+        <button
+          type="button"
+          className={`${list.tab} ${showHiddenOnly ? list.tabActive : ''}`}
+          onClick={() => setShowHiddenOnly(true)}
         >
           숨긴 글만
         </button>
       </div>
 
-      <p className={styles.mutedText} style={{ marginBottom: 12 }}>
-        {matched.length}개
-      </p>
-
       <div className={styles.card}>
-        <table className={styles.table}>
-        <thead>
-          <tr>
-            <th className={styles.tableHead}>제목</th>
-            <th className={styles.tableHead}>블로그</th>
-            <th className={styles.tableHead}>발행</th>
-            <th className={`${styles.tableHead} ${styles.actionCell}`} />
-          </tr>
-        </thead>
-        <tbody>
+        <div className={list.list}>
           {visible.map((post) => (
-            <tr key={post.id} className={post.hidden ? styles.hiddenRow : undefined}>
-              <td className={styles.tableCell}>
-                <a href={post.url} target="_blank" rel="noopener noreferrer">
+            <article key={post.id} className={`${list.row} ${isHidden(post) ? list.rowHidden : ''}`}>
+              <div className={list.rowText}>
+                <p className={list.blogName}>{post.blogName}</p>
+                <a className={list.title} href={post.url} target="_blank" rel="noopener noreferrer">
                   {post.title}
                 </a>
-                <span className={styles.truncatedUrl}>{post.url}</span>
-              </td>
-              <td className={styles.tableCell}>{post.blogName}</td>
-              <td className={styles.tableCell}>
-                {new Date(post.publishedAt).toLocaleDateString('ko-KR')}
-              </td>
-              <td className={`${styles.tableCell} ${styles.actionCell}`}>
-                <button
-                  type="button"
-                  className={post.hidden ? styles.quietButton : styles.dangerButton}
-                  onClick={() => toggle(post)}
-                  disabled={isPending}
-                >
-                  {post.hidden ? '다시 보이기' : '숨기기'}
-                </button>
-              </td>
-            </tr>
+                <p className={list.meta}>
+                  <span>{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={!isHidden(post)}
+                    aria-label={`${post.title} 공개`}
+                    title={isHidden(post) ? '숨김 — 누르면 공개합니다' : '공개 중 — 누르면 숨깁니다'}
+                    className={`${styles.toggleTrack} ${isHidden(post) ? '' : styles.toggleTrackOn}`}
+                    onClick={() => toggle(post)}
+                  >
+                    <span className={`${styles.toggleKnob} ${isHidden(post) ? '' : styles.toggleKnobOn}`} />
+                  </button>
+                </p>
+              </div>
+
+              {post.sourceThumbnail ? (
+                <img className={list.thumbnail} src={post.sourceThumbnail} alt="" />
+              ) : (
+                <div className={list.thumbnail} />
+              )}
+            </article>
           ))}
-        </tbody>
-      </table>
+        </div>
       </div>
 
       {visibleCount < matched.length && (
