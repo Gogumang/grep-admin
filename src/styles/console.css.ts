@@ -48,16 +48,16 @@ export const railItem = style({
 export const railIcon = style({
   width: 28,
   height: 28,
-  borderRadius: vars.radius.md,
-  background: vars.color.surfaceSunken,
   display: 'grid',
   placeItems: 'center',
-  fontSize: 13,
+  // 라벨과 같은 색을 따라간다 — 활성 여부는 railItemActive 한 곳에서만 정한다.
+  color: 'inherit',
 })
 
-export const railIconActive = style({
-  background: vars.color.accentSoft,
-  color: vars.color.accent,
+/** 고른 갈래는 칠하지 않고 글자와 아이콘을 진하고 굵게 만든다. */
+export const railItemActive = style({
+  color: vars.color.inkStrong,
+  fontWeight: vars.fontWeight.bold,
 })
 
 export const sidebar = style({

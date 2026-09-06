@@ -16,10 +16,9 @@ import { vars } from '@/styles/contract.css'
  */
 
 /**
- * 우리 팔레트에 없고 이 화면의 장식으로만 쓰는 두 색이라 토큰으로 올리지 않고 여기 가둔다.
- * 토큰으로 올리면 라이트·다크 두 짝을 지어 계약에 넣어야 하는데, 쓰는 곳이 이 파일 하나다.
+ * 화면 바닥(#f6f7f9)은 이제 canvas 토큰이 같은 값이라 토큰으로 쓴다.
+ * teal 만 우리 팔레트에 없는데, 이 화면의 장식으로만 쓰므로 계약에 올리지 않고 여기 가둔다.
  */
-const TOSS_SCREEN = '#f6f7f9'
 const TOSS_TEAL = '#89d8d8' // --wts-adaptive-teal200
 
 /**
@@ -61,8 +60,8 @@ export const page = style({
   display: 'grid',
   gridTemplateRows: 'auto 1fr',
   overflow: 'hidden',
-  // 카드가 흰색이므로 바닥은 한 단 내려야 한다. 다크에서는 우리 캔버스를 그대로 쓴다.
-  ...themedBackground(TOSS_SCREEN, vars.color.canvas),
+  // 카드가 흰색이므로 바닥은 한 단 내려야 한다. canvas 가 라이트·다크 양쪽에서 그 값이다.
+  background: vars.color.canvas,
 })
 
 /**
@@ -166,19 +165,23 @@ export const submit = style({
   border: 0,
   borderRadius: vars.radius.md,
   /*
-   * 토스의 기본 버튼 색(#3182f6 위 흰 글자, radius 10)을 그대로 쓴다. accent/onAccent 두 토큰이
-   * 이미 같은 값이라 토큰으로 적힌다.
+   * GitHub OAuth 버튼은 검정 배경 + 흰 글자와 흰 마크가 관례다. 파란 버튼으로 두면
+   * "우리 서비스의 파란 버튼"으로 읽히고 GitHub로 간다는 신호가 약해진다.
    *
-   * GitHub OAuth 버튼은 검정 배경이 관례라 전에는 inkStrong으로 채웠는데, 그 색이 이 화면에서
-   * 토스와 가장 다르게 읽히는 부분이었다. GitHub라는 신호는 버튼 안의 마크와 문구가 진다.
+   * 다크에서는 검정 버튼이 배경에 묻으므로 흑백을 뒤집는다 — GitHub도 그렇게 한다.
+   * inkStrong/canvas 두 토큰이 테마마다 반대로 뒤집혀서 별도 분기 없이 맞는다
+   * (라이트: #191f28 위 #f6f7f9, 다크: #ffffff 위 #0f1319).
    */
-  background: vars.color.accent,
-  color: vars.color.onAccent,
+  background: vars.color.inkStrong,
+  color: vars.color.canvas,
   fontSize: vars.fontSize.md,
   fontWeight: vars.fontWeight.semibold,
   transition: 'background 160ms cubic-bezier(0.22, 1, 0.36, 1), transform 160ms cubic-bezier(0.22, 1, 0.36, 1)',
   selectors: {
-    '&:hover:not(:disabled)': { background: vars.color.accentHover },
+    // 배경 쪽으로 살짝 섞는다 — 라이트에서는 밝아지고 다크에서는 어두워진다.
+    '&:hover:not(:disabled)': {
+      background: `color-mix(in oklab, ${vars.color.inkStrong} 86%, ${vars.color.canvas})`,
+    },
     '&:active:not(:disabled)': { transform: 'scale(0.985)' },
     '&:disabled': { opacity: 0.55, cursor: 'progress' },
   },

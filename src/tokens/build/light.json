@@ -35,7 +35,7 @@
       "sans": "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif"
     },
     "color": {
-      "canvas": "#ffffff",
+      "canvas": "#f6f7f9",
       "surface": "#ffffff",
       "surfaceSunken": "#f2f4f6",
       "border": "#e5e8eb",
