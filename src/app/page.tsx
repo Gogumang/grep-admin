@@ -1,5 +1,4 @@
 import { collector } from '@/lib/collector'
-import { loadPostsForAdmin } from '@/lib/site'
 import { requireAdmin } from '@/lib/session'
 import * as styles from '@/styles/console.css'
 import * as shared from '@/components/shared.css'
@@ -10,7 +9,7 @@ export default async function DashboardPage() {
   await requireAdmin()
 
   // 한쪽이 죽어도 다른 쪽 숫자는 보여준다 — 대시보드가 통째로 비면 무엇이 문제인지도 모른다.
-  const [feedsResult, postsResult] = await Promise.allSettled([collector.listFeeds(), loadPostsForAdmin()])
+  const [feedsResult, postsResult] = await Promise.allSettled([collector.listFeeds(), collector.listPosts()])
 
   const feeds = feedsResult.status === 'fulfilled' ? feedsResult.value : []
   const posts = postsResult.status === 'fulfilled' ? postsResult.value : []

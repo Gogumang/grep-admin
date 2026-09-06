@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
-import type { Post } from '@/lib/site'
+import type { Post } from '@/lib/collector'
 import { savePicks, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
 

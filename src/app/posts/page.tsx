@@ -1,4 +1,4 @@
-import { loadPostsForAdmin } from '@/lib/site'
+import { collector } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 import * as styles from '@/components/shared.css'
 import * as console from '@/styles/console.css'
@@ -11,7 +11,7 @@ export default async function PostsPage() {
 
   try {
     // 숨긴 글까지 전부 읽는다 — 어드민은 숨긴 것을 다시 드러낼 수 있어야 한다.
-    const posts = await loadPostsForAdmin()
+    const posts = await collector.listPosts()
     return (
       <>
         <h1 className={console.pageTitle}>글 {posts.length}개</h1>

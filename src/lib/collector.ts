@@ -31,6 +31,54 @@ export interface BlogFeed {
   homepageUrl: string
 }
 
+/**
+ * 이미 공개된 글. 어드민 화면이 "무엇이 나가 있는가"를 보여줄 때 쓴다.
+ *
+ * 예전에는 공개 사이트의 /api/posts 를 불렀는데, 사이트가 정적이라 그런 라우트가 없었다.
+ * 저장소를 아는 곳은 collector 하나로 모은다.
+ */
+export interface Post {
+  id: string
+  title: string
+  url: string
+  blogName: string
+  blogKey: string
+  publishedAt: string
+  summary: string
+  sourceThumbnail: string | null
+  tags: string[]
+  hidden: boolean
+}
+
+/** 검토를 기다리는 글. collector의 /api/admin/pending 응답 모양이다. */
+export interface PendingPost {
+  id: string
+  title: string
+  url: string
+  blogName: string
+  blogKey: string
+  publishedAt: string
+  summary: string
+  sourceThumbnail: string | null
+  tags: string[]
+  hasBody: boolean
+  hasGeneratedThumbnail: boolean
+}
+
+export interface PendingPostDetail {
+  post: PendingPost
+  body: string | null
+}
+
+/** 고치지 않은 항목은 보내지 않는다 — 서버에서 null은 "그대로 둔다"는 뜻이다. */
+export interface PendingPostEdit {
+  title?: string
+  summary?: string
+  tags?: string[]
+  sourceThumbnail?: string
+  body?: string
+}
+
 /** collector가 실패를 알려주는 모양. 그대로 화면에 옮긴다. */
 export interface CollectorError {
   error: string
@@ -98,6 +146,27 @@ export const collector = {
       `/api/collections/${runId}/feeds/${encodeURIComponent(blogKey)}`,
       { method: 'POST' },
     ),
+
+  listPosts: () => request<Post[]>('/api/admin/posts'),
+
+  listPending: () => request<PendingPost[]>('/api/admin/pending'),
+
+  findPending: (postId: string) => request<PendingPostDetail>(`/api/admin/pending/${postId}`),
+
+  savePending: (postId: string, edit: PendingPostEdit) =>
+    request<void>(`/api/admin/pending/${postId}`, { method: 'PUT', body: JSON.stringify(edit) }),
+
+  publishPending: (postIds: string[]) =>
+    request<{ affectedPostCount: number }>('/api/admin/pending/publish', {
+      method: 'POST',
+      body: JSON.stringify({ postIds }),
+    }),
+
+  rejectPending: (postIds: string[]) =>
+    request<{ affectedPostCount: number }>('/api/admin/pending/reject', {
+      method: 'POST',
+      body: JSON.stringify({ postIds }),
+    }),
 
   commitCollectionRun: (runId: string) =>
     request<{ committedPostCount: number; blogNames: string[] }>(`/api/collections/${runId}/commit`, { method: 'POST' }),

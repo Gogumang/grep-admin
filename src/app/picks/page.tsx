@@ -1,5 +1,4 @@
 import { collector } from '@/lib/collector'
-import { loadPostsForAdmin } from '@/lib/site'
 import { requireAdmin } from '@/lib/session'
 import * as styles from '@/components/shared.css'
 import * as console from '@/styles/console.css'
@@ -11,7 +10,7 @@ export default async function PicksPage() {
   await requireAdmin()
 
   try {
-    const [picks, posts] = await Promise.all([collector.listPicks(), loadPostsForAdmin()])
+    const [picks, posts] = await Promise.all([collector.listPicks(), collector.listPosts()])
 
     return (
       <>

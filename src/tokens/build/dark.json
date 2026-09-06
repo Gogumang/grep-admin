@@ -48,7 +48,8 @@
       "onAccent": "#0f1319",
       "accentSoft": "#17253a",
       "inkStrong": "#ffffff",
-      "brand": "#f96c85"
+      "brand": "#f96c85",
+      "inkSubtle": "#b0b8c1"
     }
   }
 }

@@ -10,6 +10,7 @@ const RAIL_ITEMS = [{ icon: '🍒', label: 'cherry', href: '/' }]
 const MENU = [
   { href: '/', label: '대시보드' },
   { href: '/blogs', label: '블로그' },
+  { href: '/review', label: '검토' },
   { href: '/posts', label: '글' },
   { href: '/picks', label: '오늘의 픽' },
   { href: '/collect', label: '수집 실행' },
