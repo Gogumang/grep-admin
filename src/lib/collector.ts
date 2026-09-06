@@ -127,6 +127,16 @@ export const collector = {
   addBlog: (blogName: string, feedUrl: string) =>
     request<BlogFeed>('/api/admin/feeds', { method: 'POST', body: JSON.stringify({ blogName, feedUrl }) }),
 
+  /**
+   * 이름·피드 주소를 고친다. blogKey 는 바뀌지 않는다 — 서버가 키를 다시 만들지 않기 때문이다.
+   * 키가 갈리면 이미 수집된 글이 블로그를 잃는다.
+   */
+  updateBlog: (blogKey: string, blogName: string, feedUrl: string) =>
+    request<BlogFeed>(`/api/admin/feeds/${encodeURIComponent(blogKey)}`, {
+      method: 'PUT',
+      body: JSON.stringify({ blogName, feedUrl }),
+    }),
+
   removeBlog: (blogKey: string) =>
     request<BlogFeed>(`/api/admin/feeds/${encodeURIComponent(blogKey)}`, { method: 'DELETE' }),
 

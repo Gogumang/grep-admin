@@ -30,6 +30,19 @@ export async function addBlog(formData: FormData): Promise<ActionResult> {
   }
 }
 
+/** 이름·피드 주소를 고친다. 피드가 살아있는지 확인하는 일은 여기서도 collector가 한다. */
+export async function editBlog(blogKey: string, blogName: string, feedUrl: string): Promise<ActionResult> {
+  await requireAdmin()
+
+  try {
+    const feed = await collector.updateBlog(blogKey, blogName.trim(), feedUrl.trim())
+    revalidatePath('/blogs')
+    return { ok: true, message: `${feed.blogName} 수정됨` }
+  } catch (error) {
+    return { ok: false, message: describe(error) }
+  }
+}
+
 export async function removeBlog(blogKey: string): Promise<ActionResult> {
   await requireAdmin()
 
