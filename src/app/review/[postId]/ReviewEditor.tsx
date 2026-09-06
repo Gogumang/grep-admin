@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { PostBody } from '@/components/preview/PostBody'
 import type { PendingPost, PendingPostDetail, PendingPostEdit } from '@/lib/collector'
+import { toSiteImageUrl } from '@/lib/site'
 import * as body from '@/components/preview/postBody.css'
 import * as console from '@/styles/console.css'
 import * as styles from '../ReviewWorkbench.css'
@@ -132,8 +133,8 @@ export function ReviewEditor({ detail }: { detail: PendingPostDetail }) {
           <div className={styles.articlePreview}>
             <p className={styles.previewLabel}>목록에서</p>
             <div className={styles.cardPreview}>
-              {draft.sourceThumbnail ? (
-                <img className={styles.cardThumbnail} src={draft.sourceThumbnail} alt="" />
+              {toSiteImageUrl(draft.sourceThumbnail) ? (
+                <img className={styles.cardThumbnail} src={toSiteImageUrl(draft.sourceThumbnail) ?? ''} alt="" />
               ) : (
                 <div className={styles.cardThumbnail} />
               )}
