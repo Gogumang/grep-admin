@@ -48,6 +48,9 @@ export interface Post {
   sourceThumbnail: string | null
   tags: string[]
   hidden: boolean
+  /** 최근 7일 조회수. GA4를 아직 붙이지 않았으면 0이다. */
+  recentViews: number
+  totalViews: number
 }
 
 /** 검토를 기다리는 글. collector의 /api/admin/pending 응답 모양이다. */

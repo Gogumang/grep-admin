@@ -80,6 +80,11 @@ export const meta = style({
   color: vars.color.inkMuted,
 })
 
+/** 조회수. 날짜와 같은 줄에 서지만 눈에 먼저 들어오지는 않게 둔다. */
+export const views = style({
+  fontVariantNumeric: 'tabular-nums',
+})
+
 export const thumbnail = style({
   width: 240,
   height: 162,

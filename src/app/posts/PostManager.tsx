@@ -87,6 +87,15 @@ export function PostManager({ posts }: { posts: Post[] }) {
                 </a>
                 <p className={list.meta}>
                   <span>{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</span>
+                  {/*
+                    한 번도 읽히지 않은 글에는 아무것도 적지 않는다 — "0회"라고 쓰면
+                    아직 집계를 안 붙인 것인지 정말 안 읽힌 것인지 구분되지 않는다.
+                  */}
+                  {post.totalViews > 0 && (
+                    <span className={list.views} title={`누적 ${post.totalViews.toLocaleString()}회`}>
+                      최근 7일 {post.recentViews.toLocaleString()}회
+                    </span>
+                  )}
                   <button
                     type="button"
                     role="switch"
