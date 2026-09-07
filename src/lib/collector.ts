@@ -62,7 +62,6 @@ export interface PendingPost {
   sourceThumbnail: string | null
   tags: string[]
   hasBody: boolean
-  hasGeneratedThumbnail: boolean
 }
 
 export interface PendingPostDetail {
