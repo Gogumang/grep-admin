@@ -67,6 +67,18 @@ export interface PendingPost {
   hasBody: boolean
 }
 
+/**
+ * 어제 하루 조회수 요약. collector의 /api/analytics/views/summary 응답 모양이다.
+ *
+ * postCount가 0이면 그날을 아직 받지 않았다는 뜻이다 — 애널리틱스는 조회가 0인 글을
+ * 아예 돌려주지 않는다. "아무도 안 봤다"와 구분해야 해서 함께 받는다.
+ */
+export interface DailyViewSummary {
+  date: string
+  postCount: number
+  totalViews: number
+}
+
 export interface PendingPostDetail {
   post: PendingPost
   body: string | null
@@ -160,6 +172,8 @@ export const collector = {
     ),
 
   listPosts: () => request<Post[]>('/api/admin/posts'),
+
+  viewSummary: () => request<DailyViewSummary>('/api/analytics/views/summary'),
 
   listPending: () => request<PendingPost[]>('/api/admin/pending'),
 
