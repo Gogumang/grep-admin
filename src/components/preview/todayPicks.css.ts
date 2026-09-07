@@ -1,5 +1,5 @@
 /**
- * 공개 사이트의 TodayPicks 스타일을 그대로 옮긴 것이다 (cherrypick/src/components/post/TodayPicks.css.ts).
+ * 공개 사이트의 TodayPicks 스타일을 그대로 옮긴 것이다 (grep/src/components/post/TodayPicks.css.ts).
  * 저장소가 나뉘어 있어 참조할 수 없으므로 복사한다 — postBody.css.ts 와 같은 방식이다.
  *
  * 값을 여기서 고치지 말 것. 사이트가 바뀌면 이 파일도 다시 옮겨야 미리보기가 실제와 갈라지지 않는다.

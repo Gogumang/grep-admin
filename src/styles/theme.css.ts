@@ -3,7 +3,7 @@ import { darkTheme, lightTheme } from '@/tokens/build/themes'
 import { vars } from './contract.css'
 
 /**
- * 토큰 값은 여기 없다. 원본은 cherrypick 저장소의 tokens/src/*.tokens.json 이고,
+ * 토큰 값은 여기 없다. 원본은 grep 저장소의 tokens/src/*.tokens.json 이고,
  * 구운 결과(src/tokens/build)를 복사해 온 것이다. 저장소가 나뉘어 있어 직접 참조할 수 없다.
  *
  * (이하) 원본은 packages/tokens/src/*.tokens.json (W3C DTCG 형식)이고,
