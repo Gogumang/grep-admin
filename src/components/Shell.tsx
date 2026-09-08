@@ -45,6 +45,9 @@ function isCurrent(href: string, pathname: string): boolean {
 /** 로그인 전에는 관리 메뉴를 보여주지 않는다 — 무엇이 있는지도 알려줄 이유가 없다. */
 const BARE_PATH_PREFIXES = ['/login', '/auth']
 
+/** 본문 최대폭을 풀 갈래. 검토는 목록도 미리보기도 화면을 그대로 쓰는 편이 낫다. */
+const WIDE_PATH_PREFIXES = ['/review']
+
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
@@ -55,6 +58,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   // 어느 갈래에 있는지는 경로가 말해준다. 어디에도 걸리지 않으면 첫 갈래를 연다.
   const activeGroup = GROUPS.find((group) => group.items.some((item) => isCurrent(item.href, pathname))) ?? GROUPS[0]
+  const isWide = WIDE_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))
 
   return (
     <div className={styles.shell}>
@@ -106,7 +110,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </form>
       </aside>
 
-      <main className={styles.main}>{children}</main>
+      <main className={`${styles.main} ${isWide ? styles.mainWide : ''}`}>{children}</main>
     </div>
   )
 }

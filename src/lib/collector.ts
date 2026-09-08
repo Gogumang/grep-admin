@@ -53,6 +53,29 @@ export interface Post {
   totalViews: number
 }
 
+/**
+ * 공개된 글 한 건과 본문. collector의 /api/admin/posts/{id} 응답 모양이다.
+ *
+ * 목록(Post)과 달리 조회수가 없다 — 미리보기는 "이 글이 어떻게 보이는가"만 묻는 화면이고,
+ * 조회수는 목록에 이미 나와 있다.
+ */
+export interface PostDetail {
+  post: {
+    id: string
+    title: string
+    url: string
+    blogName: string
+    blogKey: string
+    publishedAt: string
+    summary: string
+    sourceThumbnail: string | null
+    tags: string[]
+    hidden: boolean
+  }
+  /** 본문 파일이 없는 글이 있다 — 그때는 null이고, 화면이 "본문 없음"으로 알린다. */
+  body: string | null
+}
+
 /** 검토를 기다리는 글. collector의 /api/admin/pending 응답 모양이다. */
 export interface PendingPost {
   id: string
@@ -172,6 +195,9 @@ export const collector = {
     ),
 
   listPosts: () => request<Post[]>('/api/admin/posts'),
+
+  /** 미리보기용. 목록에 없는 본문을 함께 준다. */
+  findPost: (postId: string) => request<PostDetail>(`/api/admin/posts/${postId}`),
 
   viewSummary: () => request<DailyViewSummary>('/api/analytics/views/summary'),
 

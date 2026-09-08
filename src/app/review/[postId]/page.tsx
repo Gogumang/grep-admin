@@ -20,7 +20,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ p
     return (
       <>
         <a href="/review" className={styles.backLink}>
-          ← 검토 목록
+          ⬅️ 검토 목록
         </a>
         <h1 className={console.pageTitle}>검토</h1>
         <p className={shared.errorNotice}>{(error as Error).message}</p>

@@ -14,7 +14,7 @@ export default async function PostsPage() {
     const posts = await collector.listPosts()
     return (
       <>
-        <h1 className={console.pageTitle}>글 {posts.length}개</h1>
+        <h1 className={console.pageTitle}>글</h1>
         <PostManager posts={posts} />
       </>
     )

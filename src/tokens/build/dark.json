@@ -32,7 +32,7 @@
       "bold": "700"
     },
     "font": {
-      "sans": "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif"
+      "sans": "'Pretendard Variable', Pretendard, Tossface, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif"
     },
     "color": {
       "canvas": "#0f1319",
