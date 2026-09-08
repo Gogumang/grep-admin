@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSessionUser, isAllowedAdmin } from '@/lib/session'
 import { signInWithGitHub, signOut } from './actions'
+import { GrepLogo } from '@/components/Logo'
 import { SignInButton } from './SignInButton'
 import * as styles from './login.css'
 
@@ -34,7 +35,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <div className={styles.wash} aria-hidden="true" />
 
       <header className={styles.header}>
-        <span className={styles.wordmark}>grep</span>
+        <GrepLogo />
       </header>
 
       <main className={styles.center}>

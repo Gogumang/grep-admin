@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="32" height="32">
+  <!--
+    사이트 favicon(grep/public/favicon.svg)과 같은 viewBox·같은 좌표·같은 획 두께다.
+    다만 사이트는 투명 배경에 초록 선만 두는데, 어드민은 채운 사각형 위 흰 선으로 뒤집었다 —
+    탭이 여러 개 열려 있을 때 같은 브랜드임은 알아보되 사이트와 어드민이 구분되어야 한다.
+
+    탭 배경은 브라우저 테마를 따르므로 바탕 초록을 두 벌 둔다 (brand.500 / brand.400).
+  -->
+  <style>
+    .plate { fill: #079743 }
+    @media (prefers-color-scheme: dark) { .plate { fill: #09d25d } }
+  </style>
+  <rect class="plate" width="20" height="20" rx="5"/>
+  <!-- 캐럿이 커서보다 위에 있어 도형의 무게가 위로 쏠린다. 0.4 내려 광학 중심을 맞춘다. -->
+  <g transform="translate(0 -0.4)" stroke="#fff" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3.8 5.4L9.4 10L3.8 14.6"/>
+    <path d="M11.4 15.4H16.6" opacity="0.62"/>
+  </g>
+</svg>

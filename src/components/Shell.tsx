@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import * as styles from '@/styles/console.css'
 import { DocumentIcon, SlidersIcon } from './icons'
+import { GrepLogo } from './Logo'
 
 /**
  * 왼쪽 끝 레일이 대분류다. 여기서 고른 갈래의 메뉴만 사이드바에 나온다 —
@@ -78,9 +79,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </nav>
 
       <aside className={styles.sidebar}>
-        <a href="/" className={styles.wordmark}>
-          grep
-          <span className={styles.wordmarkBadge}>관리</span>
+        <a href="/">
+          <GrepLogo label="관리" />
         </a>
 
         <nav className={styles.menu} aria-label={`${activeGroup.label} 메뉴`}>

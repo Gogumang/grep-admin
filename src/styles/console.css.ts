@@ -71,25 +71,6 @@ export const sidebar = style({
   },
 })
 
-export const wordmark = style({
-  display: 'flex',
-  alignItems: 'center',
-  gap: vars.space.sm,
-  fontSize: vars.fontSize.lg,
-  fontWeight: vars.fontWeight.bold,
-  letterSpacing: '-0.03em',
-  color: vars.color.inkStrong,
-})
-
-export const wordmarkBadge = style({
-  fontSize: vars.fontSize.xs,
-  fontWeight: vars.fontWeight.semibold,
-  color: vars.color.accent,
-  background: vars.color.accentSoft,
-  padding: `2px ${vars.space.sm}`,
-  borderRadius: vars.radius.sm,
-})
-
 export const menu = style({
   display: 'flex',
   flexDirection: 'column',

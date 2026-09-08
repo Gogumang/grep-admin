@@ -88,15 +88,6 @@ export const header = style({
   padding: `${vars.space.lg} ${vars.space.xl}`,
 })
 
-/** Shell의 워드마크와 같은 모양 — 로그인 전후로 같은 제품처럼 보여야 한다. */
-export const wordmark = style({
-  display: 'inline-block',
-  fontSize: vars.fontSize.lg,
-  fontWeight: vars.fontWeight.bold,
-  letterSpacing: '-0.03em',
-  color: vars.color.inkStrong,
-})
-
 export const center = style({
   position: 'relative',
   display: 'flex',
