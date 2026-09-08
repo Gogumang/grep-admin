@@ -1,5 +1,5 @@
+import { BarChart, type BarChartData } from '@/shared'
 import type { Post } from '@/lib/collector'
-import * as styles from './postCountByBlog.css'
 
 interface BlogCount {
   blogKey: string
@@ -11,31 +11,22 @@ interface BlogCount {
 /**
  * 회사(블로그)별로 글이 몇 개 들어와 있는지. 많은 순으로 왼쪽부터 세운다.
  *
- * 축과 눈금은 두지 않는다 — 막대 위에 숫자가 그대로 붙어 있어서 눈금을 세는 일이 없다.
- * 색이 한 가지라 범례도 없다. 제목이 이 막대가 무엇인지 말한다.
+ * 막대를 그리는 일은 공용 BarChart가 맡고, 여기는 "무엇을 세는가"만 정한다 —
+ * 색이 한 가지인 것도 그 결정이다. 회사마다 다른 색을 주면 색이 순위를 따라다니게 되고,
+ * 회사가 늘 때마다 색이 뒤바뀐다.
  */
 export function PostCountByBlog({ posts }: { posts: Post[] }) {
   const rows = summarize(posts)
-  const most = rows[0]
-  if (!most) return null
+  if (rows.length === 0) return null
 
-  return (
-    <div className={styles.chart}>
-      {rows.map((row) => (
-        <div
-          key={row.blogKey}
-          className={styles.column}
-          title={`${row.blogName} — 전체 ${row.total}개, 공개 ${row.total - row.hidden}개, 숨김 ${row.hidden}개`}
-        >
-          <span className={styles.count}>{row.total}</span>
-          <div className={styles.track} aria-hidden="true">
-            <div className={styles.bar} style={{ height: `${(row.total / most.total) * 100}%` }} />
-          </div>
-          <span className={styles.name}>{row.blogName}</span>
-        </div>
-      ))}
-    </div>
-  )
+  const data: BarChartData[] = rows.map((row) => ({
+    value: row.total,
+    label: row.blogName,
+    barAnnotation: row.total,
+    title: `${row.blogName} — 전체 ${row.total}개, 공개 ${row.total - row.hidden}개, 숨김 ${row.hidden}개`,
+  }))
+
+  return <BarChart data={data} fill={{ type: 'all-bar', theme: 'blue' }} height={220} />
 }
 
 /** blogKey로 묶는다 — 이름은 같아도 다른 블로그일 수 있고, 이름은 바뀔 수 있다. */

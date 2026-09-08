@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
+import { Button, useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
 import { savePicks, type ActionResult } from './actions'
 import { PickSlide } from '@/components/preview/PickSlide'
@@ -21,7 +22,9 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
   /** 기본은 보기다 — 오늘의 픽은 대개 "지금 뭐가 나가 있지"를 확인하러 들어온다. */
   const [isEditing, setIsEditing] = useState(false)
   const [query, setQuery] = useState('')
-  const [result, setResult] = useState<ActionResult | null>(null)
+  const { openToast } = useToast()
+  /** 실패만 화면에 남긴다. 저장됐다는 소식은 토스트로 지나간다. */
+  const [failure, setFailure] = useState<ActionResult | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const postsByUrl = useMemo(() => new Map(posts.map((post) => [post.url, post])), [posts])
@@ -52,9 +55,13 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
   function save() {
     startTransition(async () => {
       const outcome = await savePicks(pickUrls)
-      setResult(outcome)
       // 저장에 실패했는데 보기로 돌아가면 안 나간 값이 나간 것처럼 보인다.
-      if (!outcome.ok) return
+      if (!outcome.ok) {
+        setFailure(outcome)
+        return
+      }
+      setFailure(null)
+      openToast(outcome.message)
       setSavedUrls(pickUrls)
       setIsEditing(false)
     })
@@ -63,7 +70,7 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
   function cancel() {
     setPickUrls(savedUrls)
     setQuery('')
-    setResult(null)
+    setFailure(null)
     setIsEditing(false)
   }
 
@@ -75,7 +82,7 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
 
   return (
     <>
-      {result && <p className={result.ok ? styles.notice : styles.errorNotice}>{result.message}</p>}
+      {failure && <p className={styles.errorNotice}>{failure.message}</p>}
 
       {/* 지금 사이트에 나가 있는 모습. 편집 중에는 고른 값이 그대로 반영된다. */}
       <div className={styles.card} style={{ marginBottom: 20 }}>
@@ -95,9 +102,9 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
       </div>
 
       {!isEditing && (
-        <button type="button" className={styles.button} onClick={() => setIsEditing(true)}>
+        <Button color="primary" variant="weak" size="small" onClick={() => setIsEditing(true)}>
           편집
-        </button>
+        </Button>
       )}
 
       {isEditing && (
@@ -121,15 +128,16 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
                     <span className={styles.truncatedUrl}>{post ? post.blogName : url}</span>
                   </td>
                   <td className={`${styles.tableCell} ${styles.actionCell}`} style={{ width: 190 }}>
-                    <button type="button" className={styles.quietButton} onClick={() => move(index, -1)} disabled={index === 0}>↑</button>{' '}
-                    <button type="button" className={styles.quietButton} onClick={() => move(index, 1)} disabled={index === pickUrls.length - 1}>↓</button>{' '}
-                    <button
-                      type="button"
-                      className={styles.dangerButton}
+                    <Button color="light" size="small" onClick={() => move(index, -1)} disabled={index === 0} aria-label="위로">↑</Button>{' '}
+                    <Button color="light" size="small" onClick={() => move(index, 1)} disabled={index === pickUrls.length - 1} aria-label="아래로">↓</Button>{' '}
+                    <Button
+                      color="danger"
+                      variant="weak"
+                      size="small"
                       onClick={() => setPickUrls(pickUrls.filter((each) => each !== url))}
                     >
                       빼기
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               )
@@ -153,12 +161,12 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
           placeholder="추가할 글을 제목·블로그로 검색"
           style={{ flex: 1, minWidth: 280 }}
         />
-        <button type="button" className={styles.button} onClick={save} disabled={isPending}>
-          {isPending ? '저장 중…' : '저장'}
-        </button>
-        <button type="button" className={styles.quietButton} onClick={cancel} disabled={isPending}>
+        <Button color="primary" variant="weak" size="small" onClick={save} loading={isPending}>
+          저장
+        </Button>
+        <Button color="light" size="small" onClick={cancel} disabled={isPending}>
           취소
-        </button>
+        </Button>
       </div>
 
       {candidates.length > 0 && (
@@ -172,16 +180,16 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
                   <span className={styles.truncatedUrl}>{post.blogName}</span>
                 </td>
                 <td className={`${styles.tableCell} ${styles.actionCell}`}>
-                  <button
-                    type="button"
-                    className={styles.quietButton}
+                  <Button
+                    color="light"
+                    size="small"
                     onClick={() => {
                       setPickUrls([...pickUrls, post.url])
                       setQuery('')
                     }}
                   >
                     픽에 넣기
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Button, useToast } from '@/shared'
 import { collectOneFeed, commitCollection, startCollection, type FeedResult } from './actions'
 import * as styles from './CollectRunner.css'
 import * as shared from '@/components/shared.css'
@@ -8,22 +9,25 @@ import * as shared from '@/components/shared.css'
 type Phase = 'idle' | 'collecting' | 'committing' | 'done'
 
 export function CollectRunner() {
+  const { openToast } = useToast()
   const [phase, setPhase] = useState<Phase>('idle')
   const [totalBlogCount, setTotalBlogCount] = useState(0)
   const [results, setResults] = useState<FeedResult[]>([])
-  const [summary, setSummary] = useState<{ ok: boolean; message: string } | null>(null)
+  /** 실패했을 때만 채운다. 성공은 토스트로 지나가고 화면에 남기지 않는다. */
+  const [error, setError] = useState<string | null>(null)
 
   async function run() {
     setPhase('collecting')
     setResults([])
-    setSummary(null)
+    setError(null)
 
     let start: Awaited<ReturnType<typeof startCollection>>
     try {
       start = await startCollection()
-    } catch (error) {
+    } catch (caught) {
       setPhase('idle')
-      setSummary({ ok: false, message: (error as Error).message })
+      // 실패는 토스트로 띄우지 않는다 — 3초 뒤 사라지면 무엇이 잘못됐는지 다시 볼 수 없다.
+      setError((caught as Error).message)
       return
     }
 
@@ -38,7 +42,9 @@ export function CollectRunner() {
 
     setPhase('committing')
     const commit = await commitCollection(start.runId)
-    setSummary(commit)
+    // 끝났다는 소식은 스쳐 지나가도 되는 말이라 토스트로 띄운다. 실패는 화면에 남긴다.
+    if (commit.ok) openToast(commit.message)
+    else setError(commit.message)
     setPhase('done')
   }
 
@@ -50,11 +56,15 @@ export function CollectRunner() {
   return (
     <>
       <div className={shared.formRow}>
-        <button type="button" className={shared.button} onClick={run} disabled={isRunning}>
+        {/*
+          * loading을 쓰지 않는다 — 스피너가 글자를 대신하면 "3/12"라는 진행 상황이 사라진다.
+          * 도는 그림보다 몇 개째인지가 더 쓸모 있다.
+          */}
+        <Button color="primary" variant="weak" size="small" onClick={run} disabled={isRunning}>
           {phase === 'collecting' && `수집 중… ${results.length}/${totalBlogCount}`}
           {phase === 'committing' && '저장 중…'}
           {!isRunning && '수집 실행'}
-        </button>
+        </Button>
       </div>
 
       {phase === 'committing' && (
@@ -63,7 +73,7 @@ export function CollectRunner() {
         </p>
       )}
 
-      {summary && <p className={summary.ok ? shared.notice : shared.errorNotice}>{summary.message}</p>}
+      {error && <p className={shared.errorNotice}>{error}</p>}
 
       {results.length > 0 && (
         <>

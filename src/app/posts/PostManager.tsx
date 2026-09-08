@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
+import { Button, useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
 import { toSiteImageUrl } from '@/lib/site'
 import { togglePostHidden, type ActionResult } from './actions'
@@ -14,7 +15,9 @@ export function PostManager({ posts }: { posts: Post[] }) {
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [, startTransition] = useTransition()
-  const [result, setResult] = useState<ActionResult | null>(null)
+  const { openToast } = useToast()
+  /** 실패만 화면에 남긴다. 숨김을 바꿨다는 말은 스위치가 이미 보여주므로 토스트로 흘려보낸다. */
+  const [failure, setFailure] = useState<ActionResult | null>(null)
   /**
    * 방금 누른 스위치의 상태.
    *
@@ -41,8 +44,11 @@ export function PostManager({ posts }: { posts: Post[] }) {
     startTransition(async () => {
       const outcome = await togglePostHidden(post.id, nextHidden)
       // 실패를 삼키면 눌렀는데 아무 일도 안 일어난 것처럼 보인다.
-      setResult(outcome)
-      if (!outcome.ok) {
+      if (outcome.ok) {
+        setFailure(null)
+        openToast(outcome.message)
+      } else {
+        setFailure(outcome)
         setJustToggled((previous) => {
           const next = new Map(previous)
           next.delete(post.id)
@@ -54,7 +60,7 @@ export function PostManager({ posts }: { posts: Post[] }) {
 
   return (
     <>
-      {result && <p className={result.ok ? styles.notice : styles.errorNotice}>{result.message}</p>}
+      {failure && <p className={styles.errorNotice}>{failure.message}</p>}
 
       {/* 갈래 줄. 칠하지 않고 색·굵기로만 고른 것을 표시한다 — 앱인토스 블로그와 같은 방식이다. */}
       <div className={list.tabs}>
@@ -82,7 +88,11 @@ export function PostManager({ posts }: { posts: Post[] }) {
             <article key={post.id} className={`${list.row} ${isHidden(post) ? list.rowHidden : ''}`}>
               <div className={list.rowText}>
                 <p className={list.blogName}>{post.blogName}</p>
-                <a className={list.title} href={post.url} target="_blank" rel="noopener noreferrer">
+                {/*
+                  원문이 아니라 우리 미리보기로 간다 — 어드민에서 알고 싶은 것은
+                  "우리 사이트에 어떻게 나갔나"다. 원문은 미리보기 화면에 링크로 있다.
+                */}
+                <a className={list.title} href={`/posts/${post.id}`}>
                   {post.title}
                 </a>
                 <p className={list.meta}>
@@ -122,14 +132,15 @@ export function PostManager({ posts }: { posts: Post[] }) {
       </div>
 
       {visibleCount < matched.length && (
-        <button
-          type="button"
-          className={styles.quietButton}
-          style={{ width: '100%', marginTop: 20 }}
+        <Button
+          color="light"
+          size="small"
+          display="block"
+          htmlStyle={{ marginTop: 20 }}
           onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
         >
           {matched.length - visibleCount}개 더 보기
-        </button>
+        </Button>
       )}
     </>
   )

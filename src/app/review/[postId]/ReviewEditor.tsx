@@ -2,27 +2,14 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { PostBody } from '@/components/preview/PostBody'
+import { ArticlePreview, type ArticleDraft } from '@/components/preview/ArticlePreview'
+import { Button, useToast } from '@/shared'
 import type { PendingPost, PendingPostDetail, PendingPostEdit } from '@/lib/collector'
-import { toSiteImageUrl } from '@/lib/site'
-import * as body from '@/components/preview/postBody.css'
 import * as console from '@/styles/console.css'
 import * as styles from '../ReviewWorkbench.css'
 import { publishPending, rejectPending, savePending } from '../actions'
 
-/** 오른쪽에 보여주는 것. 검토는 "어떻게 나갈지"를 먼저 보는 일이라 미리보기가 기본이다. */
-type Pane = 'preview' | 'edit'
-
-/** 편집 중인 값. 서버에 보낼 때 원본과 달라진 것만 골라낸다. */
-interface Draft {
-  title: string
-  summary: string
-  tags: string
-  sourceThumbnail: string
-  body: string
-}
-
-function toDraft(post: PendingPost, postBody: string | null): Draft {
+function toDraft(post: PendingPost, postBody: string | null): ArticleDraft {
   return {
     title: post.title,
     summary: post.summary,
@@ -37,7 +24,7 @@ function toDraft(post: PendingPost, postBody: string | null): Draft {
  *
  * 전부 보내면 안 고친 필드까지 커밋 diff에 올라와서, 나중에 "무엇을 손봤는지"를 볼 수 없다.
  */
-function toEdit(draft: Draft, original: Draft): PendingPostEdit {
+function toEdit(draft: ArticleDraft, original: ArticleDraft): PendingPostEdit {
   const edit: PendingPostEdit = {}
   if (draft.title !== original.title) edit.title = draft.title
   if (draft.summary !== original.summary) edit.summary = draft.summary
@@ -49,14 +36,25 @@ function toEdit(draft: Draft, original: Draft): PendingPostEdit {
   return edit
 }
 
+/**
+ * 글 하나를 검토하는 자리.
+ *
+ * 미리보기와 편집을 탭으로 나눠 두었는데 합쳤다 — 검토는 "이대로 나가도 되나"를 판단하는
+ * 일이라 고치는 내내 나갈 모습이 보여야 한다. 탭을 오가면 고친 결과를 확인하려고 매번
+ * 되돌아가야 했다. 이제 미리보기의 글자를 그대로 눌러 고친다.
+ */
 export function ReviewEditor({ detail }: { detail: PendingPostDetail }) {
   const router = useRouter()
   const loaded = toDraft(detail.post, detail.body)
 
-  const [draft, setDraft] = useState<Draft>(loaded)
-  const [original, setOriginal] = useState<Draft>(loaded)
-  const [pane, setPane] = useState<Pane>('preview')
-  const [notice, setNotice] = useState<{ ok: boolean; message: string } | null>(null)
+  const [draft, setDraft] = useState<ArticleDraft>(loaded)
+  const [original, setOriginal] = useState<ArticleDraft>(loaded)
+  const { openToast } = useToast()
+  /**
+   * 실패만 화면에 남긴다. 저장됐다는 말은 흘려보내도 되지만, 실패는 고칠 때까지 보여야 한다 —
+   * 특히 여기는 고친 내용이 아직 안 나간 상태라 알림이 사라지면 나갔다고 읽는다.
+   */
+  const [failure, setFailure] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const post = detail.post
@@ -65,8 +63,13 @@ export function ReviewEditor({ detail }: { detail: PendingPostDetail }) {
   function run(action: () => Promise<{ ok: boolean; message: string }>, onDone?: () => void) {
     startTransition(async () => {
       const result = await action()
-      setNotice(result)
-      if (result.ok) onDone?.()
+      if (!result.ok) {
+        setFailure(result.message)
+        return
+      }
+      setFailure(null)
+      openToast(result.message)
+      onDone?.()
     })
   }
 
@@ -79,135 +82,60 @@ export function ReviewEditor({ detail }: { detail: PendingPostDetail }) {
   return (
     <>
       <a href="/review" className={styles.backLink}>
-        ← 검토 목록
+        ⬅️ 검토 목록
       </a>
       <h1 className={console.pageTitle}>{post.title}</h1>
 
-      <div className={styles.panel}>
+      <div className={styles.editorPanel}>
         <div className={styles.tabBar}>
-          <button
-            type="button"
-            className={`${styles.tab} ${pane === 'preview' ? styles.tabActive : ''}`}
-            onClick={() => setPane('preview')}
-          >
-            미리보기
-          </button>
-          <button
-            type="button"
-            className={`${styles.tab} ${pane === 'edit' ? styles.tabActive : ''}`}
-            onClick={() => setPane('edit')}
-          >
-            편집{dirty ? ' •' : ''}
-          </button>
+          {/*
+            탭을 없애면서 "고친 것이 있다"를 알리던 편집 탭의 점(•)도 함께 사라졌다.
+            저장 버튼만 두면 처음 온 사람은 글자를 눌러 고칠 수 있다는 것을 모른다.
+          */}
+          <span className={styles.editHint}>
+            {dirty ? '고친 내용이 있습니다' : '미리보기의 글자를 눌러 고칩니다'}
+          </span>
 
           <span className={styles.tabSpacer} />
 
-          <button
-            type="button"
-            className={styles.quietButton}
+          <Button
+            color="light"
+            size="small"
             disabled={!dirty || isPending}
             onClick={() => run(() => savePending(post.id, toEdit(draft, original)), () => setOriginal(draft))}
           >
             {dirty ? '저장' : '고친 내용 없음'}
-          </button>
-          <button
-            type="button"
-            className={styles.dangerButton}
+          </Button>
+          <Button
+            color="danger"
+            variant="weak"
+            size="small"
             disabled={isPending}
             onClick={() => run(() => rejectPending([post.id]), backToList)}
           >
             치우기
-          </button>
-          <button
-            type="button"
-            className={styles.primaryButton}
+          </Button>
+          {/* 여기서만 채운 버튼을 쓴다 — 이 화면의 목적이 '공개'라서 한 개는 도드라져야 한다. */}
+          <Button
+            color="primary"
+            size="small"
             disabled={isPending}
             onClick={() => run(() => publishPending([post.id]), backToList)}
           >
             이 글 공개
-          </button>
+          </Button>
         </div>
 
-        {pane === 'preview' ? (
-          // 사이트와 같은 렌더러·같은 스타일·같은 줄 폭이라 실제와 갈라지지 않는다.
-          <div className={styles.articlePreview}>
-            <p className={styles.previewLabel}>목록에서</p>
-            <div className={styles.cardPreview}>
-              {toSiteImageUrl(draft.sourceThumbnail) ? (
-                <img className={styles.cardThumbnail} src={toSiteImageUrl(draft.sourceThumbnail) ?? ''} alt="" />
-              ) : (
-                <div className={styles.cardThumbnail} />
-              )}
-              <div>
-                <p className={styles.cardTitle}>{draft.title}</p>
-                <p className={styles.cardSummary}>{draft.summary}</p>
-              </div>
-            </div>
+        <div className={styles.editorBody}>
+          <ArticlePreview
+            draft={draft}
+            blogName={post.blogName}
+            publishedAt={post.publishedAt}
+            onChange={(patch) => setDraft((previous) => ({ ...previous, ...patch }))}
+          />
+        </div>
 
-            <hr className={styles.previewDivider} />
-
-            <p className={styles.previewLabel}>글 페이지에서</p>
-            <h1 className={body.title}>{draft.title}</h1>
-            <p className={body.byline}>
-              <span className={body.bylineSource}>{post.blogName}</span>
-            </p>
-            <p className={body.publishedAt}>
-              {new Date(post.publishedAt).toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-            <div className={body.body}>
-              {draft.body ? <PostBody body={draft.body} /> : <p className={body.missingBody}>본문이 없습니다.</p>}
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className={styles.field}>
-              <label className={styles.label}>제목</label>
-              <input
-                className={styles.input}
-                value={draft.title}
-                onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>요약 (목록 카드에 나가는 글)</label>
-              <textarea
-                className={styles.textarea}
-                value={draft.summary}
-                onChange={(event) => setDraft({ ...draft, summary: event.target.value })}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>태그 (쉼표로 구분)</label>
-              <input
-                className={styles.input}
-                value={draft.tags}
-                onChange={(event) => setDraft({ ...draft, tags: event.target.value })}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>썸네일 주소</label>
-              <input
-                className={styles.input}
-                value={draft.sourceThumbnail}
-                onChange={(event) => setDraft({ ...draft, sourceThumbnail: event.target.value })}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>본문 (마크다운)</label>
-              <textarea
-                className={styles.bodyEditor}
-                value={draft.body}
-                onChange={(event) => setDraft({ ...draft, body: event.target.value })}
-              />
-            </div>
-          </>
-        )}
-
-        {notice && <p className={notice.ok ? styles.notice : styles.errorNotice}>{notice.message}</p>}
+        {failure && <p className={styles.errorNotice}>{failure}</p>}
       </div>
     </>
   )

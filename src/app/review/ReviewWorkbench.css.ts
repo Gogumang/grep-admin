@@ -11,58 +11,14 @@ export const tabBar = style({
   borderBottom: `1px solid ${vars.color.border}`,
 })
 
-export const tab = style({
-  border: 0,
-  background: 'transparent',
-  borderRadius: vars.radius.md,
-  padding: `${vars.space.xs} ${vars.space.md}`,
-  fontSize: vars.fontSize.sm,
-  fontWeight: vars.fontWeight.semibold,
-  color: vars.color.inkMuted,
-  cursor: 'pointer',
-  selectors: { '&:hover': { background: vars.color.surfaceSunken } },
-})
-
-export const tabActive = style({
-  background: vars.color.accentSoft,
-  color: vars.color.accent,
+/** 미리보기를 눌러 고친다는 안내. 탭이 있던 자리를 대신한다. */
+export const editHint = style({
+  fontSize: vars.fontSize.xs,
+  color: vars.color.inkFaint,
 })
 
 /** 탭 오른쪽 끝으로 저장·공개를 밀어낸다. */
 export const tabSpacer = style({ marginLeft: 'auto' })
-
-/** 줄 전체가 상세로 가는 링크다. 체크박스가 있던 왼쪽 칸은 없앴다. */
-export const pendingItem = style({
-  display: 'block',
-  padding: vars.space.sm,
-  borderRadius: vars.radius.sm,
-  transition: 'background 160ms ease-out',
-  selectors: { '&:hover': { background: vars.color.surfaceSunken } },
-  '@media': { '(prefers-reduced-motion: reduce)': { transition: 'none' } },
-})
-
-/**
- * 사이트와 같은 글 페이지 모습. postBody.css의 container는 700px 줄 폭을 위해
- * 좌우 여백을 크게 잡는데, 패널 안에서는 그 여백이 이중이 되므로 위아래만 남긴다.
- */
-export const articlePreview = style({
-  maxWidth: 700,
-  margin: '0 auto',
-})
-
-/** 카드 미리보기와 글 페이지 미리보기를 가르는 이름표. */
-export const previewLabel = style({
-  margin: `0 0 ${vars.space.sm}`,
-  fontSize: vars.fontSize.xs,
-  fontWeight: vars.fontWeight.semibold,
-  color: vars.color.inkFaint,
-})
-
-export const previewDivider = style({
-  margin: `${vars.space.xl} 0`,
-  border: 0,
-  borderTop: `1px solid ${vars.color.border}`,
-})
 
 export const panel = style({
   background: vars.color.surface,
@@ -82,11 +38,25 @@ export const listPanel = style([
   },
 ])
 
-export const panelTitle = style({
-  margin: `0 0 ${vars.space.md}`,
-  fontSize: vars.fontSize.sm,
-  fontWeight: vars.fontWeight.semibold,
-  color: vars.color.inkMuted,
+/** 검토 작업대. 목록 패널과 같은 이유로 화면 아래까지 내려간다. */
+export const editorPanel = style([
+  panel,
+  {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+  },
+])
+
+/**
+ * 미리보기·편집이 들어앉는 자리. 남은 높이를 받아 스크롤은 여기가 맡는다 —
+ * 안쪽 editFields가 height:100%로 그 높이를 그대로 물려받아 본문 칸을 늘린다.
+ */
+export const editorBody = style({
+  flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
 })
 
 /**
@@ -104,137 +74,11 @@ export const pendingList = style({
   overflowY: 'auto',
 })
 
-export const pendingTitle = style({
-  display: 'block',
-  fontSize: vars.fontSize.sm,
-  fontWeight: vars.fontWeight.medium,
-  color: vars.color.inkStrong,
-  lineHeight: 1.4,
-})
-
-export const pendingMeta = style({
-  display: 'block',
-  marginTop: 2,
-  fontSize: vars.fontSize.xs,
-  color: vars.color.inkMuted,
-})
-
-/** 본문을 못 읽은 글은 검토할 내용이 없다 — 목록에서 바로 구분되어야 한다. */
-export const warningBadge = style({
-  display: 'inline-block',
-  marginLeft: vars.space.xs,
-  padding: `0 ${vars.space.xs}`,
-  borderRadius: vars.radius.sm,
-  fontSize: vars.fontSize.xs,
-  fontWeight: vars.fontWeight.semibold,
-  color: `color-mix(in oklab, ${vars.color.brand} 75%, ${vars.color.inkStrong})`,
-  background: `color-mix(in oklab, ${vars.color.brand} 12%, transparent)`,
-})
-
-export const field = style({ marginBottom: vars.space.md })
-
-export const label = style({
-  display: 'block',
-  marginBottom: vars.space.xs,
-  fontSize: vars.fontSize.xs,
-  fontWeight: vars.fontWeight.semibold,
-  color: vars.color.inkMuted,
-})
-
-export const input = style({
-  width: '100%',
-  padding: `${vars.space.sm} ${vars.space.md}`,
-  border: `1px solid ${vars.color.border}`,
-  borderRadius: vars.radius.md,
-  background: vars.color.canvas,
-  color: vars.color.ink,
-  fontSize: vars.fontSize.sm,
-  fontFamily: 'inherit',
-})
-
-export const textarea = style([
-  input,
-  {
-    minHeight: 120,
-    lineHeight: 1.6,
-    resize: 'vertical',
-  },
-])
-
-/** 본문은 마크다운 원문을 그대로 고친다 — 서식 도구를 얹으면 원문이 오히려 망가진다. */
-export const bodyEditor = style([
-  textarea,
-  {
-    minHeight: 320,
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-    fontSize: vars.fontSize.xs,
-  },
-])
-
-export const primaryButton = style({
-  border: 0,
-  borderRadius: vars.radius.md,
-  padding: `${vars.space.sm} ${vars.space.lg}`,
-  background: vars.color.accentHover,
-  color: vars.color.onAccent,
-  fontSize: vars.fontSize.sm,
-  fontWeight: vars.fontWeight.semibold,
-  selectors: { '&:disabled': { opacity: 0.45, cursor: 'default' } },
-})
-
-export const quietButton = style([
-  primaryButton,
-  { background: vars.color.surfaceSunken, color: vars.color.ink },
-])
-
-export const dangerButton = style([
-  primaryButton,
-  {
-    background: `color-mix(in oklab, ${vars.color.brand} 12%, transparent)`,
-    color: `color-mix(in oklab, ${vars.color.brand} 75%, ${vars.color.inkStrong})`,
-  },
-])
-
-export const notice = style({
+/** 실패한 까닭. 성공 알림은 토스트로 지나가고 여기에는 실패만 남는다. */
+export const errorNotice = style({
   margin: `${vars.space.sm} 0 0`,
   fontSize: vars.fontSize.sm,
-  color: vars.color.inkMuted,
-})
-
-export const errorNotice = style([notice, { color: `color-mix(in oklab, ${vars.color.brand} 75%, ${vars.color.inkStrong})` }])
-
-/** 미리보기 카드 — 목록 화면에서 이 글이 어떻게 보일지. */
-export const cardPreview = style({
-  display: 'flex',
-  gap: vars.space.md,
-  padding: vars.space.md,
-  borderRadius: vars.radius.lg,
-  border: `1px solid ${vars.color.border}`,
-  marginBottom: vars.space.lg,
-})
-
-export const cardThumbnail = style({
-  width: 120,
-  height: 66,
-  objectFit: 'cover',
-  borderRadius: vars.radius.md,
-  flexShrink: 0,
-  background: vars.color.surfaceSunken,
-})
-
-export const cardTitle = style({
-  margin: 0,
-  fontSize: vars.fontSize.md,
-  fontWeight: vars.fontWeight.bold,
-  color: vars.color.inkStrong,
-  lineHeight: 1.4,
-})
-
-export const cardSummary = style({
-  margin: `${vars.space.xs} 0 0`,
-  fontSize: vars.fontSize.sm,
-  color: vars.color.inkMuted,
-  lineHeight: 1.5,
+  color: `color-mix(in oklab, ${vars.color.brand} 75%, ${vars.color.inkStrong})`,
 })
 
 export const emptyState = style({
@@ -243,7 +87,6 @@ export const emptyState = style({
   color: vars.color.inkMuted,
   fontSize: vars.fontSize.sm,
 })
-
 
 /** 상세에서 목록으로 돌아가는 길. 페이지가 나뉘었으니 되돌아갈 문이 보여야 한다. */
 export const backLink = style({
