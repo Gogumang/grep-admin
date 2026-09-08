@@ -15,9 +15,12 @@ import { vars } from './contract.css'
 export const shell = style({
   display: 'grid',
   gridTemplateColumns: '56px 220px minmax(0, 1fr)',
-  minHeight: '100vh',
+  // 뷰포트에 고정한다. 페이지가 통째로 구르면 목록을 내릴 때 레일·사이드바까지 딸려 올라가
+  // 어디에 있는지 알 수 없어진다 — 스크롤은 본문 혼자 맡는다.
+  height: '100vh',
   '@media': {
-    '(max-width: 900px)': { gridTemplateColumns: '1fr' },
+    // 한 줄로 접히면 세로로 쌓이므로 높이를 풀어 평범한 페이지 스크롤로 돌려준다.
+    '(max-width: 900px)': { gridTemplateColumns: '1fr', height: 'auto' },
   },
 })
 
@@ -66,6 +69,7 @@ export const sidebar = style({
   display: 'flex',
   flexDirection: 'column',
   gap: vars.space.lg,
+  overflowY: 'auto',
   '@media': {
     '(max-width: 900px)': { borderRight: 0, borderBottom: `1px solid ${vars.color.border}` },
   },
@@ -97,6 +101,12 @@ export const menuLinkActive = style({
 })
 
 export const main = style({
+  // 세로 흐름 + 제 안에서 스크롤. 화면을 꽉 채워야 하는 페이지는 flex:1 한 줄로 늘어난다.
+  // minHeight:0 이 없으면 그리드 항목이 내용 높이 밑으로 줄지 않아 overflow가 걸리지 않는다.
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: 0,
+  overflowY: 'auto',
   padding: `${vars.space.xl} ${vars.space.xxl} ${vars.space.xxxl}`,
   maxWidth: 1100,
   '@media': {

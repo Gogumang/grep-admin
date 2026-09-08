@@ -31,31 +31,14 @@ export const tabActive = style({
 /** 탭 오른쪽 끝으로 저장·공개를 밀어낸다. */
 export const tabSpacer = style({ marginLeft: 'auto' })
 
-/**
- * 목록 한 줄. 체크(일괄 처리)와 제목(펼치기)은 하는 일이 다르므로 자리를 나눈다 —
- * 예전에는 label이 줄 전체를 감싸서, 제목을 눌러 글을 열면 체크까지 같이 켜졌다.
- */
+/** 줄 전체가 상세로 가는 링크다. 체크박스가 있던 왼쪽 칸은 없앴다. */
 export const pendingItem = style({
-  display: 'grid',
-  gridTemplateColumns: 'auto minmax(0, 1fr)',
-  gap: vars.space.sm,
-  alignItems: 'start',
+  display: 'block',
   padding: vars.space.sm,
   borderRadius: vars.radius.sm,
   transition: 'background 160ms ease-out',
   selectors: { '&:hover': { background: vars.color.surfaceSunken } },
   '@media': { '(prefers-reduced-motion: reduce)': { transition: 'none' } },
-})
-
-/** 제목 버튼. 줄 전체를 눌러 열 수 있도록 왼쪽 정렬한 투명 버튼이다. */
-export const pendingOpen = style({
-  display: 'block',
-  width: '100%',
-  border: 0,
-  padding: 0,
-  background: 'transparent',
-  textAlign: 'left',
-  cursor: 'pointer',
 })
 
 /**
@@ -88,6 +71,17 @@ export const panel = style({
   padding: vars.space.lg,
 })
 
+/** 목록 전용 패널. 화면 아래까지 내려가고, 넘치는 몫은 안쪽 목록이 스크롤한다. */
+export const listPanel = style([
+  panel,
+  {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+  },
+])
+
 export const panelTitle = style({
   margin: `0 0 ${vars.space.md}`,
   fontSize: vars.fontSize.sm,
@@ -95,11 +89,18 @@ export const panelTitle = style({
   color: vars.color.inkMuted,
 })
 
+/**
+ * 스크롤은 여기가 맡는다. 예전에는 maxHeight 60vh 였는데, 패널이 화면 중간에서 끊기고
+ * 그 아래가 통째로 비었다 — 높이를 짐작하지 말고 남은 자리를 그대로 받게 한다.
+ *
+ * minHeight:0 이 없으면 flex 자식이 내용 높이 밑으로 줄지 않아 목록이 패널을 밀어낸다.
+ */
 export const pendingList = style({
   display: 'flex',
   flexDirection: 'column',
   gap: 2,
-  maxHeight: '60vh',
+  flex: 1,
+  minHeight: 0,
   overflowY: 'auto',
 })
 
@@ -169,14 +170,6 @@ export const bodyEditor = style([
     fontSize: vars.fontSize.xs,
   },
 ])
-
-export const actions = style({
-  display: 'flex',
-  gap: vars.space.sm,
-  alignItems: 'center',
-  marginTop: vars.space.md,
-  flexWrap: 'wrap',
-})
 
 export const primaryButton = style({
   border: 0,
