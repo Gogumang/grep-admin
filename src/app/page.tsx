@@ -44,9 +44,10 @@ export default async function DashboardPage() {
         <div className={styles.card}>
           <p className={styles.cardDescription}>포스팅 된 글</p>
           <p className={styles.cardValue}>{publishedCount}</p>
-          <p className={styles.cardDescription}>
-            {hiddenCount > 0 ? `숨김 ${hiddenCount}개 제외` : '숨긴 글 없음'}
-          </p>
+          {/* 숨긴 글이 없으면 아래 줄을 아예 두지 않는다 — "없음"은 숫자가 이미 하는 말이다. */}
+          {hiddenCount > 0 && (
+            <p className={styles.cardDescription}>숨김 {hiddenCount}개 제외</p>
+          )}
         </div>
 
         {/*
@@ -56,19 +57,18 @@ export default async function DashboardPage() {
         <div className={styles.card}>
           <p className={styles.cardDescription}>하루 조회수</p>
           <p className={styles.cardValue}>{hasViews ? views.totalViews.toLocaleString() : '—'}</p>
-          <p className={styles.cardDescription}>
-            {hasViews
-              ? `${new Date(`${views.date}T00:00:00`).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} · 글 ${views.postCount}개`
-              : '아직 집계 없음'}
-          </p>
+          {hasViews && (
+            <p className={styles.cardDescription}>
+              {new Date(`${views.date}T00:00:00`).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} · 글{' '}
+              {views.postCount}개
+            </p>
+          )}
         </div>
 
         <div className={styles.card}>
           <p className={styles.cardDescription}>검토 대기</p>
           <p className={styles.cardValue}>{pending.length}</p>
-          <p className={styles.cardDescription}>
-            {pending.length > 0 ? '검토 화면에서 처리' : '밀린 글 없음'}
-          </p>
+          {pending.length === 0 && <p className={styles.cardDescription}>밀린 글 없음</p>}
         </div>
       </div>
 
