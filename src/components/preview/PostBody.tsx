@@ -3,6 +3,7 @@
 import Markdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
+import { toSiteImageUrl } from '@/lib/site'
 
 /**
  * grep(사이트)의 components/post/PostBody.tsx 와 같은 렌더러다.
@@ -15,7 +16,23 @@ import remarkGfm from 'remark-gfm'
  */
 export function PostBody({ body }: { body: string }) {
   return (
-    <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+    <Markdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeHighlight]}
+      components={{
+        /*
+         * 본문 이미지는 사이트 기준 상대 경로다 (/images/{글id}/01.avif).
+         * 사이트에서는 그대로 맞지만 어드민에서 그리면 어드민 주소로 풀려 전부 404가 난다 —
+         * 썸네일이 toSiteImageUrl 을 거치는 것과 같은 이유인데 본문만 빠져 있었다.
+         */
+        img: ({ src, alt, ...rest }) => {
+          const resolved = toSiteImageUrl(typeof src === 'string' ? src : null)
+          // 주소를 만들지 못하면 깨진 이미지 아이콘 대신 아무것도 그리지 않는다.
+          if (!resolved) return null
+          return <img {...rest} src={resolved} alt={alt ?? ''} />
+        },
+      }}
+    >
       {body}
     </Markdown>
   )
