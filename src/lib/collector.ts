@@ -202,6 +202,10 @@ export const collector = {
   /** 미리보기용. 목록에 없는 본문을 함께 준다. */
   findPost: (postId: string) => request<PostDetail>(`/api/admin/posts/${postId}`),
 
+  /** 이미 나간 글을 고친다. 고치지 않은 항목은 보내지 않는다 — 서버에서 null은 "그대로 둔다"다. */
+  editPost: (postId: string, edit: PendingPostEdit) =>
+    request<PostDetail>(`/api/admin/posts/${postId}`, { method: 'PUT', body: JSON.stringify(edit) }),
+
   viewSummary: () => request<DailyViewSummary>('/api/analytics/views/summary'),
 
   listPending: () => request<PendingPost[]>('/api/admin/pending'),

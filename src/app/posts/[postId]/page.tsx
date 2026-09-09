@@ -1,10 +1,9 @@
-import { ArticlePreview } from '@/components/preview/ArticlePreview'
-import { Badge } from '@/shared'
 import { collector } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import * as styles from './postDetail.css'
+import { PostEditor } from './PostEditor'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,40 +21,8 @@ export default async function PostDetailPage({ params }: { params: Promise<{ pos
   const { postId } = await params
 
   try {
-    const { post, body } = await collector.findPost(postId)
-    return (
-      <>
-        <a href="/posts" className={styles.backLink}>
-          ⬅️ 글 목록
-        </a>
-        <div className={styles.titleRow}>
-          <h1 className={console.pageTitle}>{post.title}</h1>
-          {post.hidden && (
-            <Badge color="red" variant="weak" size="small">
-              숨김
-            </Badge>
-          )}
-          <a className={styles.sourceLink} href={post.url} target="_blank" rel="noopener noreferrer">
-            원문 보기 ↗
-          </a>
-        </div>
-
-        <div className={styles.panel}>
-          {/* onChange를 주지 않으므로 읽기 전용이다 — 공개된 글은 여기서 고치지 않는다. */}
-          <ArticlePreview
-            draft={{
-              title: post.title,
-              summary: post.summary,
-              sourceThumbnail: post.sourceThumbnail ?? '',
-              tags: post.tags.join(', '),
-              body: body ?? '',
-            }}
-            blogName={post.blogName}
-            publishedAt={post.publishedAt}
-          />
-        </div>
-      </>
-    )
+    const detail = await collector.findPost(postId)
+    return <PostEditor detail={detail} />
   } catch (error) {
     // 목록을 띄운 뒤 지워졌을 수 있다. 목록으로 돌아갈 길을 함께 준다.
     return (
