@@ -1,15 +1,21 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
-import { Button, useToast } from '@/shared'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
 import { SiteImage } from '@/components/SiteImage'
 import { togglePostHidden, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
 import * as list from './postList.css'
 
-/** 한 번에 그리는 글 수. 667개를 한 화면에 늘어놓으면 브라우저가 버벅인다. */
-const PAGE_SIZE = 40
+/** 처음 그리는 글 수. 스크롤이 끝에 닿을 때마다 이만큼씩 잇는다. */
+const PAGE_SIZE = 10
+
+/**
+ * 목록 끝에서 이만큼 남았을 때 미리 다음 장을 부른다.
+ * 0으로 두면 눈금이 화면에 들어온 뒤에야 그리기 시작해 스크롤이 한 번 걸린다.
+ */
+const PREFETCH_MARGIN = '600px'
 
 export function PostManager({ posts }: { posts: Post[] }) {
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
@@ -36,6 +42,32 @@ export function PostManager({ posts }: { posts: Post[] }) {
   )
 
   const visible = matched.slice(0, visibleCount)
+  const hasMore = visibleCount < matched.length
+
+  const sentinelRef = useRef<HTMLParagraphElement | null>(null)
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    // 더 이을 것이 없으면 눈금을 그리지 않으므로 관찰할 대상도 없다.
+    if (!sentinel || !hasMore) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        // 남은 것보다 많이 세지 않는다 — 넘겨 세면 "다 봤는지" 판단이 어긋난다.
+        setVisibleCount((count) => Math.min(count + PAGE_SIZE, matched.length))
+      },
+      { rootMargin: PREFETCH_MARGIN },
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasMore, matched.length])
+
+  /** 갈래를 바꾸면 목록이 통째로 달라진다 — 앞의 스크롤 위치만큼 그려 둘 이유가 없다. */
+  function selectTab(hiddenOnly: boolean) {
+    setShowHiddenOnly(hiddenOnly)
+    setVisibleCount(PAGE_SIZE)
+  }
 
   function toggle(post: Post) {
     const nextHidden = !isHidden(post)
@@ -67,14 +99,14 @@ export function PostManager({ posts }: { posts: Post[] }) {
         <button
           type="button"
           className={`${list.tab} ${showHiddenOnly ? '' : list.tabActive}`}
-          onClick={() => setShowHiddenOnly(false)}
+          onClick={() => selectTab(false)}
         >
           전체
         </button>
         <button
           type="button"
           className={`${list.tab} ${showHiddenOnly ? list.tabActive : ''}`}
-          onClick={() => setShowHiddenOnly(true)}
+          onClick={() => selectTab(true)}
         >
           숨긴 글만
         </button>
@@ -84,6 +116,8 @@ export function PostManager({ posts }: { posts: Post[] }) {
         <div className={list.list}>
           {visible.map((post) => (
             <article key={post.id} className={`${list.row} ${isHidden(post) ? list.rowHidden : ''}`}>
+              <SiteImage className={list.thumbnail} thumbnail={post.sourceThumbnail} />
+
               <div className={list.rowText}>
                 <p className={list.blogName}>{post.blogName}</p>
                 {/*
@@ -110,30 +144,26 @@ export function PostManager({ posts }: { posts: Post[] }) {
                     aria-checked={!isHidden(post)}
                     aria-label={`${post.title} 공개`}
                     title={isHidden(post) ? '숨김 — 누르면 공개합니다' : '공개 중 — 누르면 숨깁니다'}
-                    className={`${styles.toggleTrack} ${isHidden(post) ? '' : styles.toggleTrackOn}`}
+                    className={`${list.spacer} ${styles.toggleTrack} ${isHidden(post) ? '' : styles.toggleTrackOn}`}
                     onClick={() => toggle(post)}
                   >
                     <span className={`${styles.toggleKnob} ${isHidden(post) ? '' : styles.toggleKnobOn}`} />
                   </button>
                 </p>
               </div>
-
-              <SiteImage className={list.thumbnail} thumbnail={post.sourceThumbnail} />
             </article>
           ))}
         </div>
       </div>
 
-      {visibleCount < matched.length && (
-        <Button
-          color="light"
-          size="small"
-          display="block"
-          htmlStyle={{ marginTop: 20 }}
-          onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-        >
-          {matched.length - visibleCount}개 더 보기
-        </Button>
+      {/*
+        관찰 대상이 곧 안내 문구다. 눈에 보이지 않는 1px 눈금을 따로 두면 넓이가 0이라
+        브라우저가 "화면에 들어왔다"고 보지 않아 아무리 내려도 다음 장이 붙지 않는다.
+      */}
+      {hasMore && (
+        <p ref={sentinelRef} className={list.loadingNotice}>
+          {matched.length - visibleCount}개 더 불러오는 중…
+        </p>
       )}
     </>
   )
