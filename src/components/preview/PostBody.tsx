@@ -21,9 +21,9 @@ export function PostBody({ body }: { body: string }) {
       rehypePlugins={[rehypeHighlight]}
       components={{
         /*
-         * 본문 이미지는 사이트 기준 상대 경로다 (/images/{글id}/01.avif).
-         * 사이트에서는 그대로 맞지만 어드민에서 그리면 어드민 주소로 풀려 전부 404가 난다 —
-         * 썸네일이 toSiteImageUrl 을 거치는 것과 같은 이유인데 본문만 빠져 있었다.
+         * 본문 이미지는 R2의 절대 주소다 (https://images.gogumang.com/{글id}/01.avif).
+         * 이미 변환본 주소라 toSiteImageUrl 은 대개 그대로 돌려주지만, collector가 원본
+         * 확장자를 남긴 글이 섞여도 여기서 함께 걸러지도록 썸네일과 같은 길을 통과시킨다.
          */
         img: ({ src, alt, ...rest }) => {
           const resolved = toSiteImageUrl(typeof src === 'string' ? src : null)

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Post } from '@/lib/collector'
-import { toSiteWideImage } from '@/lib/site'
+import { toSiteImage } from '@/lib/site'
 import { SiteImage } from '@/components/SiteImage'
 import * as styles from './todayPicks.css'
 
@@ -38,8 +38,8 @@ export function PickSlide({ picks }: { picks: Post[] }) {
   const post = picks[index] ?? picks[0]
   if (!post) return null
 
-  const image = toSiteWideImage(post.id, post.sourceThumbnail)
-  const leavingImage = leaving ? toSiteWideImage(leaving.id, leaving.sourceThumbnail) : null
+  const image = toSiteImage(post.sourceThumbnail)
+  const leavingImage = leaving ? toSiteImage(leaving.sourceThumbnail) : null
 
   function move(step: number) {
     setLeaving(picks[index] ?? null)
