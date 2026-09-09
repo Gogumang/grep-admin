@@ -2,7 +2,11 @@
  * 공개 사이트의 TodayPicks 스타일을 그대로 옮긴 것이다 (grep/src/components/post/TodayPicks.css.ts).
  * 저장소가 나뉘어 있어 참조할 수 없으므로 복사한다 — postBody.css.ts 와 같은 방식이다.
  *
- * 값을 여기서 고치지 말 것. 사이트가 바뀌면 이 파일도 다시 옮겨야 미리보기가 실제와 갈라지지 않는다.
+ * 값을 여기서 고치지 말 것. 사이트가 바뀌면 이 파일도 다시 옮겨야 미리보기가 실제와 갈라진다.
+ * 어긋났는지는 `pnpm check:preview-copies` 로 확인한다.
+ *
+ * 원본과 다른 곳은 import 경로 한 줄뿐이다 — 어드민에는 @/shared 가 없고 토큰 계약이
+ * @/styles/contract.css 에 있다.
  */
 import { keyframes, style } from '@vanilla-extract/css'
 import { vars } from '@/styles/contract.css'
@@ -70,6 +74,11 @@ export const leaving = style({
 /** 텍스트와 같은 방식으로 두 장을 한 칸에 겹친다. 칸은 가장 높은 자식만큼 늘어난다. */
 export const imageStack = style({
   display: 'grid',
+  '@media': {
+    // 한 칸으로 접히면 마크업 순서상 텍스트가 먼저 온다.
+    // 모바일에서는 사진이 먼저 보여야 하므로 순서를 뒤집는다.
+    '(max-width: 860px)': { order: -1 },
+  },
 })
 
 export const imageLayer = style({
@@ -102,6 +111,11 @@ export const title = style({
   WebkitLineClamp: 2,
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
+  '@media': {
+    // 좁은 화면에서는 빈 둘째 줄이 제목과 요약 사이 빈 칸으로 그대로 드러난다.
+    // 세로로 쌓인 히어로에서는 그 여백이 화살표가 조금 움직이는 것보다 눈에 거슬린다.
+    '(max-width: 860px)': { minHeight: 0 },
+  },
   selectors: {
     '&:hover': { color: vars.color.accent },
   },

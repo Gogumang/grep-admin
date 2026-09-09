@@ -4,6 +4,8 @@
  * 검토 화면의 미리보기가 실제 글 페이지와 갈라지면 미리보기의 존재 이유가 없어진다.
  * 저장소가 나뉘어 있어 참조할 수 없으므로 복사한다 — 디자인 토큰과 같은 방식이다.
  * 사이트에서 이 파일을 고치면 여기도 함께 고쳐야 한다.
+ *
+ * 어긋났는지는 `pnpm check:preview-copies` 로 확인한다.
  */
 import { globalStyle, style } from '@vanilla-extract/css'
 import { vars } from '@/styles/contract.css'
@@ -79,12 +81,16 @@ export const publishedAt = style({
   color: vars.color.inkFaint,
 })
 
-/** 제목 아래 한 번만. 출처는 글쓴이 줄과 canonical로도 밝힌다. */
+/**
+ * 제목 아래 한 번만. 출처는 글쓴이 줄과 canonical로도 밝힌다.
+ * 날짜와 20px만 띄우면 발행일 줄에 딸린 것처럼 붙어 읽힌다 — 글머리(제목·글쓴이·날짜)와
+ * 다른 성격의 요소라 한 칸 띄워 둔다.
+ */
 export const sourceLink = style({
   display: 'inline-flex',
   alignItems: 'center',
   gap: vars.space.sm,
-  marginTop: vars.space.lg,
+  marginTop: vars.space.xl,
   padding: `10px ${vars.space.lg}`,
   borderRadius: vars.radius.md,
   background: vars.color.surfaceSunken,
@@ -96,10 +102,12 @@ export const sourceLink = style({
   },
 })
 
+/**
+ * toss.tech는 글머리와 본문을 선이 아니라 여백으로만 가른다(날짜 아래 64px).
+ * 우리는 사이에 원문 버튼이 하나 더 있어 그만큼 더 띄운다.
+ */
 export const body = style({
   marginTop: vars.space.xxl,
-  paddingTop: vars.space.xxl,
-  borderTop: `1px solid ${vars.color.border}`,
   // toss.tech 실측: 17px / line-height 27.2px(=1.6) / 색 rgb(51,61,75)
   fontSize: vars.fontSize.lg,
   lineHeight: 1.6,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Post } from '@/lib/collector'
-import { toSiteImageUrl } from '@/lib/site'
+import { toSiteWideImageUrl } from '@/lib/site'
 import * as styles from './todayPicks.css'
 
 /** 사이트 실측: 제목 opacity 0→1, 400ms linear. CSS 애니메이션과 값을 맞춘다. */
@@ -11,8 +11,12 @@ const FADE_MILLISECONDS = 400
 /**
  * 첫 화면 히어로에 나가는 모습 그대로.
  *
- * 사이트의 TodayPicks 를 같은 마크업·같은 스타일로 옮겼다 — 어드민에서 본 모습과
- * 실제 화면이 갈라지면 미리보기를 볼 이유가 없어진다.
+ * 사이트의 TodayPicks 를 같은 마크업·같은 스타일로 옮겼다 (grep/src/components/post/TodayPicks.tsx) —
+ * 어드민에서 본 모습과 실제 화면이 갈라지면 미리보기를 볼 이유가 없어진다.
+ *
+ * 사이트와 다른 점은 링크뿐이다. 저쪽은 제목과 사진이 /posts/{id} 로 가는 a 태그인데,
+ * 여기서는 미리보기라 누를 곳이 아니다 — a 를 두면 어드민에서 사이트로 튕겨 나간다.
+ * 그래서 같은 자리에 a 대신 div 를 둔다. 모양은 같고 동작만 없앤 것이다.
  */
 export function PickSlide({ picks }: { picks: Post[] }) {
   const [index, setIndex] = useState(0)
@@ -33,7 +37,8 @@ export function PickSlide({ picks }: { picks: Post[] }) {
   const post = picks[index] ?? picks[0]
   if (!post) return null
 
-  const image = toSiteImageUrl(post.sourceThumbnail)
+  const image = toSiteWideImageUrl(post.id, post.sourceThumbnail)
+  const leavingImage = leaving ? toSiteWideImageUrl(leaving.id, leaving.sourceThumbnail) : null
 
   function move(step: number) {
     setLeaving(picks[index] ?? null)
@@ -68,13 +73,18 @@ export function PickSlide({ picks }: { picks: Post[] }) {
         </div>
 
         <div className={styles.imageStack}>
-          {leaving && leaving.id !== post.id && toSiteImageUrl(leaving.sourceThumbnail) && (
+          {leaving && leaving.id !== post.id && leavingImage && (
             <div key={leaving.id} className={`${styles.imageLayer} ${styles.leaving}`} aria-hidden="true">
-              <img className={styles.image} src={toSiteImageUrl(leaving.sourceThumbnail) ?? ''} alt="" />
+              {/* 사이트와 같은 가로세로를 못 박는다 — 없으면 사진이 늦게 올 때 글이 밀린다. */}
+              <img className={styles.image} src={leavingImage} alt="" width={1200} height={630} />
             </div>
           )}
           <div key={post.id} className={`${styles.imageLayer} ${styles.entering}`}>
-            {image ? <img className={styles.image} src={image} alt="" /> : <div className={styles.image} />}
+            {image ? (
+              <img className={styles.image} src={image} alt="" width={1200} height={630} />
+            ) : (
+              <div className={styles.image} />
+            )}
           </div>
         </div>
       </div>

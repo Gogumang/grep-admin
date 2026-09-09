@@ -27,3 +27,18 @@ export function toSiteImageUrl(thumbnail: string | null | undefined): string | n
   const base = siteUrl.replace(/\/$/, '')
   return thumbnail.startsWith('/') ? `${base}${thumbnail}` : `${base}/${thumbnail}`
 }
+
+/**
+ * 히어로에 거는 1200×630 이미지 주소.
+ *
+ * 사이트의 content.ts가 `sourceThumbnail ?? /thumbnails/{id}-og.png` 로 만드는 값을
+ * 그대로 옮긴 것이다 — 원문 이미지가 없는 글은 collector가 구운 OG 이미지가 걸린다.
+ * 어드민이 sourceThumbnail 만 보고 빈 상자를 그리면, 정작 이미지가 없는 글에서
+ * 미리보기와 실제 화면이 가장 크게 갈라진다.
+ *
+ * 목록 카드용 400×220은 `/thumbnails/{id}.png` 로 규칙이 다르다. 지금 어드민이 카드를
+ * 그릴 때는 sourceThumbnail 을 쓰므로 여기서는 히어로용만 만든다.
+ */
+export function toSiteWideImageUrl(postId: string, sourceThumbnail: string | null | undefined): string | null {
+  return toSiteImageUrl(sourceThumbnail ?? `/thumbnails/${postId}-og.png`)
+}
