@@ -81,7 +81,8 @@ export function PickSlide({ picks }: { picks: Post[] }) {
             </div>
           )}
           <div key={post.id} className={`${styles.imageLayer} ${styles.entering}`}>
-            <SiteImage className={styles.image} source={image} width={1200} height={630} />
+            {/* 화면을 열자마자 보이는 그림이다 — 기다렸다 받으면 빈 상자부터 보인다. */}
+            <SiteImage className={styles.image} source={image} width={1200} height={630} eager />
           </div>
         </div>
       </div>

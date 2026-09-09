@@ -29,7 +29,11 @@ export function PostBody({ body }: { body: string }) {
           const resolved = toSiteImageUrl(typeof src === 'string' ? src : null)
           // 주소를 만들지 못하면 깨진 이미지 아이콘 대신 아무것도 그리지 않는다.
           if (!resolved) return null
-          return <img {...rest} src={resolved} alt={alt ?? ''} />
+          /*
+           * 글 한 편에 사진이 열 장 가까이 붙는다 — 미리보기를 열자마자 전부 받으면
+           * 정작 먼저 읽을 첫 문단이 늦는다. 화면에 가까워질 때 받는다.
+           */
+          return <img {...rest} src={resolved} alt={alt ?? ''} loading="lazy" decoding="async" />
         },
       }}
     >

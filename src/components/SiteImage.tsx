@@ -18,6 +18,7 @@ export function SiteImage({
   width,
   height,
   source,
+  eager = false,
 }: {
   thumbnail?: string | null
   /** 이미 만들어 둔 주소가 있을 때 (히어로처럼 규칙이 다른 경우). */
@@ -26,6 +27,11 @@ export function SiteImage({
   alt?: string
   width?: number
   height?: number
+  /**
+   * 화면에 들어오기를 기다리지 않고 바로 받는다. 처음부터 보이는 큰 그림에만 쓴다 —
+   * 히어로를 늦게 받으면 화면이 열리자마자 빈 상자가 보인다.
+   */
+  eager?: boolean
 }) {
   const [failedUrls, setFailedUrls] = useState<string[]>([])
   const imageRef = useRef<HTMLImageElement | null>(null)
@@ -65,6 +71,14 @@ export function SiteImage({
       alt={alt}
       width={width}
       height={height}
+      /*
+       * 목록은 스크롤을 내리는 만큼 카드가 쌓인다 — 전부 즉시 받으면 100개를 지난
+       * 시점에 화면 밖 사진 수십 장을 함께 내려받느라 방금 보이기 시작한 카드가 늦는다.
+       * 자리 크기는 CSS(aspectRatio)가 잡고 있어서 늦게 와도 글이 밀리지 않는다.
+       */
+      loading={eager ? 'eager' : 'lazy'}
+      // 디코딩까지 기다리며 화면을 멈추지 않는다.
+      decoding="async"
       onError={() => markFailed(resolved)}
     />
   )
