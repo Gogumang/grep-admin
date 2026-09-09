@@ -91,9 +91,12 @@ export interface PendingPost {
 }
 
 /**
- * 어제 하루 조회수 요약. collector의 /api/analytics/views/summary 응답 모양이다.
+ * 오늘 하루 조회수 요약. collector의 /api/analytics/views/summary 응답 모양이다.
  *
- * postCount가 0이면 그날을 아직 받지 않았다는 뜻이다 — 애널리틱스는 조회가 0인 글을
+ * 하루가 끝나지 않았으므로 잠정값이다 — Airflow가 00·09·12·18시에 GA4에서 받아 쌓고,
+ * 화면은 그 DB만 읽는다. 실시간이 아니라 최대 몇 시간 뒤처진다.
+ *
+ * postCount가 0이면 아직 한 번도 받지 않았다는 뜻이다 — 애널리틱스는 조회가 0인 글을
  * 아예 돌려주지 않는다. "아무도 안 봤다"와 구분해야 해서 함께 받는다.
  */
 export interface DailyViewSummary {

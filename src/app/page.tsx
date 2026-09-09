@@ -53,15 +53,15 @@ export default async function DashboardPage() {
         {/*
           아직 받지 않은 날에 0을 그리면 "아무도 안 봤다"는 거짓말이 된다.
           애널리틱스는 조회가 0인 글을 아예 돌려주지 않으므로, 글 수가 0이면 집계가 없는 것이다.
+
+          오늘치는 하루가 끝나지 않아 계속 올라가는 잠정값이다 — 그 사실을 아래 줄에 밝힌다.
+          밝히지 않으면 아침에 본 숫자가 저녁에 달라진 것을 오류로 읽는다.
         */}
         <div className={styles.card}>
-          <p className={styles.cardDescription}>하루 조회수</p>
+          <p className={styles.cardDescription}>오늘 조회수</p>
           <p className={styles.cardValue}>{hasViews ? views.totalViews.toLocaleString() : '—'}</p>
           {hasViews && (
-            <p className={styles.cardDescription}>
-              {new Date(`${views.date}T00:00:00`).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} · 글{' '}
-              {views.postCount}개
-            </p>
+            <p className={styles.cardDescription}>글 {views.postCount}개 · 잠정</p>
           )}
         </div>
 
