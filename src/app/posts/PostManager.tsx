@@ -17,7 +17,29 @@ const PAGE_SIZE = 10
  */
 const PREFETCH_MARGIN = '600px'
 
-export function PostManager({ posts }: { posts: Post[] }) {
+/**
+ * 목록이 실제로 그리는 것만 추린 글.
+ *
+ * Post 를 그대로 넘기면 이 화면이 한 번도 읽지 않는 summary·url·blogKey·tags 까지
+ * 398건분이 브라우저로 실려 나간다 — 2026-09-10 실측으로 목록 데이터 160KB 중 72KB가
+ * 그 몫이었다. 필드를 늘릴 일이 생기면 여기에 적으면 page.tsx 가 컴파일로 알려준다.
+ *
+ * 골라내는 일은 page.tsx(서버)가 한다. 여기서 매퍼를 export 하면 'use client' 모듈의
+ * export 라 클라이언트 참조가 되어, 서버에서 부르는 순간 런타임에 터진다 — 타입 검사와
+ * 빌드는 멀쩡히 통과하므로 화면을 열어 보기 전까지 드러나지 않는다.
+ */
+export interface PostListItem {
+  id: string
+  title: string
+  blogName: string
+  publishedAt: string
+  sourceThumbnail: string | null
+  hidden: boolean
+  recentViews: number
+  totalViews: number
+}
+
+export function PostManager({ posts }: { posts: PostListItem[] }) {
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [, startTransition] = useTransition()
@@ -34,7 +56,7 @@ export function PostManager({ posts }: { posts: Post[] }) {
   const [justToggled, setJustToggled] = useState<Map<string, boolean>>(new Map())
 
   /** 화면이 믿을 상태. 방금 누른 값이 있으면 그것이, 없으면 서버가 준 값이 이긴다. */
-  const isHidden = (post: Post) => justToggled.get(post.id) ?? post.hidden
+  const isHidden = (post: PostListItem) => justToggled.get(post.id) ?? post.hidden
 
   const matched = useMemo(
     () => (showHiddenOnly ? posts.filter((post) => justToggled.get(post.id) ?? post.hidden) : posts),
@@ -69,7 +91,7 @@ export function PostManager({ posts }: { posts: Post[] }) {
     setVisibleCount(PAGE_SIZE)
   }
 
-  function toggle(post: Post) {
+  function toggle(post: PostListItem) {
     const nextHidden = !isHidden(post)
     setJustToggled((previous) => new Map(previous).set(post.id, nextHidden))
 
