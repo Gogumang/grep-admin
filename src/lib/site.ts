@@ -7,12 +7,13 @@
  * 사이트 기준으로 다시 푸는 계층 자체가 없어졌다.
  *
  * 사이트(grep)의 scripts/fetchImages.mjs 의 R2_PUBLIC_BASE_URL,
- * collector의 collector.r2.public-base-url 과 같은 값이어야 한다.
+ * collector의 collector.r2.public-base-url 과 같은 값이어야 한다. 이 셋이 갈리면
+ * 어드민에서만 썸네일이 깨진다 — 옮길 일이 생기면 세 곳을 함께 고친다.
  *
- * 기본값을 두는 이유 — 이 값이 비면 아래 확장자 변환이 조용히 꺼지면서 썸네일이 전부
- * 깨진다. 환경변수를 빠뜨린 실행이 성공한 척하는 것보다 알려진 주소로 도는 편이 낫다.
+ * 환경변수로 두지 않는 이유 — 시크릿이 아니라 공개 주소이고 버킷도 하나뿐인데,
+ * 환경변수로 두면 값을 빠뜨린 배포가 조용히 다른 주소로 돌 자리만 생긴다.
  */
-const imageOrigin = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? 'https://images.gogumang.com').replace(/\/$/, '')
+const IMAGE_ORIGIN = 'https://images.gogumang.com'
 
 /**
  * R2에 avif 변환본으로 올라가 있는 확장자들.
@@ -49,7 +50,7 @@ export function toSiteImage(thumbnail: string | null | undefined): SiteImage | n
    * 검토 대기 글은 아직 원문 CDN 주소를 그대로 들고 있다 (예: cdn-images-1.medium.com).
    * 남의 서버 이미지는 우리가 굽지 않았으니, .avif 로 바꾸면 멀쩡한 주소가 깨진다.
    */
-  if (!thumbnail.startsWith(`${imageOrigin}/`)) return { url: thumbnail, fallbackUrl: null }
+  if (!thumbnail.startsWith(`${IMAGE_ORIGIN}/`)) return { url: thumbnail, fallbackUrl: null }
 
   // 이미 변환본 주소인 글도 있다 (본문 이미지는 전부 이쪽이다).
   if (!CONVERTED_EXTENSION.test(thumbnail)) return { url: thumbnail, fallbackUrl: null }
