@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import type { Post } from '@/lib/collector'
-import { toSiteWideImageUrl } from '@/lib/site'
+import { toSiteWideImage } from '@/lib/site'
+import { SiteImage } from '@/components/SiteImage'
 import * as styles from './todayPicks.css'
 
 /** 사이트 실측: 제목 opacity 0→1, 400ms linear. CSS 애니메이션과 값을 맞춘다. */
@@ -37,8 +38,8 @@ export function PickSlide({ picks }: { picks: Post[] }) {
   const post = picks[index] ?? picks[0]
   if (!post) return null
 
-  const image = toSiteWideImageUrl(post.id, post.sourceThumbnail)
-  const leavingImage = leaving ? toSiteWideImageUrl(leaving.id, leaving.sourceThumbnail) : null
+  const image = toSiteWideImage(post.id, post.sourceThumbnail)
+  const leavingImage = leaving ? toSiteWideImage(leaving.id, leaving.sourceThumbnail) : null
 
   function move(step: number) {
     setLeaving(picks[index] ?? null)
@@ -76,15 +77,11 @@ export function PickSlide({ picks }: { picks: Post[] }) {
           {leaving && leaving.id !== post.id && leavingImage && (
             <div key={leaving.id} className={`${styles.imageLayer} ${styles.leaving}`} aria-hidden="true">
               {/* 사이트와 같은 가로세로를 못 박는다 — 없으면 사진이 늦게 올 때 글이 밀린다. */}
-              <img className={styles.image} src={leavingImage} alt="" width={1200} height={630} />
+              <SiteImage className={styles.image} source={leavingImage} width={1200} height={630} />
             </div>
           )}
           <div key={post.id} className={`${styles.imageLayer} ${styles.entering}`}>
-            {image ? (
-              <img className={styles.image} src={image} alt="" width={1200} height={630} />
-            ) : (
-              <div className={styles.image} />
-            )}
+            <SiteImage className={styles.image} source={image} width={1200} height={630} />
           </div>
         </div>
       </div>

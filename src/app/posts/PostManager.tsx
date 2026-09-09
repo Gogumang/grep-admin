@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import { Button, useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
-import { toSiteImageUrl } from '@/lib/site'
+import { SiteImage } from '@/components/SiteImage'
 import { togglePostHidden, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
 import * as list from './postList.css'
@@ -82,9 +82,7 @@ export function PostManager({ posts }: { posts: Post[] }) {
 
       <div className={styles.card}>
         <div className={list.list}>
-          {visible.map((post) => {
-            const thumbnail = toSiteImageUrl(post.sourceThumbnail)
-            return (
+          {visible.map((post) => (
             <article key={post.id} className={`${list.row} ${isHidden(post) ? list.rowHidden : ''}`}>
               <div className={list.rowText}>
                 <p className={list.blogName}>{post.blogName}</p>
@@ -120,14 +118,9 @@ export function PostManager({ posts }: { posts: Post[] }) {
                 </p>
               </div>
 
-              {thumbnail ? (
-                <img className={list.thumbnail} src={thumbnail} alt="" />
-              ) : (
-                <div className={list.thumbnail} />
-              )}
+              <SiteImage className={list.thumbnail} thumbnail={post.sourceThumbnail} />
             </article>
-            )
-          })}
+          ))}
         </div>
       </div>
 

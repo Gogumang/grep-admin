@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { toSiteImageUrl } from '@/lib/site'
 import * as body from './postBody.css'
 import * as styles from './articlePreview.css'
 import { PostBody } from './PostBody'
+import { SiteImage } from '@/components/SiteImage'
 
 /** 편집할 수 있는 값들. 미리보기에 그려지는 것과 같은 이름을 쓴다. */
 export interface ArticleDraft {
@@ -89,14 +89,13 @@ export function ArticlePreview({
    */
   const [isEditingBody, setIsEditingBody] = useState(false)
 
-  const thumbnail = toSiteImageUrl(draft.sourceThumbnail)
   const isEditable = onChange !== undefined
 
   return (
     <div className={styles.pane}>
       <p className={styles.label}>목록에서</p>
       <div className={styles.card}>
-        {thumbnail ? <img className={styles.cardThumbnail} src={thumbnail} alt="" /> : <div className={styles.cardThumbnail} />}
+        <SiteImage className={styles.cardThumbnail} thumbnail={draft.sourceThumbnail} />
         <div className={styles.cardText}>
           {onChange ? (
             <>
