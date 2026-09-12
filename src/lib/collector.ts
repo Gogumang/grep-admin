@@ -206,7 +206,15 @@ export const collector = {
   editPost: (postId: string, edit: PendingPostEdit) =>
     request<PostDetail>(`/api/admin/posts/${postId}`, { method: 'PUT', body: JSON.stringify(edit) }),
 
-  viewSummary: () => request<DailyViewSummary>('/api/analytics/views/summary'),
+  /**
+   * 하루 요약. 날짜(YYYYMMDD)를 주지 않으면 collector 기준 오늘이다 —
+   * collector JVM 이 Asia/Seoul 로 돌므로 KST 오늘과 같다.
+   *
+   * 대시보드가 어제치도 부르는 이유 — GA4 당일 집계가 몇 시간 늦어서, 오늘치가 비어 있는
+   * 시간대가 하루 중 꽤 길다. 그때는 어제 숫자를 날짜와 함께 보여준다.
+   */
+  viewSummary: (date?: string) =>
+    request<DailyViewSummary>(`/api/analytics/views/summary${date ? `?date=${date}` : ''}`),
 
   listPending: () => request<PendingPost[]>('/api/admin/pending'),
 
