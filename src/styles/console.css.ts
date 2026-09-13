@@ -63,6 +63,13 @@ export const railItemActive = style({
   fontWeight: vars.fontWeight.bold,
 })
 
+/**
+ * 넓은 화면에서는 왼쪽에 붙박인 메뉴, 좁은 화면에서는 왼쪽에서 밀려 나오는 서랍이다.
+ *
+ * 좁을 때 자리를 접는 것으로는 부족했다 — 세로로 쌓이면 로고·메뉴·로그아웃이 본문 위를
+ * 한 화면 가까이 먹고, 목록을 내리면 메뉴가 위로 사라져 다른 화면으로 갈 길이 없어진다.
+ * 그래서 흐름에서 빼내(fixed) 평소에는 왼쪽 밖에 두고, ☰ 를 누를 때만 덮어서 펼친다.
+ */
 export const sidebar = style({
   borderRight: `1px solid ${vars.color.border}`,
   padding: `${vars.space.lg} ${vars.space.lg} ${vars.space.xl}`,
@@ -71,14 +78,118 @@ export const sidebar = style({
   gap: vars.space.lg,
   overflowY: 'auto',
   '@media': {
-    '(max-width: 900px)': { borderRight: 0, borderBottom: `1px solid ${vars.color.border}` },
+    '(max-width: 900px)': {
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      width: 260,
+      maxWidth: '80vw',
+      zIndex: 1200,
+      background: vars.color.surface,
+      borderRight: `1px solid ${vars.color.border}`,
+      transform: 'translateX(-100%)',
+      // 닫힌 서랍을 화면 밖에 두기만 하면 링크가 탭 순서에 남는다 — 보이지 않는 곳으로
+      // 포커스가 넘어가면 어디에 있는지 알 수 없다. visibility 로 순서에서도 뺀다.
+      visibility: 'hidden',
+      transition: 'transform 180ms ease-out, visibility 180ms',
+    },
+  },
+  selectors: {
+    '&[data-open="true"]': {
+      '@media': { '(max-width: 900px)': { transform: 'translateX(0)', visibility: 'visible' } },
+    },
   },
 })
+
+/** 서랍 뒤를 덮는 어둠막. 본문을 누르면 닫힌다 — 서랍을 닫으려고 ☰ 를 다시 찾지 않게. */
+export const menuDimmer = style({
+  display: 'none',
+  '@media': {
+    '(max-width: 900px)': {
+      display: 'block',
+      position: 'fixed',
+      inset: 0,
+      zIndex: 1150,
+      background: 'rgba(0, 0, 0, 0.4)',
+    },
+  },
+})
+
+/**
+ * 좁은 화면에만 나오는 윗줄: ☰ · 로고 · 로그아웃.
+ *
+ * 스크롤을 따라 붙어 있게 한다. 목록이 길어도 메뉴로 돌아오려고 맨 위까지 올리지 않아도 된다.
+ */
+export const topBar = style({
+  display: 'none',
+  '@media': {
+    '(max-width: 900px)': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: vars.space.md,
+      position: 'sticky',
+      top: 0,
+      zIndex: 1100,
+      padding: `${vars.space.md} ${vars.space.lg}`,
+      background: vars.color.canvas,
+      borderBottom: `1px solid ${vars.color.border}`,
+    },
+  },
+})
+
+/** ☰ 버튼. 아이콘만 있으므로 aria-label 로 이름을 준다 (Shell.tsx). */
+export const menuButton = style({
+  display: 'grid',
+  placeItems: 'center',
+  width: 32,
+  height: 32,
+  border: 0,
+  borderRadius: vars.radius.md,
+  background: 'transparent',
+  color: vars.color.ink,
+  selectors: { '&:hover': { background: vars.color.surfaceSunken } },
+})
+
+/** 윗줄의 로그아웃을 오른쪽 끝으로 민다. */
+export const topBarSpacer = style({ marginLeft: 'auto' })
+
+/** 로고와 로그아웃은 좁은 화면에서 윗줄로 옮겨간다 — 서랍 안에 또 두면 같은 것이 둘이 된다. */
+export const sidebarOnly = style({
+  '@media': { '(max-width: 900px)': { display: 'none' } },
+})
+
+/** 로그아웃은 메뉴 아래 끝에 붙는다. 좁은 화면에서는 윗줄에 있으므로 감춘다. */
+export const signOutForm = style([sidebarOnly, { marginTop: 'auto' }])
 
 export const menu = style({
   display: 'flex',
   flexDirection: 'column',
   gap: 2,
+})
+
+/**
+ * 지금 갈래가 아닌 메뉴. 넓은 화면에서는 레일이 갈래를 나누므로 감추고,
+ * 좁은 화면에서는 레일이 없으므로 서랍 안에 함께 편다 — 그러지 않으면 글 갈래에서
+ * 블로그로 갈 길이 화면에 없다.
+ */
+export const otherGroupMenu = style({
+  display: 'none',
+  '@media': { '(max-width: 900px)': { display: 'flex' } },
+})
+
+/** 서랍 안에서 갈래를 가르는 작은 제목. 레일이 없는 좁은 화면에서만 쓴다. */
+export const menuGroupLabel = style({
+  display: 'none',
+  '@media': {
+    '(max-width: 900px)': {
+      display: 'block',
+      margin: `${vars.space.sm} ${vars.space.md} ${vars.space.xs}`,
+      fontSize: vars.fontSize.xs,
+      fontWeight: vars.fontWeight.semibold,
+      color: vars.color.inkFaint,
+    },
+  },
 })
 
 /** 메뉴 항목: 14px / 500. 실측값이다. */

@@ -1,9 +1,10 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import * as styles from '@/styles/console.css'
-import { DocumentIcon, SlidersIcon } from './icons'
+import { DocumentIcon, MenuIcon, SlidersIcon } from './icons'
 import { GrepLogo } from './Logo'
 
 /**
@@ -50,6 +51,29 @@ const WIDE_PATH_PREFIXES = ['/review']
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  /** 좁은 화면의 서랍이 열려 있는지. 넓은 화면에서는 CSS가 무시하므로 값이 무엇이든 상관없다. */
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  // 화면을 옮기면 닫는다. 링크를 눌렀는데 서랍이 그대로면 도착한 화면이 가려진다.
+  useEffect(() => setIsMenuOpen(false), [pathname])
+
+  useEffect(() => {
+    if (!isMenuOpen) return
+
+    // 서랍이 열린 동안 뒤가 굴러가면, 닫고 났을 때 보던 자리를 잃는다.
+    const { overflow } = document.body.style
+    document.body.style.overflow = 'hidden'
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsMenuOpen(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = overflow
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isMenuOpen])
 
   // 로그인 화면은 제 레이아웃을 직접 짠다 — 콘솔의 여백·최대폭을 씌우면 안 된다.
   if (BARE_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
@@ -82,28 +106,67 @@ export function Shell({ children }: { children: React.ReactNode }) {
         })}
       </nav>
 
-      <aside className={styles.sidebar}>
+      {/* 좁은 화면에만 나오는 윗줄. 레일이 사라진 자리에서 메뉴를 여는 유일한 길이다. */}
+      <header className={styles.topBar}>
+        <button
+          type="button"
+          className={styles.menuButton}
+          aria-label="메뉴 열기"
+          aria-expanded={isMenuOpen}
+          aria-controls="console-menu"
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          <MenuIcon size={20} />
+        </button>
+
         <a href="/">
           <GrepLogo label="관리" />
         </a>
 
-        <nav className={styles.menu} aria-label={`${activeGroup.label} 메뉴`}>
-          {activeGroup.items.map((item) => {
-            const isActive = isCurrent(item.href, pathname)
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`${styles.menuLink} ${isActive ? styles.menuLinkActive : ''}`}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                {item.label}
-              </a>
-            )
-          })}
-        </nav>
+        <form action={signOut} className={styles.topBarSpacer}>
+          <button type="submit" className={styles.quietButton}>
+            로그아웃
+          </button>
+        </form>
+      </header>
 
-        <form action={signOut} style={{ marginTop: 'auto' }}>
+      {isMenuOpen && (
+        <div className={styles.menuDimmer} onClick={() => setIsMenuOpen(false)} aria-hidden="true" />
+      )}
+
+      <aside className={styles.sidebar} id="console-menu" data-open={isMenuOpen}>
+        <a href="/" className={styles.sidebarOnly}>
+          <GrepLogo label="관리" />
+        </a>
+
+        {/*
+          갈래를 모두 그려 두고 넓은 화면에서는 지금 갈래만 남긴다(otherGroupMenu).
+          좁은 화면에는 레일이 없어서, 지금 갈래만 그리면 다른 갈래로 건너갈 길이 사라진다.
+        */}
+        {GROUPS.map((group) => (
+          <nav
+            key={group.key}
+            className={`${styles.menu} ${group.key === activeGroup.key ? '' : styles.otherGroupMenu}`}
+            aria-label={`${group.label} 메뉴`}
+          >
+            <p className={styles.menuGroupLabel}>{group.label}</p>
+            {group.items.map((item) => {
+              const isActive = isCurrent(item.href, pathname)
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.menuLink} ${isActive ? styles.menuLinkActive : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {item.label}
+                </a>
+              )
+            })}
+          </nav>
+        ))}
+
+        <form action={signOut} className={styles.signOutForm}>
           <button type="submit" className={styles.quietButton}>
             로그아웃
           </button>

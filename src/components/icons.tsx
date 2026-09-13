@@ -47,3 +47,19 @@ export function SlidersIcon({ size, strokeWidth }: IconProps) {
     </Glyph>
   )
 }
+
+/**
+ * 모바일 메뉴 버튼 — 줄 세 개.
+ *
+ * 열렸을 때 X로 바꾸지 않는다. 서랍이 열리면 버튼이 서랍에 가려 보이지 않고,
+ * 닫는 길은 서랍 바깥(어둠막)·Esc·메뉴 선택 셋이다.
+ */
+export function MenuIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <Glyph size={size} strokeWidth={strokeWidth}>
+      <path d="M4 6h16" />
+      <path d="M4 12h16" />
+      <path d="M4 18h16" />
+    </Glyph>
+  )
+}
