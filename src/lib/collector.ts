@@ -126,6 +126,40 @@ export interface PendingPostEdit {
   body?: string
 }
 
+/**
+ * 검토 화면이 보는 채용공고 하나. collector의 /api/admin/jobs 응답 모양이다.
+ *
+ * 글(PendingPost)과 달리 상태를 들고 온다 — 공고는 대기·공개·치움 사이를 오가고,
+ * 원문에서 닫혔다가 다시 열리기도 해서 "어느 목록에 있나"만으로 상태를 알 수 없다.
+ */
+export interface ReviewedJob {
+  id: string
+  companyKey: string
+  /** 공고를 낸 회사. 계열사 공고면 계열사 이름이다(예: 카카오페이). */
+  companyName: string
+  title: string
+  /** 원문 채용 페이지. 지원은 여기서 한다. */
+  url: string
+  jobCategory: string | null
+  employmentType: string | null
+  location: string | null
+  careerLevel: string | null
+  /** ISO-8601. 원문이 주지 않으면 null. */
+  openedAt: string | null
+  /** ISO-8601. 상시채용이 대부분이라 null 이 정상이다. */
+  closesAt: string | null
+  reviewStatus: 'pending' | 'published' | 'rejected'
+  /** 원문 목록에서 사라진 공고. 새로 공개할 수 없다. */
+  closed: boolean
+  hasBody: boolean
+}
+
+export interface ReviewedJobDetail {
+  job: ReviewedJob
+  /** 마크다운. 본문을 읽지 못한 공고(라인 등)는 null 이다. */
+  body: string | null
+}
+
 /** collector가 실패를 알려주는 모양. 그대로 화면에 옮긴다. */
 export interface CollectorError {
   error: string
@@ -246,4 +280,25 @@ export const collector = {
 
   commitCollectionRun: (runId: string) =>
     request<{ committedPostCount: number; blogNames: string[] }>(`/api/collections/${runId}/commit`, { method: 'POST' }),
+
+  /** 검토를 기다리는 열린 공고. 본문은 싣지 않는다. */
+  listPendingJobs: () => request<ReviewedJob[]>('/api/admin/jobs/pending'),
+
+  /** 사이트에 올라가 있는 공고. 내릴 공고를 고르는 목록이다. */
+  listPublishedJobs: () => request<ReviewedJob[]>('/api/admin/jobs/published'),
+
+  findJob: (jobId: string) => request<ReviewedJobDetail>(`/api/admin/jobs/${encodeURIComponent(jobId)}`),
+
+  /**
+   * 고른 공고를 사이트에 올린다. 닫혔거나 이미 올린 공고는 collector가 건너뛰므로,
+   * 요청한 수가 아니라 실제로 올린 수(affectedJobCount)를 보여준다.
+   */
+  publishJobs: (jobIds: string[]) =>
+    request<{ affectedJobCount: number }>('/api/admin/jobs/publish', { method: 'POST', body: JSON.stringify({ jobIds }) }),
+
+  rejectJobs: (jobIds: string[]) =>
+    request<{ affectedJobCount: number }>('/api/admin/jobs/reject', { method: 'POST', body: JSON.stringify({ jobIds }) }),
+
+  unpublishJobs: (jobIds: string[]) =>
+    request<{ affectedJobCount: number }>('/api/admin/jobs/unpublish', { method: 'POST', body: JSON.stringify({ jobIds }) }),
 }

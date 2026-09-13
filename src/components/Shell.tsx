@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import * as styles from '@/styles/console.css'
-import { DocumentIcon, MenuIcon, SlidersIcon } from './icons'
+import { BriefcaseIcon, DocumentIcon, MenuIcon, SlidersIcon } from './icons'
 import { GrepLogo } from './Logo'
 
 /**
@@ -21,9 +21,22 @@ const GROUPS = [
     Icon: DocumentIcon,
     items: [
       { href: '/', label: '대시보드' },
-      { href: '/review', label: '검토' },
+      { href: '/review', label: '검증' },
       { href: '/posts', label: '글' },
       { href: '/picks', label: '오늘의 픽' },
+    ],
+  },
+  /*
+    채용은 글과 갈래를 나눈다. 검증하는 대상도, 사이트에 나가는 곳도, 판단 기준도 다르다 —
+    한 메뉴에 섞으면 "검증"을 눌렀을 때 무엇을 검증하는지 매번 따져야 한다.
+  */
+  {
+    key: 'jobs',
+    label: '채용',
+    Icon: BriefcaseIcon,
+    items: [
+      { href: '/jobs', label: '검증' },
+      { href: '/jobs/published', label: '공개한 공고' },
     ],
   },
   {
@@ -43,11 +56,21 @@ function isCurrent(href: string, pathname: string): boolean {
   return href === '/' ? pathname === '/' : pathname.startsWith(href)
 }
 
+/**
+ * 갈래 안에서 불을 켤 메뉴 하나. 가장 길게 들어맞는 주소를 고른다 —
+ * /jobs/published 는 /jobs 로도 시작해서, 들어맞는 것을 모두 켜면 두 메뉴가 함께 켜진다.
+ */
+function currentHref(items: readonly { href: string }[], pathname: string): string | undefined {
+  return items
+    .filter((item) => isCurrent(item.href, pathname))
+    .sort((left, right) => right.href.length - left.href.length)[0]?.href
+}
+
 /** 로그인 전에는 관리 메뉴를 보여주지 않는다 — 무엇이 있는지도 알려줄 이유가 없다. */
 const BARE_PATH_PREFIXES = ['/login', '/auth']
 
 /** 본문 최대폭을 풀 갈래. 검토는 목록도 미리보기도 화면을 그대로 쓰는 편이 낫다. */
-const WIDE_PATH_PREFIXES = ['/review']
+const WIDE_PATH_PREFIXES = ['/review', '/jobs']
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -151,7 +174,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           >
             <p className={styles.menuGroupLabel}>{group.label}</p>
             {group.items.map((item) => {
-              const isActive = isCurrent(item.href, pathname)
+              const isActive = item.href === currentHref(group.items, pathname)
               return (
                 <a
                   key={item.href}
