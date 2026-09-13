@@ -5,6 +5,7 @@ import { Badge, Button, useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
 import { savePicks, type ActionResult } from './actions'
 import { PickSlide } from '@/components/preview/PickSlide'
+import { selectTodayPicks } from '@/components/preview/picks'
 import * as styles from '@/components/shared.css'
 
 /** 히어로에 세우는 글 수. 넘겨 담아도 화면에는 앞에서부터만 올라간다. */
@@ -28,6 +29,18 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
   const [isPending, startTransition] = useTransition()
 
   const postsByUrl = useMemo(() => new Map(posts.map((post) => [post.url, post])), [posts])
+
+  /**
+   * 픽을 비워 뒀을 때 사이트가 스스로 고르는 다섯 개.
+   *
+   * 사이트와 같은 규칙·같은 입력으로 계산한다 — 숨긴 글을 빼고(사이트의 loadPosts), 최신순
+   * 그대로다(collector 가 published_at desc 로 준다). 규칙이 갈리지 않는지는
+   * pnpm check:preview-copies 가 원본과 대조한다.
+   *
+   * 날짜를 고정하지 않으므로 '최근 7일'의 기준이 이 화면을 연 시각이다. 사이트는 빌드 시각을
+   * 쓰기 때문에 배포가 오래된 날에는 두 결과가 한두 개 어긋날 수 있다.
+   */
+  const autoPicks = useMemo(() => selectTodayPicks(posts.filter((post) => !post.hidden), []), [posts])
 
   /** 검색은 이미 고른 글을 빼고 보여준다 — 같은 글을 두 번 넣을 이유가 없다. */
   const candidates = useMemo(() => {
@@ -69,6 +82,16 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
     })
   }
 
+  /**
+   * 자동 선정 결과를 편집 시작점으로 삼는다. 아직 저장하지 않는다 —
+   * 가져오자마자 저장되면 "잠깐 보려고 눌렀다"가 곧바로 사이트에 나간다.
+   */
+  function startFromAutoPicks() {
+    setPickUrls(autoPicks.map((post) => post.url))
+    setFailure(null)
+    setIsEditing(true)
+  }
+
   function cancel() {
     setPickUrls(savedUrls)
     setQuery('')
@@ -108,16 +131,35 @@ export function PickEditor({ posts, initialPickUrls }: PickEditorProps) {
             {hiddenPickCount > 0 && ` — 숨긴 글 ${hiddenPickCount}개`}. 아래에서 빼거나 다시 고르세요.
           </p>
         ) : (
-          <p className={styles.mutedText}>
-            고른 글이 없습니다. 이대로 두면 첫 화면이 자동 선정(최근 7일 · 블로그별 최신 1개)으로 채워집니다.
-          </p>
+          /*
+            고른 글이 없으면 자동 선정이 나가 있다. 안내문만 두면 "지금 무엇이 떠 있는지"를
+            여기서 볼 수 없어서, 고치러 들어온 사람이 사이트를 따로 열어봐야 했다.
+          */
+          <>
+            <p className={styles.mutedText} style={{ marginBottom: 12 }}>
+              고른 글이 없어 자동 선정(최근 7일 · 블로그별 최신 1개)이 나가고 있습니다. 지금 모습입니다.
+            </p>
+            {autoPicks.length > 0 ? (
+              <PickSlide picks={autoPicks} />
+            ) : (
+              <p className={styles.mutedText}>공개된 글이 없어 화면에 세울 글도 없습니다.</p>
+            )}
+          </>
         )}
       </div>
 
       {!isEditing && (
-        <Button color="primary" variant="weak" size="small" onClick={() => setIsEditing(true)}>
-          편집
-        </Button>
+        <div className={styles.formRow}>
+          <Button color="primary" variant="weak" size="small" onClick={() => setIsEditing(true)}>
+            편집
+          </Button>
+          {/* 맨손으로 다섯 개를 검색해 넣는 대신, 지금 나가는 것에서 출발해 고치게 한다. */}
+          {pickUrls.length === 0 && autoPicks.length > 0 && (
+            <Button color="light" size="small" onClick={startFromAutoPicks}>
+              지금 {autoPicks.length}개를 픽으로 가져오기
+            </Button>
+          )}
+        </div>
       )}
 
       {isEditing && (

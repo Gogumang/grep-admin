@@ -37,6 +37,10 @@ const PAIRS = [
     copy: 'src/components/preview/postBody.css.ts',
     origin: 'src/styles/post.css.ts',
   },
+  {
+    copy: 'src/components/preview/picks.ts',
+    origin: 'src/service/picks.ts',
+  },
 ]
 
 /** 옮기면서 달라지는 것들을 지워 같은 잣대로 만든다. */
@@ -46,6 +50,8 @@ function normalize(source) {
     .replace(/^\s*\/\*[\s\S]*?\*\/\s*/, '')
     // 어드민에는 @/shared 가 없다.
     .replace(/@\/shared\/styles\//g, '@/styles/')
+    // Post 타입이 사는 곳이 다르다 — 어드민은 collector 응답 타입을 쓴다.
+    .replace(/from '(\.\.\/shared\/types|@\/lib\/collector)'/g, "from '<post-type>'")
     .replace(/\r\n/g, '\n')
     .trim()
 }
