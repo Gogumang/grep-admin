@@ -29,6 +29,13 @@ export interface BlogFeed {
   blogKey: string
   feedUrl: string
   homepageUrl: string
+  /**
+   * 수집 대상인지. 끄면 다음 수집부터 빠지고, 이미 모은 글은 그대로 남는다.
+   *
+   * 목록에서 빼는 것과 다른 일이다 — 빼면 되돌릴 때 blogKey가 새로 만들어져
+   * 그 블로그로 모아둔 지난 글들이 주인을 잃는다.
+   */
+  active: boolean
 }
 
 /**
@@ -162,23 +169,25 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const collector = {
-  listFeeds: () => request<BlogFeed[]>('/api/feeds'),
+  /**
+   * 등록된 블로그 전부. 꺼둔 것도 함께 온다 — 어드민이 다시 켤 수 있어야 한다.
+   *
+   * active 를 주지 않는 응답은 켜진 것으로 읽는다. 이 값은 collector에 나중에 생겼고,
+   * 서버가 아직 그 버전이 아니면 화면이 전부 꺼진 것처럼 보인다 — 실제로는 전부 수집 중인데
+   * 그렇게 보이면 고치려고 스위치를 건드리게 된다. DAG(grep_sync_blogs)와 같은 규칙이다.
+   */
+  listFeeds: async (): Promise<BlogFeed[]> =>
+    (await request<BlogFeed[]>('/api/feeds')).map((feed) => ({ ...feed, active: feed.active ?? true })),
 
   addBlog: (blogName: string, feedUrl: string) =>
     request<BlogFeed>('/api/admin/feeds', { method: 'POST', body: JSON.stringify({ blogName, feedUrl }) }),
 
-  /**
-   * 이름·피드 주소를 고친다. blogKey 는 바뀌지 않는다 — 서버가 키를 다시 만들지 않기 때문이다.
-   * 키가 갈리면 이미 수집된 글이 블로그를 잃는다.
-   */
-  updateBlog: (blogKey: string, blogName: string, feedUrl: string) =>
-    request<BlogFeed>(`/api/admin/feeds/${encodeURIComponent(blogKey)}`, {
+  /** 수집을 켜거나 끈다. 바뀐 뒤의 모습을 돌려준다. */
+  setBlogActive: (blogKey: string, active: boolean) =>
+    request<BlogFeed>(`/api/admin/feeds/${encodeURIComponent(blogKey)}/active`, {
       method: 'PUT',
-      body: JSON.stringify({ blogName, feedUrl }),
+      body: JSON.stringify({ active }),
     }),
-
-  removeBlog: (blogKey: string) =>
-    request<BlogFeed>(`/api/admin/feeds/${encodeURIComponent(blogKey)}`, { method: 'DELETE' }),
 
   setPostHidden: (postId: string, hidden: boolean) =>
     request<void>(`/api/admin/posts/${postId}/hidden`, { method: 'PUT', body: JSON.stringify({ hidden }) }),

@@ -11,9 +11,13 @@ export default async function BlogsPage() {
 
   try {
     const feeds = await collector.listFeeds()
+    // 꺼둔 블로그는 목록에 그대로 있어서, 세지 않으면 수집이 몇 곳에서 도는지 알 수 없다.
+    const inactiveCount = feeds.filter((feed) => !feed.active).length
     return (
       <>
-        <h1 className={console.pageTitle}>블로그 {feeds.length}개</h1>
+        <h1 className={console.pageTitle}>
+          블로그 {feeds.length}개{inactiveCount > 0 && ` · ${inactiveCount}개 꺼둠`}
+        </h1>
         <BlogManager feeds={feeds} />
       </>
     )

@@ -15,14 +15,11 @@ export interface ActionResult {
  * 피드가 살아있는지 확인하는 일은 collector가 한다 — 어드민이 따로 검증하면
  * 같은 규칙이 두 곳에 생기고, 언젠가 한쪽만 바뀐다.
  */
-export async function addBlog(formData: FormData): Promise<ActionResult> {
+export async function addBlog(blogName: string, feedUrl: string): Promise<ActionResult> {
   await requireAdmin()
 
-  const blogName = String(formData.get('blogName') ?? '').trim()
-  const feedUrl = String(formData.get('feedUrl') ?? '').trim()
-
   try {
-    const feed = await collector.addBlog(blogName, feedUrl)
+    const feed = await collector.addBlog(blogName.trim(), feedUrl.trim())
     revalidatePath('/blogs')
     return { ok: true, message: `${feed.blogName} 추가됨` }
   } catch (error) {
@@ -30,27 +27,19 @@ export async function addBlog(formData: FormData): Promise<ActionResult> {
   }
 }
 
-/** 이름·피드 주소를 고친다. 피드가 살아있는지 확인하는 일은 여기서도 collector가 한다. */
-export async function editBlog(blogKey: string, blogName: string, feedUrl: string): Promise<ActionResult> {
+/**
+ * 수집을 켜거나 끈다.
+ *
+ * 목록에서 빼는 길을 두지 않은 이유 — 뺐다가 다시 넣으면 collector가 피드 주소로 blogKey를
+ * 새로 만들고, 그 블로그로 모아둔 지난 글들이 주인을 잃는다. 멈추고 싶을 뿐이라면 끄면 된다.
+ */
+export async function setBlogActive(blogKey: string, active: boolean): Promise<ActionResult> {
   await requireAdmin()
 
   try {
-    const feed = await collector.updateBlog(blogKey, blogName.trim(), feedUrl.trim())
+    const feed = await collector.setBlogActive(blogKey, active)
     revalidatePath('/blogs')
-    return { ok: true, message: `${feed.blogName} 수정됨` }
-  } catch (error) {
-    return { ok: false, message: describe(error) }
-  }
-}
-
-export async function removeBlog(blogKey: string): Promise<ActionResult> {
-  await requireAdmin()
-
-  try {
-    const feed = await collector.removeBlog(blogKey)
-    revalidatePath('/blogs')
-    // 이미 수집된 글은 남는다. 목록에서 빼는 것과 지난 글을 지우는 것은 다른 일이다.
-    return { ok: true, message: `${feed.blogName} 제거됨. 이미 수집된 글은 그대로 남습니다.` }
+    return { ok: true, message: `${feed.blogName} 수집 ${feed.active ? '켬' : '끔'}` }
   } catch (error) {
     return { ok: false, message: describe(error) }
   }

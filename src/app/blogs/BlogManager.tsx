@@ -1,10 +1,68 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { Button, useDialog, useToast } from '@/shared'
+import { type RefObject, useEffect, useOptimistic, useRef, useState, useTransition } from 'react'
+import { Button, Switch, TextField, useDialog, useToast } from '@/shared'
 import type { BlogFeed } from '@/lib/collector'
-import { addBlog, editBlog, removeBlog, type ActionResult } from './actions'
+import { addBlog, setBlogActive, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
+import * as local from './blogManager.css'
+
+interface BlogDraft {
+  blogName: string
+  feedUrl: string
+}
+
+/**
+ * 추가 창의 확인 버튼은 창 바깥(OverlayProvider)이 그린다.
+ * 그래서 값을 읽고 실패를 돌려줄 통로를 창 안쪽에서 이 모양으로 남긴다.
+ */
+interface AddBlogControl {
+  read: () => BlogDraft
+  showError: (message: string) => void
+}
+
+/**
+ * 추가 창 안의 입력 두 칸.
+ *
+ * 입력값을 state가 아니라 ref에 담는 이유 — 한 글자마다 다시 그리면 다이얼로그 전체가
+ * 함께 다시 그려진다. 여기서 값을 읽는 곳은 확인 버튼 하나뿐이라 중간 상태가 필요 없다.
+ */
+function AddBlogFields({ control }: { control: RefObject<AddBlogControl | null> }) {
+  const draft = useRef<BlogDraft>({ blogName: '', feedUrl: '' })
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    control.current = { read: () => draft.current, showError: setError }
+    return () => {
+      control.current = null
+    }
+  }, [control])
+
+  return (
+    <div className={local.fieldStack}>
+      <TextField
+        variant="box"
+        label="블로그 이름"
+        labelOption="sustain"
+        placeholder="예: 카카오"
+        autoFocus
+        onChange={(event) => {
+          draft.current = { ...draft.current, blogName: event.target.value }
+        }}
+      />
+      <TextField
+        variant="box"
+        label="피드 주소"
+        labelOption="sustain"
+        placeholder="예: https://tech.kakao.com/feed/"
+        onChange={(event) => {
+          draft.current = { ...draft.current, feedUrl: event.target.value }
+        }}
+      />
+      {error && <p className={local.fieldError}>{error}</p>}
+    </div>
+  )
+}
 
 export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
   const { openToast } = useToast()
@@ -14,12 +72,21 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
    * 무엇이 잘못됐는지는 고칠 때까지 보여야 한다.
    */
   const [failure, setFailure] = useState<ActionResult | null>(null)
-  /** 지금 고치고 있는 블로그의 blogKey. 한 번에 한 줄만 연다. */
-  const [editingKey, setEditingKey] = useState<string | null>(null)
-  const [draft, setDraft] = useState({ blogName: '', feedUrl: '' })
   const [isPending, startTransition] = useTransition()
+  const addControl = useRef<AddBlogControl | null>(null)
 
-  /** 성공은 토스트, 실패는 화면. 세 군데가 같은 규칙을 쓰므로 한곳에 모은다. */
+  /**
+   * 스위치를 서버 응답보다 먼저 움직인다. collector는 GitHub·DB를 거쳐 응답이 수백 ms라,
+   * 누른 자리가 그동안 가만히 있으면 안 눌린 줄 알고 한 번 더 누른다.
+   * 서버가 거절하면 revalidate 된 원래 값으로 알아서 돌아온다.
+   */
+  const [shownFeeds, applyOptimisticActive] = useOptimistic(
+    feeds,
+    (current, changed: { blogKey: string; active: boolean }) =>
+      current.map((feed) => (feed.blogKey === changed.blogKey ? { ...feed, active: changed.active } : feed)),
+  )
+
+  /** 성공은 토스트, 실패는 화면. 두 군데가 같은 규칙을 쓰므로 한곳에 모은다. */
   function report(outcome: ActionResult): boolean {
     if (outcome.ok) {
       openToast(outcome.message)
@@ -30,40 +97,31 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
     return false
   }
 
-  function startEdit(feed: BlogFeed) {
-    setEditingKey(feed.blogKey)
-    setDraft({ blogName: feed.blogName, feedUrl: feed.feedUrl })
-    setFailure(null)
-  }
-
-  function saveEdit(blogKey: string) {
-    startTransition(async () => {
-      // 실패하면 입력값을 남겨둔다 — 주소를 다시 치게 만들지 않는다.
-      if (report(await editBlog(blogKey, draft.blogName, draft.feedUrl))) setEditingKey(null)
-    })
-  }
-
-  function submit(formData: FormData) {
-    startTransition(async () => {
-      // 실패하면 입력값을 남겨둔다 — 주소를 다시 치게 만들지 않는다.
-      if (report(await addBlog(formData))) {
-        ;(document.getElementById('add-blog-form') as HTMLFormElement)?.reset()
-      }
-    })
-  }
-
-  /**
-   * 제거는 되돌릴 수 없으니 한 번 묻는다. openAsyncConfirm은 서버 응답이 올 때까지
-   * 확인 버튼을 잠가, 느린 응답에 같은 요청을 두 번 보내는 것을 막는다.
-   */
-  function remove(feed: BlogFeed) {
+  function openAddDialog() {
     void openAsyncConfirm({
-      title: `${feed.blogName}을 제거할까요?`,
-      description: '수집 목록에서 빠집니다. 이미 모은 글은 그대로 남습니다.',
-      confirmButton: <Button color="danger" size="medium" display="block">제거하기</Button>,
+      title: '블로그 추가',
+      description: <AddBlogFields control={addControl} />,
+      confirmButton: '추가',
+      closeOnDimmerClick: true,
       onConfirmClick: async () => {
-        report(await removeBlog(feed.blogKey))
+        const draft = addControl.current?.read() ?? { blogName: '', feedUrl: '' }
+        const outcome = await addBlog(draft.blogName, draft.feedUrl)
+
+        // 실패를 던지면 창이 닫히지 않는다. 방금 친 값을 남겨 둔 채 그 자리에서 알린다.
+        if (!outcome.ok) {
+          addControl.current?.showError(outcome.message)
+          throw new Error(outcome.message)
+        }
+
+        report(outcome)
       },
+    })
+  }
+
+  function toggleActive(feed: BlogFeed, active: boolean) {
+    startTransition(async () => {
+      applyOptimisticActive({ blogKey: feed.blogKey, active })
+      report(await setBlogActive(feed.blogKey, active))
     })
   }
 
@@ -71,80 +129,42 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
     <>
       {failure && <p className={styles.errorNotice}>{failure.message}</p>}
 
-      <form id="add-blog-form" action={submit} className={styles.formRow}>
-        <input className={styles.input} name="blogName" placeholder="블로그 이름 (예: 카카오)" required />
-        <input
-          className={styles.input}
-          name="feedUrl"
-          placeholder="피드 주소 (예: https://tech.kakao.com/feed/)"
-          style={{ flex: 1, minWidth: 280 }}
-          required
-        />
-        <Button type="submit" color="primary" variant="weak" size="small" disabled={isPending}>
-          {isPending ? '확인 중…' : '추가'}
+      <div className={styles.formRow}>
+        <Button color="primary" variant="weak" size="small" onClick={openAddDialog}>
+          추가
         </Button>
-      </form>
+      </div>
 
       <div className={styles.card}>
         <table className={styles.table}>
-        <thead>
-          <tr>
-            <th className={styles.tableHead}>블로그</th>
-            <th className={styles.tableHead}>피드 주소</th>
-            <th className={`${styles.tableHead} ${styles.actionCell}`} />
-          </tr>
-        </thead>
-        <tbody>
-          {feeds.map((feed) => (
-            <tr key={feed.blogKey}>
-              {editingKey === feed.blogKey ? (
-                <>
-                  <td className={styles.tableCell}>
-                    <input
-                      className={styles.input}
-                      value={draft.blogName}
-                      onChange={(event) => setDraft({ ...draft, blogName: event.target.value })}
-                      aria-label="블로그 이름"
-                    />
-                  </td>
-                  <td className={styles.tableCell}>
-                    <input
-                      className={styles.input}
-                      value={draft.feedUrl}
-                      onChange={(event) => setDraft({ ...draft, feedUrl: event.target.value })}
-                      style={{ width: '100%' }}
-                      aria-label="피드 주소"
-                    />
-                  </td>
-                  <td className={`${styles.tableCell} ${styles.actionCell}`}>
-                    <Button color="primary" variant="weak" size="small" onClick={() => saveEdit(feed.blogKey)} disabled={isPending}>
-                      {isPending ? '확인 중…' : '저장'}
-                    </Button>{' '}
-                    <Button color="light" size="small" onClick={() => setEditingKey(null)} disabled={isPending}>
-                      취소
-                    </Button>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td className={styles.tableCell}>{feed.blogName}</td>
-                  <td className={styles.tableCell}>
-                    <span className={styles.truncatedUrl}>{feed.feedUrl}</span>
-                  </td>
-                  <td className={`${styles.tableCell} ${styles.actionCell}`}>
-                    <Button color="light" size="small" onClick={() => startEdit(feed)} disabled={isPending}>
-                      수정
-                    </Button>{' '}
-                    <Button color="danger" variant="weak" size="small" onClick={() => remove(feed)} disabled={isPending}>
-                      제거
-                    </Button>
-                  </td>
-                </>
-              )}
+          <thead>
+            <tr>
+              <th className={styles.tableHead}>블로그</th>
+              <th className={styles.tableHead}>피드 주소</th>
+              <th className={`${styles.tableHead} ${local.switchCell}`}>수집</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {shownFeeds.map((feed) => (
+              <tr key={feed.blogKey} className={feed.active ? undefined : local.inactiveRow}>
+                <td className={styles.tableCell}>{feed.blogName}</td>
+                <td className={styles.tableCell}>
+                  <span className={styles.truncatedUrl}>{feed.feedUrl}</span>
+                </td>
+                <td className={`${styles.tableCell} ${local.switchCell}`}>
+                  <Switch
+                    checked={feed.active}
+                    // 도는 동안 잠근다 — 연달아 누르면 늦게 도착한 요청이 뒤집어 놓는다.
+                    disabled={isPending}
+                    aria-label={`${feed.blogName} 수집`}
+                    title={feed.active ? '수집 중 — 끄면 다음 수집부터 빠집니다' : '꺼둠 — 켜면 다음 수집부터 들어옵니다'}
+                    onChange={(_, checked) => toggleActive(feed, checked)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   )

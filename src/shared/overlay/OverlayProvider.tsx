@@ -141,6 +141,17 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  /**
+   * 버튼 클릭에서 부르는 자리. 창을 열어 둔 채로 끝나는 실패는 여기서 삼킨다.
+   *
+   * 무엇이 잘못됐는지 알리는 일은 onConfirmClick 을 넘긴 쪽이 한다 — 실패를 던지는 것은
+   * 이 창에게 "닫지 말라"는 신호일 뿐이다. 그대로 두면 처리되지 않은 rejection 이 되어
+   * 콘솔에 잡히지도 않을 오류가 쌓인다.
+   */
+  function runAndSettleQuietly(confirmed: boolean) {
+    void runAndSettle(confirmed).catch(() => {})
+  }
+
   return (
     <ToastContext.Provider value={toastControls}>
       <DialogContext.Provider value={dialogControls}>
@@ -184,7 +195,11 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
               >
                 <div className={dialogStyles.dialog} role="alertdialog" aria-modal="true" aria-label={undefined}>
                   <h2 className={dialogStyles.title}>{dialog.title}</h2>
-                  {dialog.description && <p className={dialogStyles.description}>{dialog.description}</p>}
+                  {/*
+                    p가 아니라 div인 이유 — 설명 자리에 입력 필드를 넣는 창(블로그 추가)이 있다.
+                    p 안에는 블록 요소를 둘 수 없어서 React가 개발 중에 경고를 띄운다.
+                  */}
+                  {dialog.description && <div className={dialogStyles.description}>{dialog.description}</div>}
 
                   <div className={dialogStyles.buttons}>
                     {dialog.kind === 'confirm' &&
@@ -195,7 +210,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
                         // 취소는 로딩을 보여주지 않는다 — 도는 것이 둘이면 어느 쪽을 기다리는지 알 수 없다.
                         loading: false,
                         disabled: isRunning,
-                        onClick: () => void runAndSettle(false),
+                        onClick: () => runAndSettleQuietly(false),
                         color: 'light',
                       })}
                     {renderDialogButton({
@@ -204,7 +219,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
                       loadingPropName: dialog.confirmButtonLoadingPropName,
                       loading: isRunning,
                       disabled: false,
-                      onClick: () => void runAndSettle(true),
+                      onClick: () => runAndSettleQuietly(true),
                       color: 'primary',
                     })}
                   </div>
