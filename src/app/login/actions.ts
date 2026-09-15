@@ -24,6 +24,22 @@ export async function signInWithGitHub() {
   redirect(data.url)
 }
 
+/**
+ * 사용자가 접속한 주소. origin 헤더가 빠지면 프록시가 넘긴 호스트로 조립한다 —
+ * localhost 같은 고정값으로 떨어지면 배포본에서 로그인 후 로컬 주소로 튕긴다.
+ */
+async function requestOrigin(): Promise<string> {
+  const requestHeaders = await headers()
+  const origin = requestHeaders.get('origin')
+  if (origin) return origin
+
+  const host = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host')
+  if (!host) throw new Error('접속 주소를 알 수 없어 GitHub 로그인을 시작하지 못했습니다')
+
+  const protocol = requestHeaders.get('x-forwarded-proto') ?? 'http'
+  return `${protocol}://${host}`
+}
+
 export async function signOut() {
   const supabase = await createClient()
   await supabase.auth.signOut()
