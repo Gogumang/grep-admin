@@ -52,13 +52,8 @@ export function toSiteImage(thumbnail: string | null | undefined): SiteImage | n
    */
   if (!thumbnail.startsWith(`${IMAGE_ORIGIN}/`)) return { url: thumbnail, fallbackUrl: null }
 
-  // 이미 변환본 주소인 글도 있다 (본문 이미지는 전부 이쪽이다).
+  // 이미 변환본 주소인 글도 있다.
   if (!CONVERTED_EXTENSION.test(thumbnail)) return { url: thumbnail, fallbackUrl: null }
 
   return { url: thumbnail.replace(CONVERTED_EXTENSION, '.avif'), fallbackUrl: thumbnail }
-}
-
-/** 한 벌만 필요한 곳(마크다운 본문 이미지)을 위한 지름길. */
-export function toSiteImageUrl(thumbnail: string | null | undefined): string | null {
-  return toSiteImage(thumbnail)?.url ?? null
 }
