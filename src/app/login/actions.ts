@@ -12,7 +12,7 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function signInWithGitHub() {
   const supabase = await createClient()
-  const origin = (await headers()).get('origin') ?? 'http://localhost:3001'
+  const origin = await requestOrigin()
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
