@@ -174,9 +174,14 @@ export function JobReviewList({ jobs, mode }: { jobs: ReviewedJob[]; mode: 'pend
                     {[job.companyName, job.jobCategory, job.careerLevel, job.openedAt && `게시 ${shortDate(job.openedAt)}`]
                       .filter(Boolean)
                       .join(' · ')}
-                    {job.closesAt && (
+                    {/* 마감일이 없으면 비워 두지 않고 적는다 — 빈칸은 "못 읽었다"와 "상시 채용"을 가르지 못한다. */}
+                    {job.closesAt ? (
                       <Badge color="blue" variant="weak" size="xsmall">
                         {shortDate(job.closesAt)} 마감
+                      </Badge>
+                    ) : (
+                      <Badge color="elephant" variant="weak" size="xsmall">
+                        상시 채용
                       </Badge>
                     )}
                     {!job.hasBody && (
