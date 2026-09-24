@@ -48,7 +48,10 @@ const GROUPS = [
     key: 'github',
     label: 'GitHub',
     Icon: StarIcon,
-    items: [{ href: '/repositories', label: '인기 저장소' }],
+    items: [
+      { href: '/repositories', label: '인기 저장소' },
+      { href: '/companies', label: '회사 저장소' },
+    ],
   },
   {
     key: 'manage',

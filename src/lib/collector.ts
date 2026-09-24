@@ -283,7 +283,38 @@ export interface DeviceEnrollmentRequest {
   requestedAt: string
 }
 
+/** 주요 회사 조직이 공개한 저장소 하나(포크 제외). collector 의 /api/admin/company-repositories 응답 모양이다. */
+export interface CompanyRepository {
+  organization: string
+  name: string
+  fullName: string
+  url: string
+  description: string | null
+  language: string | null
+  stars: number
+  forks: number
+  isArchived: boolean
+  pushedAt: string | null
+  createdAt: string | null
+}
+
+/** 회사 목록 한 줄. 아직 한 번도 못 모은 회사는 저장소 0개·collectedAt null 이다. */
+export interface CompanySummary {
+  company: string
+  login: string
+  repositoryCount: number
+  totalStars: number
+  topRepository: CompanyRepository | null
+  lastPushedAt: string | null
+  collectedAt: string | null
+}
+
 export const collector = {
+  listCompanySummaries: () => request<CompanySummary[]>('/api/admin/company-repositories'),
+
+  listCompanyRepositories: (login: string) =>
+    request<CompanyRepository[]>(`/api/admin/company-repositories/${encodeURIComponent(login)}`),
+
   listDevices: () =>
     request<{ devices: ManagedDevice[]; enrollmentRequests: DeviceEnrollmentRequest[] }>('/api/admin/devices'),
 
