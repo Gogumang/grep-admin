@@ -34,6 +34,7 @@ export type {
 } from './components/ListRow'
 export { Loader, LoaderBlock } from './components/Loader'
 export type { LoaderSize } from './components/Loader'
+export { Result } from './components/Result'
 export { Stepper, StepperRow } from './components/Stepper'
 export { Switch } from './components/Switch'
 export type { SwitchProps } from './components/Switch'

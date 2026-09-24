@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
-import { useToast } from '@/shared'
+import { Result, useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
 import { SiteImage } from '@/components/SiteImage'
 import { togglePostHidden, type ActionResult } from './actions'
@@ -16,6 +16,12 @@ const PAGE_SIZE = 10
  * 0으로 두면 눈금이 화면에 들어온 뒤에야 그리기 시작해 스크롤이 한 번 걸린다.
  */
 const PREFETCH_MARGIN = '600px'
+
+/**
+ * 빈 목록 그림. TDS가 쓰는 static.toss.im/lotties/empty-2-spot-apng.png 를 받아 public 에 둔 것이다 —
+ * 남의 CDN을 바로 부르면 그쪽이 주소를 바꾸는 날 어드민 그림이 깨진다. 움직이는 PNG(APNG)라 한 번 재생된다.
+ */
+const EMPTY_FIGURE = <img src="/illustrations/empty.png" alt="" width={100} height={100} />
 
 /**
  * 목록이 실제로 그리는 것만 추린 글.
@@ -135,6 +141,18 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
       </div>
 
       <div className={styles.card}>
+        {/* 빈 목록은 빈 카드로 두지 않는다 — 비어 있는 이유와 다음에 할 일을 함께 알린다. */}
+        {matched.length === 0 &&
+          (showHiddenOnly ? (
+            <Result
+              figure={EMPTY_FIGURE}
+              title="숨긴 글이 없어요"
+              description={'사이트에 모든 글이 공개돼 있어요.\n전체 목록에서 공개 스위치를 끄면 여기에 모여요.'}
+              button={<Result.Button onClick={() => selectTab(false)}>전체 글 보기</Result.Button>}
+            />
+          ) : (
+            <Result figure={EMPTY_FIGURE} title="공개한 글이 없어요" description="검토 대기에서 글을 공개하면 여기에 쌓여요." />
+          ))}
         <div className={list.list}>
           {visible.map((post) => (
             <article key={post.id} className={`${list.row} ${isHidden(post) ? list.rowHidden : ''}`}>
