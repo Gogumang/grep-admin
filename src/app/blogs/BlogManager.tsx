@@ -70,22 +70,14 @@ function AddBlogFields({ control }: { control: RefObject<AddBlogControl | null> 
 const BLOG_ICON_SIZE = 20
 
 /**
- * 블로그 옆에 붙일 회사 아이콘 주소.
+ * 블로그 옆에 붙일 회사 아이콘. scripts/fetch-blog-icons.py 가 받아 public/blog-icons 에 둔 것이다.
  *
- * 사이트 루트의 favicon.ico를 먼저 받고, 없으면 구글 파비콘 서비스로 물러난다 —
- * 아이콘을 <link rel="icon">으로만 알리고 루트에 두지 않는 곳이 있다.
- * 홈페이지 주소가 깨져 있으면 아이콘 없이 회색 자리만 남긴다.
+ * 남의 사이트 favicon.ico를 화면에서 바로 부르지 않는 이유 — HTML을 주거나 404가 나거나
+ * (Medium 블로그는) 전부 같은 Medium 로고가 나와서 회사를 알아볼 수 없었다.
+ * 방금 추가해 아직 받지 않은 블로그는 회색 자리로 남는다 — 스크립트를 다시 돌려 채운다.
  */
-function blogIcon(homepageUrl: string): SiteImageSource | null {
-  try {
-    const { origin, hostname } = new URL(homepageUrl)
-    return {
-      url: `${origin}/favicon.ico`,
-      fallbackUrl: `https://www.google.com/s2/favicons?domain=${hostname}&sz=${BLOG_ICON_SIZE * 2}`,
-    }
-  } catch {
-    return null
-  }
+function blogIcon(blogKey: string): SiteImageSource {
+  return { url: `/blog-icons/${encodeURIComponent(blogKey)}.png`, fallbackUrl: null }
 }
 
 export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
@@ -174,7 +166,7 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
                 <td className={styles.tableCell}>
                   <span className={local.blogName}>
                     <SiteImage
-                      source={blogIcon(feed.homepageUrl)}
+                      source={blogIcon(feed.blogKey)}
                       className={local.blogIcon}
                       width={BLOG_ICON_SIZE}
                       height={BLOG_ICON_SIZE}
