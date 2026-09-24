@@ -37,6 +37,30 @@ export async function unfeatureEvent(eventId: string): Promise<ActionResult> {
   }
 }
 
+/**
+ * 판매처(지금은 티켓타코)를 지금 다시 읽는다. 매일 08:30 에 DAG 가 하는 일을 기다리지 않고 한 번 돌린다.
+ *
+ * 모은 목록은 사이트 저장소 파일이라 화면은 GitHub 캐시(최대 5분)가 풀린 뒤 바뀐다 — 그래서 결과를 숫자로 알린다.
+ */
+export async function refreshEvents(): Promise<ActionResult> {
+  await requireAdmin()
+
+  try {
+    const result = await collector.collectEvents()
+    if (result.skippedReason) return { ok: false, message: result.skippedReason }
+    revalidatePath('/events')
+    const unread = result.unreadPageCount > 0 ? `, 못 읽은 행사 ${result.unreadPageCount}건` : ''
+    return {
+      ok: true,
+      message: result.hasSiteChanged
+        ? `행사 ${result.readCount}건을 읽어 ${result.listedCount}건으로 갱신했습니다${unread}. 목록은 몇 분 안에 바뀝니다.`
+        : `행사 ${result.readCount}건을 읽었고 목록은 그대로입니다${unread}.`,
+    }
+  } catch (error) {
+    return { ok: false, message: describe(error) }
+  }
+}
+
 function describe(error: unknown): string {
   if (error instanceof CollectorRequestError) return error.message
   return `알 수 없는 오류: ${(error as Error).message}`

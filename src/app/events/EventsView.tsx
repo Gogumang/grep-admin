@@ -4,6 +4,7 @@ import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import * as styles from './events.css'
 import { EventFeatureControl } from './EventFeatureControl'
+import { RefreshEventsButton } from './RefreshEventsButton'
 
 /** YYYY-MM-DD → 9/14(월). 행사는 요일이 중요하다 — 평일이면 휴가를 내야 한다. */
 function shortDate(date: string): string {
@@ -85,7 +86,10 @@ export function EventsView({ events, today }: { events: SiteEvent[]; today: stri
 
   return (
     <>
-      <h1 className={console.pageTitle}>사이트에 나가는 행사 {onSite.length}건</h1>
+      <div className={styles.header}>
+        <h1 className={console.pageTitle}>사이트에 나가는 행사 {onSite.length}건</h1>
+        <RefreshEventsButton />
+      </div>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
         사이트 이벤트 페이지에는 여기서 올린 행사만 나갑니다. 아래 &lsquo;올리지 않은 행사&rsquo;는 collector가 매일 08:30
         티켓타코에서 모은 후보입니다.

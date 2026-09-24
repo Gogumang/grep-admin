@@ -26,6 +26,8 @@ const accessToken = configuredToken
 
 /** collector가 응답하지 않으면 화면 전체가 멈춘다 — 기다려주는 한계를 둔다. */
 const REQUEST_TIMEOUT_MILLISECONDS = 15_000
+/** 행사 수집은 판매처 행사 페이지 백여 개를 차례로 읽는다(수십 초) — 보통 요청보다 넉넉히 기다린다. */
+const COLLECT_EVENTS_TIMEOUT_MILLISECONDS = 120_000
 /** 행사 올리기는 남의 서버에서 이미지를 받아(최대 30초) 굽고 커밋까지 한다 — 보통 요청보다 넉넉히 기다린다. */
 const FEATURE_EVENT_TIMEOUT_MILLISECONDS = 60_000
 
@@ -163,6 +165,19 @@ export interface ReviewedJobDetail {
   job: ReviewedJob
   /** 마크다운. 본문을 읽지 못한 공고(라인 등)는 null 이다. */
   body: string | null
+}
+
+/** 행사 수집 결과. collector의 /api/events/collect 응답 모양이다. */
+export interface EventCollectionResult {
+  /** 판매처에서 읽은 행사 수(지난 행사·개발 외 행사 포함). */
+  readCount: number
+  unreadPageCount: number
+  /** 사이트 목록(events.json)에 실은 행사 수. 반영을 건너뛰었으면 0. */
+  listedCount: number
+  /** 사이트 파일이 실제로 바뀌었는지. 목록이 그대로면 false 가 정상이다. */
+  hasSiteChanged: boolean
+  /** 반영을 건너뛴 이유(판매처가 막혔을 때 등). */
+  skippedReason: string | null
 }
 
 /** daily 는 급상승 — 오늘 늘어난 별. collector 가 3시간마다 다시 쌓는다. */
@@ -400,4 +415,8 @@ export const collector = {
   /** 가장 최근 인기 저장소 차트. 아직 쌓인 차트가 없으면 undefined(204). */
   getRepositoryChart: (period: ChartPeriod) =>
     request<RepositoryChart | undefined>(`/api/admin/repository-chart?period=${period}`),
+
+  /** 행사 판매처를 지금 다시 읽어 사이트 목록을 맞춘다. 매일 08:30 DAG 가 하는 일을 바로 한 번 한다. */
+  collectEvents: () =>
+    request<EventCollectionResult>('/api/events/collect', { method: 'POST' }, COLLECT_EVENTS_TIMEOUT_MILLISECONDS),
 }

@@ -6,6 +6,9 @@ import { EventsView } from './EventsView'
 
 export const dynamic = 'force-dynamic'
 
+/** 갱신 버튼(서버 액션)이 판매처를 다 읽을 때까지 기다린다. 기본 제한 시간으로는 중간에 끊긴다. */
+export const maxDuration = 120
+
 /** 오늘(서울). 끝난 행사를 가르는 기준이다 — 서버가 UTC로 돌아서 그냥 쓰면 아침 아홉 시 전까지 하루가 밀린다. */
 function todayInSeoul(): string {
   return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date())

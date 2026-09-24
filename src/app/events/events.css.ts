@@ -46,3 +46,12 @@ export const fieldHint = style({ margin: 0, fontSize: vars.fontSize.sm, lineHeig
 
 /** 창을 닫지 않고 그 자리에서 알린다 — 닫으면 방금 넣은 주소가 사라진다. */
 export const fieldError = style({ margin: 0, fontSize: vars.fontSize.xs, lineHeight: 1.5, color: vars.color.brand })
+
+/** 제목과 갱신 버튼을 한 줄에. 버튼은 오른쪽 끝(블로그 추가 버튼과 같은 자리)에 둔다. */
+export const header = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: vars.space.md,
+  flexWrap: 'wrap',
+})
