@@ -145,7 +145,7 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
     <>
       {failure && <p className={styles.errorNotice}>{failure.message}</p>}
 
-      <div className={styles.formRow}>
+      <div className={`${styles.formRow} ${local.addRow}`}>
         <Button color="primary" variant="weak" size="small" onClick={openAddDialog}>
           추가
         </Button>
