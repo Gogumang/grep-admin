@@ -30,3 +30,19 @@ export const titleLink = style({
 })
 
 export const badges = style({ display: 'inline-flex', gap: vars.space.xs, marginLeft: vars.space.sm, verticalAlign: 'middle' })
+
+export const controls = style({ display: 'inline-flex', gap: vars.space.xs })
+
+/** 올리기 창 안 입력 칸. 다이얼로그가 좁아서(360px) 세로로 쌓는다. */
+export const fieldStack = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: vars.space.sm,
+  marginTop: vars.space.sm,
+  textAlign: 'left',
+})
+
+export const fieldHint = style({ margin: 0, fontSize: vars.fontSize.sm, lineHeight: 1.5, color: vars.color.inkMuted })
+
+/** 창을 닫지 않고 그 자리에서 알린다 — 닫으면 방금 넣은 주소가 사라진다. */
+export const fieldError = style({ margin: 0, fontSize: vars.fontSize.xs, lineHeight: 1.5, color: vars.color.brand })

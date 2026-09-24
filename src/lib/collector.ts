@@ -23,6 +23,8 @@ const accessToken = configuredToken
 
 /** collector가 응답하지 않으면 화면 전체가 멈춘다 — 기다려주는 한계를 둔다. */
 const REQUEST_TIMEOUT_MILLISECONDS = 15_000
+/** 행사 올리기는 남의 서버에서 이미지를 받아(최대 30초) 굽고 커밋까지 한다 — 보통 요청보다 넉넉히 기다린다. */
+const FEATURE_EVENT_TIMEOUT_MILLISECONDS = 60_000
 
 export interface BlogFeed {
   blogName: string
@@ -160,6 +162,13 @@ export interface ReviewedJobDetail {
   body: string | null
 }
 
+/** 이벤트 페이지에 올린 행사. collector의 /api/admin/events/featured 응답 모양이다. */
+export interface FeaturedEvent {
+  id: string
+  /** 사이트 기준 경로(/events/x.avif)나 R2 전체 주소. */
+  image: string
+}
+
 /** collector가 실패를 알려주는 모양. 그대로 화면에 옮긴다. */
 export interface CollectorError {
   error: string
@@ -175,14 +184,14 @@ export class CollectorRequestError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, timeoutMilliseconds = REQUEST_TIMEOUT_MILLISECONDS): Promise<T> {
   let response: Response
   try {
     response = await fetch(`${baseUrl}${path}`, {
       ...init,
       // 토큰은 서버에서만 실린다 — Server Actions로만 이 층을 부르므로 브라우저에 나가지 않는다.
       headers: { 'content-type': 'application/json', 'X-Collector-Token': accessToken, ...init?.headers },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MILLISECONDS),
+      signal: AbortSignal.timeout(timeoutMilliseconds),
       cache: 'no-store',
     })
   } catch (error) {
@@ -301,4 +310,18 @@ export const collector = {
 
   unpublishJobs: (jobIds: string[]) =>
     request<{ affectedJobCount: number }>('/api/admin/jobs/unpublish', { method: 'POST', body: JSON.stringify({ jobIds }) }),
+
+  /** 이벤트 페이지에 올린 행사. 저장소 파일을 바로 읽으면 5분 캐시라, 올리고 내린 직후가 어긋난다. */
+  listFeaturedEvents: () => request<FeaturedEvent[]>('/api/admin/events/featured'),
+
+  /** 이미지 주소의 그림을 collector가 받아 R2에 올린 뒤 이벤트 페이지 목록에 넣는다. */
+  featureEvent: (eventId: string, imageUrl: string) =>
+    request<FeaturedEvent>(
+      `/api/admin/events/${encodeURIComponent(eventId)}/feature`,
+      { method: 'POST', body: JSON.stringify({ imageUrl }) },
+      FEATURE_EVENT_TIMEOUT_MILLISECONDS,
+    ),
+
+  unfeatureEvent: (eventId: string) =>
+    request<{ removed: boolean }>(`/api/admin/events/${encodeURIComponent(eventId)}/feature`, { method: 'DELETE' }),
 }

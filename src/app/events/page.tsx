@@ -12,8 +12,8 @@ function todayInSeoul(): string {
 }
 
 /**
- * 티켓타코에서 모은 개발 행사. 읽기 전용이다 — 목록은 collector가 매일 통째로 다시 쓰고,
- * 사이트에 올릴 행사는 grep 저장소의 src/events/config/featured.ts 에 적는다.
+ * 티켓타코에서 모은 개발 행사. 목록은 collector가 매일 통째로 다시 쓰고,
+ * 이벤트 페이지에 올릴 행사는 여기서 사람이 고른다(자동으로 올라가는 행사는 없다).
  */
 export default async function EventsPage() {
   await requireAdmin()

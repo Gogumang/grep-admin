@@ -3,6 +3,7 @@ import type { SiteEvent } from '@/lib/events'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import * as styles from './events.css'
+import { EventFeatureControl } from './EventFeatureControl'
 
 /** YYYY-MM-DD → 9/14(월). 행사는 요일이 중요하다 — 평일이면 휴가를 내야 한다. */
 function shortDate(date: string): string {
@@ -59,6 +60,16 @@ function EventRow({ event, isEnded }: { event: SiteEvent; isEnded: boolean }) {
             .join(' · ')}
         />
       }
+      /*
+        끝난 행사는 올릴 수 없다 — 사이트가 끝난 행사를 알아서 뺀다. 올려 둔 채 끝난 행사는 목록 정리를 위해 내릴 수만 있다.
+      */
+      right={
+        isEnded ? (
+          event.isFeatured && <EventFeatureControl eventId={event.id} title={event.title} isFeatured endedOnly />
+        ) : (
+          <EventFeatureControl eventId={event.id} title={event.title} isFeatured={event.isFeatured} />
+        )
+      }
     />
   )
 }
@@ -66,17 +77,18 @@ function EventRow({ event, isEnded }: { event: SiteEvent; isEnded: boolean }) {
 /** 목록을 그리기만 한다. 오늘을 밖에서 받아, 끝난 행사를 가르는 기준을 호출하는 쪽이 정한다. */
 export function EventsView({ events, today }: { events: SiteEvent[]; today: string }) {
   const upcoming = events.filter((event) => event.endDate >= today)
+  // 사이트 이벤트 페이지와 같은 목록이다 — 다가오는 행사 중 올린 것만. 둘을 나란히 열어 대조할 수 있어야 한다.
+  const onSite = upcoming.filter((event) => event.isFeatured)
+  const notOnSite = upcoming.filter((event) => !event.isFeatured)
   // 끝난 행사는 최근에 끝난 것부터 — 방금 지나간 행사가 맨 아래 묻히지 않게 한다.
   const ended = events.filter((event) => event.endDate < today).reverse()
-  const featuredCount = upcoming.filter((event) => event.isFeatured).length
 
   return (
     <>
-      <h1 className={console.pageTitle}>
-        행사 {upcoming.length}건 · 사이트에 올림 {featuredCount}건
-      </h1>
+      <h1 className={console.pageTitle}>사이트에 나가는 행사 {onSite.length}건</h1>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
-        collector가 매일 08:30 티켓타코에서 모읍니다. 사이트에는 grep 저장소 featured.ts 에 적은 행사만 나갑니다.
+        사이트 이벤트 페이지에는 여기서 올린 행사만 나갑니다. 아래 &lsquo;올리지 않은 행사&rsquo;는 collector가 매일 08:30
+        티켓타코에서 모은 후보입니다.
       </p>
 
       {events.length === 0 ? (
@@ -90,16 +102,28 @@ export function EventsView({ events, today }: { events: SiteEvent[]; today: stri
       ) : (
         <>
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>다가오는 행사</h2>
+            <h2 className={styles.sectionTitle}>사이트에 나가는 행사 {onSite.length}</h2>
             <div className={shared.card}>
-              {upcoming.map((event) => (
-                <EventRow key={event.id} event={event} isEnded={false} />
-              ))}
+              {onSite.length === 0 ? (
+                <Result title="사이트에 올린 행사가 없어요" description="아래 후보에서 올리면 이벤트 페이지에 나가요." />
+              ) : (
+                onSite.map((event) => <EventRow key={event.id} event={event} isEnded={false} />)
+              )}
             </div>
           </section>
+          {notOnSite.length > 0 && (
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>올리지 않은 행사 {notOnSite.length}</h2>
+              <div className={shared.card}>
+                {notOnSite.map((event) => (
+                  <EventRow key={event.id} event={event} isEnded={false} />
+                ))}
+              </div>
+            </section>
+          )}
           {ended.length > 0 && (
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>끝난 행사</h2>
+              <h2 className={styles.sectionTitle}>끝난 행사 {ended.length}</h2>
               <div className={shared.card}>
                 {ended.map((event) => (
                   <EventRow key={event.id} event={event} isEnded />
