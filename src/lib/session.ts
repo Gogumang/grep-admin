@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from './supabase/server'
+import { readDeviceSession } from './deviceSession'
 
 /**
  * 어드민에 들어올 수 있는 GitHub 계정.
@@ -47,6 +48,18 @@ export function isAllowedAdmin(user: User): boolean {
  * Server Action은 경로 없이 불릴 수 있다. 데이터를 만지기 직전에 확인해야 한다.
  */
 export const requireAdmin = cache(async (): Promise<User> => {
+  const user = await requireAdminAccount()
+  // 쿠키가 있는지만 본다. 세션이 살아 있는지는 collector 가 매 요청에서 판단한다 —
+  // 여기서 막는 것은 go-runner 로 열지 않은 브라우저에 빈 화면 대신 안내를 보여주기 위해서다.
+  if (!(await readDeviceSession())) redirect('/device')
+  return user
+})
+
+/**
+ * 계정만 확인한다. 기기 세션을 여는 자리(/device, /device/connect)가 쓴다 —
+ * 거기서 기기 세션까지 요구하면 세션을 처음 여는 길이 막힌다.
+ */
+export const requireAdminAccount = cache(async (): Promise<User> => {
   const user = await getSessionUser()
   if (!user) redirect('/login')
   if (!isAllowedAdmin(user)) redirect('/login?error=not_allowed')

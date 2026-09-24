@@ -14,11 +14,14 @@ ICON_OVERRIDES.
 
 실행:  python3 scripts/fetch-blog-icons.py          (아이콘이 없는 블로그만)
        python3 scripts/fetch-blog-icons.py --force  (전부 다시)
-준비:  .env.local 의 COLLECTOR_BASE_URL, COLLECTOR_TOKEN (블로그 목록을 collector에서 읽는다)
+준비:  .env.local 의 COLLECTOR_BASE_URL, COLLECTOR_ADMIN_TOKEN (블로그 목록을 collector에서 읽는다)
+       + 환경변수 DEVICE_SESSION — collector 가 어드민 토큰에 기기 세션을 함께 요구한다.
+         go-runner 의 "어드민 열기"로 어드민을 연 뒤 브라우저 개발자 도구의 device_session 쿠키 값을 넣는다.
 결과:  public/blog-icons/<blogKey>.png  — 블로그를 추가하면 다시 돌려 커밋한다
 """
 
 import io
+import os
 import re
 import sys
 from html import unescape
@@ -68,16 +71,19 @@ ATTRIBUTE = re.compile(r'([\w-]+)\s*=\s*["\']([^"\']*)["\']')
 def read_env() -> dict[str, str]:
     env_file = ROOT / ".env.local"
     if not env_file.exists():
-        sys.exit(".env.local 이 없습니다. COLLECTOR_BASE_URL, COLLECTOR_TOKEN 이 필요합니다.")
+        sys.exit(".env.local 이 없습니다. COLLECTOR_BASE_URL, COLLECTOR_ADMIN_TOKEN 이 필요합니다.")
     pairs = (line.split("=", 1) for line in env_file.read_text().splitlines() if "=" in line and not line.startswith("#"))
     return {key.strip(): value.strip() for key, value in pairs}
 
 
 def list_feeds(session: requests.Session) -> list[dict]:
     env = read_env()
+    device_session = os.environ.get("DEVICE_SESSION")
+    if not device_session:
+        sys.exit("DEVICE_SESSION 이 없습니다. go-runner 로 어드민을 연 뒤 device_session 쿠키 값을 넣으세요.")
     response = session.get(
         f"{env['COLLECTOR_BASE_URL'].rstrip('/')}/api/feeds",
-        headers={"X-Collector-Token": env["COLLECTOR_TOKEN"]},
+        headers={"X-Collector-Token": env["COLLECTOR_ADMIN_TOKEN"], "X-Device-Session": device_session},
         timeout=REQUEST_TIMEOUT_SECONDS,
     )
     response.raise_for_status()

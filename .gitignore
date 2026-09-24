@@ -12,7 +12,7 @@ node_modules/
 
 # 환경변수 — 예시 파일(.env.example)까지 포함해 전부 올리지 않는다.
 # 필요한 키 목록조차 저장소에 남기지 않겠다는 선택이다.
-# (COLLECTOR_TOKEN, ADMIN_API_TOKEN, Supabase 키, ADMIN_ALLOWED_GITHUB_IDS)
+# (COLLECTOR_ADMIN_TOKEN, ADMIN_API_TOKEN, Supabase 키, ADMIN_ALLOWED_GITHUB_IDS)
 .env
 .env.*
 

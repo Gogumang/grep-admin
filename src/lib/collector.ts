@@ -4,19 +4,22 @@
  * 어드민은 저장소 파일을 직접 만지지 않는다 — 커밋 로직이 collector에만 있으면
  * 같은 일을 두 언어로 만들지 않아도 되고, GitHub 토큰도 한 곳에만 두면 된다.
  */
+import { readDeviceSession } from './deviceSession'
+
 const baseUrl = process.env.COLLECTOR_BASE_URL ?? 'http://localhost:8081'
 
 /**
- * collector가 모든 요청에 요구하는 접근 토큰. 기본값을 두지 않는다 —
+ * collector가 어드민에게 요구하는 접근 토큰. 기본값을 두지 않는다 —
  * 빠뜨리면 화면의 모든 동작이 401로 실패하는데, 버튼을 하나씩 눌러보고서야
  * 그 사실을 알게 된다. 모듈을 읽는 순간 실패하는 편이 낫다.
  *
- * collector의 collector.access.token 과 같은 값이어야 한다.
+ * collector의 collector.access.admin-token(COLLECTOR_ADMIN_TOKEN) 과 같은 값이어야 한다.
+ * 이 토큰만으로는 부족하다 — 등록된 Mac 의 go-runner 가 연 기기 세션이 함께 실려야 collector 가 받는다.
  */
-const configuredToken = process.env.COLLECTOR_TOKEN
+const configuredToken = process.env.COLLECTOR_ADMIN_TOKEN
 if (!configuredToken) {
   throw new Error(
-    'COLLECTOR_TOKEN 이 설정되지 않았습니다. collector의 collector.access.token 과 같은 값을 .env.local 에 넣으세요.',
+    'COLLECTOR_ADMIN_TOKEN 이 설정되지 않았습니다. collector의 collector.access.admin-token 과 같은 값을 .env.local 에 넣으세요.',
   )
 }
 const accessToken = configuredToken
@@ -185,12 +188,18 @@ export class CollectorRequestError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit, timeoutMilliseconds = REQUEST_TIMEOUT_MILLISECONDS): Promise<T> {
+  const deviceSession = await readDeviceSession()
   let response: Response
   try {
     response = await fetch(`${baseUrl}${path}`, {
       ...init,
       // 토큰은 서버에서만 실린다 — Server Actions로만 이 층을 부르므로 브라우저에 나가지 않는다.
-      headers: { 'content-type': 'application/json', 'X-Collector-Token': accessToken, ...init?.headers },
+      headers: {
+        'content-type': 'application/json',
+        'X-Collector-Token': accessToken,
+        ...(deviceSession ? { 'X-Device-Session': deviceSession } : {}),
+        ...init?.headers,
+      },
       signal: AbortSignal.timeout(timeoutMilliseconds),
       cache: 'no-store',
     })
@@ -212,6 +221,13 @@ async function request<T>(path: string, init?: RequestInit, timeoutMilliseconds 
 }
 
 export const collector = {
+  /** go-runner 가 브라우저로 넘긴 60초짜리 code 를 기기 세션으로 바꾼다. 한 번만 쓸 수 있다. */
+  redeemDeviceHandoff: (handoffCode: string) =>
+    request<{ deviceSessionId: string; expiresAt: string }>('/api/device/handoffs/redeem', {
+      method: 'POST',
+      body: JSON.stringify({ handoffCode }),
+    }),
+
   /**
    * 등록된 블로그 전부. 꺼둔 것도 함께 온다 — 어드민이 다시 켤 수 있어야 한다.
    *

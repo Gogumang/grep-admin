@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { clearDeviceSession } from '@/lib/deviceSession'
 
 /**
  * GitHub 로그인을 시작한다.
@@ -43,5 +44,7 @@ async function requestOrigin(): Promise<string> {
 export async function signOut() {
   const supabase = await createClient()
   await supabase.auth.signOut()
+  // 다른 계정으로 들어올 때 앞 사람의 기기 세션이 따라가지 않게 한다.
+  await clearDeviceSession()
   redirect('/login')
 }
