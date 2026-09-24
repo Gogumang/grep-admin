@@ -3,6 +3,8 @@
 import { type RefObject, useEffect, useOptimistic, useRef, useState, useTransition } from 'react'
 import { Button, Switch, TextField, useDialog, useToast } from '@/shared'
 import type { BlogFeed } from '@/lib/collector'
+import { SiteImage } from '@/components/SiteImage'
+import type { SiteImage as SiteImageSource } from '@/lib/site'
 import { addBlog, setBlogActive, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
 import * as local from './blogManager.css'
@@ -62,6 +64,28 @@ function AddBlogFields({ control }: { control: RefObject<AddBlogControl | null> 
       {error && <p className={local.fieldError}>{error}</p>}
     </div>
   )
+}
+
+/** 목록에서 회사를 알아보게 하는 아이콘 크기. 글자 한 줄 높이에 맞춘다. */
+const BLOG_ICON_SIZE = 20
+
+/**
+ * 블로그 옆에 붙일 회사 아이콘 주소.
+ *
+ * 사이트 루트의 favicon.ico를 먼저 받고, 없으면 구글 파비콘 서비스로 물러난다 —
+ * 아이콘을 <link rel="icon">으로만 알리고 루트에 두지 않는 곳이 있다.
+ * 홈페이지 주소가 깨져 있으면 아이콘 없이 회색 자리만 남긴다.
+ */
+function blogIcon(homepageUrl: string): SiteImageSource | null {
+  try {
+    const { origin, hostname } = new URL(homepageUrl)
+    return {
+      url: `${origin}/favicon.ico`,
+      fallbackUrl: `https://www.google.com/s2/favicons?domain=${hostname}&sz=${BLOG_ICON_SIZE * 2}`,
+    }
+  } catch {
+    return null
+  }
 }
 
 export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
@@ -147,7 +171,17 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
           <tbody>
             {shownFeeds.map((feed) => (
               <tr key={feed.blogKey} className={feed.active ? undefined : local.inactiveRow}>
-                <td className={styles.tableCell}>{feed.blogName}</td>
+                <td className={styles.tableCell}>
+                  <span className={local.blogName}>
+                    <SiteImage
+                      source={blogIcon(feed.homepageUrl)}
+                      className={local.blogIcon}
+                      width={BLOG_ICON_SIZE}
+                      height={BLOG_ICON_SIZE}
+                    />
+                    {feed.blogName}
+                  </span>
+                </td>
                 <td className={styles.tableCell}>
                   <span className={styles.truncatedUrl}>{feed.feedUrl}</span>
                 </td>
