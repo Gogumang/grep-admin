@@ -251,10 +251,6 @@ export const collector = {
   setPostHidden: (postId: string, hidden: boolean) =>
     request<void>(`/api/admin/posts/${postId}/hidden`, { method: 'PUT', body: JSON.stringify({ hidden }) }),
 
-  listPicks: () => request<{ pickUrls: string[] }>('/api/admin/picks'),
-
-  savePicks: (pickUrls: string[]) =>
-    request<void>('/api/admin/picks', { method: 'PUT', body: JSON.stringify({ pickUrls }) }),
 
   openCollectionRun: () =>
     request<{ runId: string; existingPostCount: number; feeds: BlogFeed[] }>('/api/collections', { method: 'POST' }),

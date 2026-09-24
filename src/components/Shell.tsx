@@ -17,13 +17,12 @@ import { GrepLogo } from './Logo'
 const GROUPS = [
   {
     key: 'posts',
-    label: '글',
+    label: '블로그',
     Icon: DocumentIcon,
     items: [
       { href: '/', label: '대시보드' },
       { href: '/review', label: '검증' },
       { href: '/posts', label: '글' },
-      { href: '/picks', label: '오늘의 픽' },
     ],
   },
   /*

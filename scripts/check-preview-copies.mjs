@@ -30,16 +30,8 @@ const siteRoot = process.env.GREP_SITE_PATH ?? resolve(adminRoot, '../grep')
  */
 const PAIRS = [
   {
-    copy: 'src/components/preview/todayPicks.css.ts',
-    origin: 'src/components/post/TodayPicks.css.ts',
-  },
-  {
     copy: 'src/components/preview/postBody.css.ts',
     origin: 'src/styles/post.css.ts',
-  },
-  {
-    copy: 'src/components/preview/picks.ts',
-    origin: 'src/service/picks.ts',
   },
 ]
 
