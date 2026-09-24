@@ -3,7 +3,14 @@ import type { ChartPeriod, RankedRepository, RepositoryChart } from '@/lib/colle
 import * as shared from '@/components/shared.css'
 import * as styles from './repositories.css'
 
-const PERIOD_LABEL: Record<ChartPeriod, string> = { weekly: '이번 주', monthly: '이번 달' }
+const PERIOD_LABEL: Record<ChartPeriod, string> = { daily: '오늘', weekly: '이번 주', monthly: '이번 달' }
+
+/** 차트가 비었을 때 언제 채워지는지. 급상승만 3시간마다 다시 쌓는다. */
+const COLLECTION_SCHEDULE: Record<ChartPeriod, string> = {
+  daily: '3시간마다',
+  weekly: '매일 07:40에',
+  monthly: '매일 07:40에',
+}
 
 /** 순위 변동. 오르면 ▲, 내리면 ▼, 그대로면 –, 지난 차트에 없었으면 NEW. 첫 차트는 비교할 것이 없어 비운다. */
 function Movement({ entry, hasPrevious }: { entry: RankedRepository; hasPrevious: boolean }) {
@@ -50,7 +57,7 @@ export function RepositoryChartView({ chart, period }: { chart: RepositoryChart 
         <Result
           figure={<img src="/illustrations/empty.png" alt="" width={100} height={100} />}
           title="아직 쌓인 차트가 없어요"
-          description={'매일 07:40에 GitHub에서 인기 저장소를 모아요.\n첫 차트가 쌓이면 여기에 나와요.'}
+          description={`${COLLECTION_SCHEDULE[period]} GitHub에서 인기 저장소를 모아요.\n첫 차트가 쌓이면 여기에 나와요.`}
         />
       </div>
     )

@@ -5,6 +5,7 @@ import { Tab } from '@/shared'
 import type { ChartPeriod } from '@/lib/collector'
 
 const PERIODS: { key: ChartPeriod; label: string }[] = [
+  { key: 'daily', label: '급상승 (오늘)' },
   { key: 'weekly', label: '주간 (1주)' },
   { key: 'monthly', label: '월간 (4주)' },
 ]

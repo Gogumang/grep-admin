@@ -165,7 +165,8 @@ export interface ReviewedJobDetail {
   body: string | null
 }
 
-export type ChartPeriod = 'weekly' | 'monthly'
+/** daily 는 급상승 — 오늘 늘어난 별. collector 가 3시간마다 다시 쌓는다. */
+export type ChartPeriod = 'weekly' | 'monthly' | 'daily'
 
 /** 인기 저장소 차트의 한 칸. collector의 /api/admin/repository-chart 응답 모양이다. */
 export interface RankedRepository {
@@ -185,7 +186,7 @@ export interface RankedRepository {
 }
 
 export interface RepositoryChart {
-  period: 'WEEKLY' | 'MONTHLY'
+  period: 'WEEKLY' | 'MONTHLY' | 'DAILY'
   /** YYYY-MM-DD */
   chartDate: string
   /** 비교한 지난 차트 날짜. 첫 차트면 null. */
