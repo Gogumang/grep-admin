@@ -1,38 +1,79 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { Button, Loader, Stepper, StepperRow, useToast } from '@/shared'
+import { BlogIcon } from '@/components/BlogIcon'
 import { collectOneFeed, commitCollection, startCollection, type FeedResult } from './actions'
 import * as styles from './CollectRunner.css'
 import * as shared from '@/components/shared.css'
 
-type Phase = 'idle' | 'collecting' | 'committing' | 'done'
-type StepState = 'waiting' | 'running' | 'done' | 'failed'
+export type Phase = 'idle' | 'listing' | 'collecting' | 'committing' | 'done'
+
+export interface CommitOutcome {
+  ok: boolean
+  message: string
+}
+
+export interface Blog {
+  blogKey: string
+  blogName: string
+}
+
+/** 줄 왼쪽 회사 아이콘. Stepper 번호 원과 같은 24px이다. */
+const BLOG_ICON_SIZE = 24
 
 /**
- * 단계 왼쪽 표시. 기다리는 단계는 번호, 도는 단계는 스피너, 끝난 단계는 체크, 실패는 ✕다 —
- * 번호만 두면 지금 어디까지 왔는지 설명을 읽어야 안다.
+ * 블로그가 20곳을 넘어서 TDS 기본 간격(0.1초)이면 마지막 줄이 2초 넘게 늦게 뜬다.
+ * 목록이 한꺼번에 떠오르는 느낌만 남기고 줄인다.
  */
-function StepMark({ number, state }: { number: 1 | 2 | 3; state: StepState }) {
-  if (state === 'running') return <StepperRow.AssetFrame content={<Loader size="small" label={`${number}단계 진행 중`} />} />
-  if (state === 'done') return <StepperRow.AssetFrame content={<span className={styles.markDone}>✓</span>} />
-  if (state === 'failed') return <StepperRow.AssetFrame content={<span className={styles.markFailed}>✕</span>} />
-  return <StepperRow.NumberIcon number={number} />
+const ROW_STAGGER_SECONDS = 0.03
+
+type RowState = 'waiting' | 'running' | 'done' | 'failed'
+
+function stateOf(outcome: { ok: boolean } | null | undefined, isRunning: boolean): RowState {
+  if (isRunning) return 'running'
+  if (!outcome) return 'waiting'
+  return outcome.ok ? 'done' : 'failed'
+}
+
+/** 오른쪽 상태 표시. 도는 중은 스피너, 끝나면 ✓, 실패는 ✕, 차례를 기다리면 비운다. */
+function StatusMark({ state }: { state: RowState }) {
+  if (state === 'running') return <Loader size="small" label="진행 중" />
+  if (state === 'done') return <span className={styles.markDone}>✓</span>
+  if (state === 'failed') return <span className={styles.markFailed}>✕</span>
+  return null
+}
+
+/** 저장 줄 왼쪽 그림. 블로그 줄과 달리 회사가 없어서 내려받기 모양을 둔다. */
+function SaveIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+      <path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function describe(result: FeedResult | undefined, isRunning: boolean): string {
+  if (isRunning) return '수집 중…'
+  if (!result) return '대기'
+  if (!result.ok) return result.message
+  const newPosts = result.newPostCount > 0 ? `새 글 ${result.newPostCount}개` : '새 글 없음'
+  return result.message ? `${newPosts} (${result.message})` : newPosts
 }
 
 export function CollectRunner() {
   const { openToast } = useToast()
   const [phase, setPhase] = useState<Phase>('idle')
-  const [totalBlogCount, setTotalBlogCount] = useState(0)
+  const [blogs, setBlogs] = useState<Blog[]>([])
   const [results, setResults] = useState<FeedResult[]>([])
-  /** 저장 단계의 결과. 실패도 단계 안에 남긴다 — 토스트는 3초 뒤 사라져 무엇이 잘못됐는지 다시 볼 수 없다. */
-  const [commitOutcome, setCommitOutcome] = useState<{ ok: boolean; message: string } | null>(null)
-  /** 시작부터 막힌 경우. 단계가 하나도 돌지 않았으니 단계 밖에 띄운다. */
+  /** 저장 단계의 결과. 실패도 줄 안에 남긴다 — 토스트는 3초 뒤 사라져 무엇이 잘못됐는지 다시 볼 수 없다. */
+  const [commitOutcome, setCommitOutcome] = useState<CommitOutcome | null>(null)
+  /** 시작부터 막힌 경우. 돌린 블로그가 없으니 목록 밖에 띄운다. */
   const [startError, setStartError] = useState<string | null>(null)
 
   async function run() {
-    setPhase('collecting')
-    setTotalBlogCount(0)
+    setPhase('listing')
+    setBlogs([])
     setResults([])
     setCommitOutcome(null)
     setStartError(null)
@@ -46,7 +87,8 @@ export function CollectRunner() {
       return
     }
 
-    setTotalBlogCount(start.blogs.length)
+    setBlogs(start.blogs)
+    setPhase('collecting')
 
     // 블로그를 하나씩 순서대로 돈다. 한꺼번에 던지면 상대 서버에 무례하고,
     // 어디서 막혔는지도 보이지 않는다.
@@ -62,48 +104,54 @@ export function CollectRunner() {
     setPhase('done')
   }
 
-  const isRunning = phase === 'collecting' || phase === 'committing'
-  const hasBlogList = totalBlogCount > 0
-  const progress = totalBlogCount === 0 ? 0 : Math.round((results.length / totalBlogCount) * 100)
-  const newPostCount = results.reduce((sum, result) => sum + result.newPostCount, 0)
-  const failures = results.filter((result) => !result.ok)
-  const blogsWithNewPosts = results.filter((result) => result.ok && result.newPostCount > 0)
+  const isBusy = phase === 'listing' || phase === 'collecting' || phase === 'committing'
 
-  const listState: StepState = hasBlogList ? 'done' : 'running'
-  const collectState: StepState = !hasBlogList ? 'waiting' : phase === 'collecting' ? 'running' : 'done'
-  const commitState: StepState =
-    phase === 'committing' ? 'running' : commitOutcome ? (commitOutcome.ok ? 'done' : 'failed') : 'waiting'
+  return (
+    <>
+      <div className={shared.formRow}>
+        <Button color="primary" variant="weak" size="small" onClick={run} disabled={isBusy}>
+          {isBusy ? '수집 중…' : '수집 실행'}
+        </Button>
+      </div>
 
-  let collectDescription: ReactNode = '블로그를 하나씩 돌며 새 글을 모읍니다.'
-  if (hasBlogList) {
-    collectDescription = (
-      <>
-        <div className={styles.progressBar}>
-          <div className={styles.progressFill} style={{ width: `${progress}%` }} />
-        </div>
-        <p className={styles.summary}>
-          {results.length}/{totalBlogCount} · 새 글 {newPostCount}개 · 실패 {failures.length}곳
+      {startError && <p className={shared.errorNotice}>{startError}</p>}
+
+      {phase === 'listing' && (
+        <p className={shared.mutedText}>
+          <Loader size="small" label="블로그 목록을 불러오는 중" /> 수집할 블로그를 불러오는 중…
         </p>
-        {blogsWithNewPosts.length > 0 && (
-          <p className={styles.summary}>
-            {blogsWithNewPosts.map((result) => `${result.blogName} ${result.newPostCount}`).join(' · ')}
-          </p>
-        )}
-        {/* 실패는 이유까지 남긴다 — 무엇을 고쳐야 하는지는 이유에 있다. */}
-        {failures.length > 0 && (
-          <ul className={styles.failureList}>
-            {failures.map((result) => (
-              <li key={result.blogKey}>
-                <span className={styles.failureName}>{result.blogName}</span> {result.message}
-              </li>
-            ))}
-          </ul>
-        )}
-      </>
-    )
-  }
+      )}
 
-  let commitDescription = '모은 글을 한 번에 저장합니다.'
+      {blogs.length > 0 && (
+        <CollectProgress phase={phase} blogs={blogs} results={results} commitOutcome={commitOutcome} />
+      )}
+    </>
+  )
+}
+
+/**
+ * 블로그마다 한 줄씩 — 어느 회사를 지금 돌고 있는지, 어디서 새 글이 나왔고 어디가 실패했는지를
+ * 한눈에 보려고 Stepper를 쓴다. 상태는 CollectRunner가 들고 여기는 그리기만 한다.
+ */
+export function CollectProgress({
+  phase,
+  blogs,
+  results,
+  commitOutcome,
+}: {
+  phase: Phase
+  blogs: Blog[]
+  results: FeedResult[]
+  commitOutcome: CommitOutcome | null
+}) {
+  const resultByBlog = new Map(results.map((result) => [result.blogKey, result]))
+  // 순서대로 돌기 때문에 지금 도는 블로그는 결과가 쌓인 수 바로 다음 자리다.
+  const runningBlogKey = phase === 'collecting' ? blogs[results.length]?.blogKey : undefined
+  const progress = blogs.length === 0 ? 0 : Math.round((results.length / blogs.length) * 100)
+  const newPostCount = results.reduce((sum, result) => sum + result.newPostCount, 0)
+  const failedCount = results.filter((result) => !result.ok).length
+
+  let commitDescription = '블로그를 다 돌면 모은 글을 한 번에 저장합니다.'
   if (phase === 'committing') {
     commitDescription = '글마다 썸네일을 그리고 원문 본문을 받아옵니다. 새 글이 많으면 몇 분 걸릴 수 있습니다.'
   } else if (commitOutcome) {
@@ -112,39 +160,38 @@ export function CollectRunner() {
 
   return (
     <>
-      <div className={shared.formRow}>
-        <Button color="primary" variant="weak" size="small" onClick={run} disabled={isRunning}>
-          {isRunning ? '수집 중…' : '수집 실행'}
-        </Button>
+      <div className={styles.progressBar}>
+        <div className={styles.progressFill} style={{ width: `${progress}%` }} />
       </div>
+      <p className={shared.mutedText} style={{ marginBottom: 12 }}>
+        {results.length}/{blogs.length} · 새 글 {newPostCount}개 · 실패 {failedCount}곳
+      </p>
 
-      {startError && <p className={shared.errorNotice}>{startError}</p>}
-
-      {phase !== 'idle' && (
-        <div className={`${shared.card} ${styles.stepperCard}`}>
-          <Stepper>
-            <StepperRow
-              left={<StepMark number={1} state={listState} />}
-              center={
-                <StepperRow.Texts
-                  type="A"
-                  title="블로그 목록 받기"
-                  description={hasBlogList ? `수집을 켜 둔 블로그 ${totalBlogCount}곳` : '수집할 블로그를 불러옵니다.'}
-                />
-              }
-            />
-            <StepperRow
-              left={<StepMark number={2} state={collectState} />}
-              center={<StepperRow.Texts type="A" title="블로그마다 새 글 모으기" description={collectDescription} />}
-            />
-            <StepperRow
-              left={<StepMark number={3} state={commitState} />}
-              center={<StepperRow.Texts type="A" title="한 번에 저장하기" description={commitDescription} />}
-              hideLine
-            />
-          </Stepper>
-        </div>
-      )}
+      <div className={`${shared.card} ${styles.stepperCard}`}>
+        <Stepper staggerDelay={ROW_STAGGER_SECONDS}>
+          {blogs.map((blog) => {
+            const isRunning = blog.blogKey === runningBlogKey
+            const result = resultByBlog.get(blog.blogKey)
+            return (
+              <StepperRow
+                key={blog.blogKey}
+                left={<StepperRow.AssetFrame content={<BlogIcon blogKey={blog.blogKey} size={BLOG_ICON_SIZE} />} />}
+                center={
+                  <StepperRow.Texts type="C" title={blog.blogName} description={describe(result, isRunning)} />
+                }
+                right={<StatusMark state={stateOf(result, isRunning)} />}
+              />
+            )
+          })}
+          <StepperRow
+            key="commit"
+            left={<StepperRow.AssetFrame content={<span className={styles.saveIcon}><SaveIcon /></span>} />}
+            center={<StepperRow.Texts type="C" title="한 번에 저장하기" description={commitDescription} />}
+            right={<StatusMark state={stateOf(commitOutcome, phase === 'committing')} />}
+            hideLine
+          />
+        </Stepper>
+      </div>
     </>
   )
 }

@@ -3,8 +3,7 @@
 import { type RefObject, useEffect, useOptimistic, useRef, useState, useTransition } from 'react'
 import { Button, Switch, TextField, useDialog, useToast } from '@/shared'
 import type { BlogFeed } from '@/lib/collector'
-import { SiteImage } from '@/components/SiteImage'
-import type { SiteImage as SiteImageSource } from '@/lib/site'
+import { BlogIcon } from '@/components/BlogIcon'
 import { addBlog, setBlogActive, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
 import * as local from './blogManager.css'
@@ -68,17 +67,6 @@ function AddBlogFields({ control }: { control: RefObject<AddBlogControl | null> 
 
 /** 목록에서 회사를 알아보게 하는 아이콘 크기. 글자 한 줄 높이에 맞춘다. */
 const BLOG_ICON_SIZE = 20
-
-/**
- * 블로그 옆에 붙일 회사 아이콘. scripts/fetch-blog-icons.py 가 받아 public/blog-icons 에 둔 것이다.
- *
- * 남의 사이트 favicon.ico를 화면에서 바로 부르지 않는 이유 — HTML을 주거나 404가 나거나
- * (Medium 블로그는) 전부 같은 Medium 로고가 나와서 회사를 알아볼 수 없었다.
- * 방금 추가해 아직 받지 않은 블로그는 회색 자리로 남는다 — 스크립트를 다시 돌려 채운다.
- */
-function blogIcon(blogKey: string): SiteImageSource {
-  return { url: `/blog-icons/${encodeURIComponent(blogKey)}.png`, fallbackUrl: null }
-}
 
 export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
   const { openToast } = useToast()
@@ -165,12 +153,7 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
               <tr key={feed.blogKey} className={feed.active ? undefined : local.inactiveRow}>
                 <td className={styles.tableCell}>
                   <span className={local.blogName}>
-                    <SiteImage
-                      source={blogIcon(feed.blogKey)}
-                      className={local.blogIcon}
-                      width={BLOG_ICON_SIZE}
-                      height={BLOG_ICON_SIZE}
-                    />
+                    <BlogIcon blogKey={feed.blogKey} size={BLOG_ICON_SIZE} />
                     {feed.blogName}
                   </span>
                 </td>

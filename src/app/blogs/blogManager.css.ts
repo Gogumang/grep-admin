@@ -39,21 +39,5 @@ export const blogName = style({
   gap: vars.space.sm,
 })
 
-/**
- * 회사 아이콘. 받지 못해도 같은 크기의 자리를 남겨 이름들의 시작점이 어긋나지 않게 한다.
- * 파비콘은 크기가 제각각이라 상자에 맞춰 줄인다. 회색 바탕은 받지 못해 남은 자리(div)에만 깐다 —
- * 투명한 파비콘 뒤에 깔면 아이콘마다 회색 테두리가 생긴다.
- */
-export const blogIcon = style({
-  flexShrink: 0,
-  width: 20,
-  height: 20,
-  borderRadius: 4,
-  objectFit: 'contain',
-  selectors: {
-    'div&': { backgroundColor: vars.color.surfaceSunken },
-  },
-})
-
 /** 추가 버튼은 표의 오른쪽 끝(수집 스위치 열)에 맞춘다. */
 export const addRow = style({ justifyContent: 'flex-end' })

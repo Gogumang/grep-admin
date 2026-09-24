@@ -21,27 +21,29 @@ export const progressFill = style({
   '@media': { '(prefers-reduced-motion: reduce)': { transition: 'none' } },
 })
 
-export const summary = style({ margin: 0 })
-
-export const failureList = style({
-  listStyle: 'none',
-  margin: `${vars.space.xs} 0 0`,
-  padding: 0,
-  fontSize: vars.fontSize.sm,
+/** 끝남·실패 표시. 오른쪽 칸 글자 한 줄 높이에 맞춘 원이다. */
+const mark = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 20,
+  height: 20,
+  borderRadius: vars.radius.full,
+  fontSize: vars.fontSize.xs,
+  fontWeight: vars.fontWeight.bold,
+  color: vars.color.onAccent,
 })
 
-export const failureName = style({ color: vars.color.brand, fontWeight: vars.fontWeight.medium })
+export const markDone = style([mark, { background: vars.color.accent }])
+export const markFailed = style([mark, { background: vars.color.brand }])
 
-/** 체크·✕는 번호 원과 같은 24px 자리에 채워 그린다 — 단계마다 표시 크기가 다르면 선이 어긋나 보인다. */
-const mark = style({
+/** 저장 줄 그림. 번호 원과 같은 색으로 채워 블로그 아이콘들과 구분한다. */
+export const saveIcon = style({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   width: '100%',
   height: '100%',
-  fontSize: vars.fontSize.sm,
-  fontWeight: vars.fontWeight.bold,
+  background: vars.color.accentSoft,
+  color: vars.color.accent,
 })
-
-export const markDone = style([mark, { background: vars.color.accent, color: vars.color.onAccent }])
-export const markFailed = style([mark, { background: vars.color.brand, color: vars.color.onAccent }])
