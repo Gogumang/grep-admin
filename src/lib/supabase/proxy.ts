@@ -32,15 +32,19 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
-  // createServerClient와 getUser 사이에 코드를 넣지 않는다.
+  // createServerClient와 getClaims 사이에 코드를 넣지 않는다.
   // 순서가 어긋나면 사용자가 무작위로 로그아웃되고, 원인을 찾기가 아주 어렵다.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  //
+  // getUser가 아니라 getClaims다 — 이 프로젝트는 비대칭 서명 키(ES256)를 써서 getClaims가 JWT 서명을
+  // 공개 키로 직접 검증하고 Supabase에 묻지 않는다. proxy는 모든 요청에서 돌기 때문에 getUser를 쓰면
+  // 누를 때마다 Supabase 왕복이 하나씩 붙는다. 세션이 서버에서 끊겼는지까지 보는 확인은
+  // requireAdmin(getUser)이 한 번 더 한다 — 여기는 비로그인 차단만 맡는다.
+  const { data } = await supabase.auth.getClaims()
+  const isSignedIn = Boolean(data?.claims)
 
   const isPublicPath = PUBLIC_PATH_PREFIXES.some((prefix) => request.nextUrl.pathname.startsWith(prefix))
 
-  if (!user && !isPublicPath) {
+  if (!isSignedIn && !isPublicPath) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     loginUrl.search = ''
