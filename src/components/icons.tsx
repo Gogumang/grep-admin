@@ -74,3 +74,13 @@ export function MenuIcon({ size, strokeWidth }: IconProps) {
     </Glyph>
   )
 }
+
+/** 행사 갈래 — 달력 */
+export function CalendarIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <Glyph size={size} strokeWidth={strokeWidth}>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+      <path d="M3.5 10h17M8 3v4M16 3v4" />
+    </Glyph>
+  )
+}
