@@ -220,7 +220,38 @@ async function request<T>(path: string, init?: RequestInit, timeoutMilliseconds 
   return (await response.json()) as T
 }
 
+/** 어드민을 열 수 있는 Mac. configuration 은 collector 설정(COLLECTOR_DEVICE_KEYS)으로 등록돼 화면에서 지울 수 없다. */
+export interface ManagedDevice {
+  thumbprint: string
+  name: string
+  source: 'configuration' | 'approved'
+  registeredAt: string | null
+  /** go-runner 가 마지막으로 신호를 보낸 시각. collector 가 다시 뜬 뒤로는 비어 있을 수 있다. */
+  lastSeenAt: string | null
+  /** 지금 이 어드민 세션을 연 기기인가 */
+  isCurrent: boolean
+}
+
+/** go-runner 가 보낸 등록 요청. 10분 안에 승인하지 않으면 사라진다. */
+export interface DeviceEnrollmentRequest {
+  thumbprint: string
+  name: string
+  requestedAt: string
+}
+
 export const collector = {
+  listDevices: () =>
+    request<{ devices: ManagedDevice[]; enrollmentRequests: DeviceEnrollmentRequest[] }>('/api/admin/devices'),
+
+  approveDevice: (thumbprint: string) =>
+    request<void>(`/api/admin/devices/${encodeURIComponent(thumbprint)}/approve`, { method: 'POST' }),
+
+  rejectDeviceEnrollment: (thumbprint: string) =>
+    request<void>(`/api/admin/devices/${encodeURIComponent(thumbprint)}/enrollment`, { method: 'DELETE' }),
+
+  removeDevice: (thumbprint: string) =>
+    request<void>(`/api/admin/devices/${encodeURIComponent(thumbprint)}`, { method: 'DELETE' }),
+
   /** go-runner 가 브라우저로 넘긴 60초짜리 code 를 기기 세션으로 바꾼다. 한 번만 쓸 수 있다. */
   redeemDeviceHandoff: (handoffCode: string) =>
     request<{ deviceSessionId: string; expiresAt: string }>('/api/device/handoffs/redeem', {

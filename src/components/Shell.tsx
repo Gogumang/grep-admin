@@ -51,6 +51,7 @@ const GROUPS = [
     items: [
       { href: '/blogs', label: '블로그' },
       { href: '/collect', label: '수집 실행' },
+      { href: '/devices', label: '기기' },
     ],
   },
   // as const — 튜플로 굳혀야 GROUPS[0] 과 items[0] 이 "없을 수도 있는 값"이 되지 않는다.
