@@ -84,3 +84,12 @@ export function CalendarIcon({ size, strokeWidth }: IconProps) {
     </Glyph>
   )
 }
+
+/** GitHub 갈래 — 별 */
+export function StarIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <Glyph size={size} strokeWidth={strokeWidth}>
+      <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />
+    </Glyph>
+  )
+}

@@ -165,6 +165,34 @@ export interface ReviewedJobDetail {
   body: string | null
 }
 
+export type ChartPeriod = 'weekly' | 'monthly'
+
+/** 인기 저장소 차트의 한 칸. collector의 /api/admin/repository-chart 응답 모양이다. */
+export interface RankedRepository {
+  rank: number
+  /** 지난 차트의 순위. 지난 차트에 없었으면 null(NEW). */
+  previousRank: number | null
+  repository: {
+    /** owner/name */
+    fullName: string
+    url: string
+    description: string | null
+    language: string | null
+    totalStars: number
+    /** 기간 동안 늘어난 별. 순위의 기준이다. */
+    starsGained: number
+  }
+}
+
+export interface RepositoryChart {
+  period: 'WEEKLY' | 'MONTHLY'
+  /** YYYY-MM-DD */
+  chartDate: string
+  /** 비교한 지난 차트 날짜. 첫 차트면 null. */
+  previousChartDate: string | null
+  entries: RankedRepository[]
+}
+
 /** 이벤트 페이지에 올린 행사. collector의 /api/admin/events/featured 응답 모양이다. */
 export interface FeaturedEvent {
   id: string
@@ -367,4 +395,8 @@ export const collector = {
 
   unfeatureEvent: (eventId: string) =>
     request<{ removed: boolean }>(`/api/admin/events/${encodeURIComponent(eventId)}/feature`, { method: 'DELETE' }),
+
+  /** 가장 최근 인기 저장소 차트. 아직 쌓인 차트가 없으면 undefined(204). */
+  getRepositoryChart: (period: ChartPeriod) =>
+    request<RepositoryChart | undefined>(`/api/admin/repository-chart?period=${period}`),
 }
