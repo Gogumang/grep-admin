@@ -218,8 +218,8 @@ export const main = style({
   flexDirection: 'column',
   minHeight: 0,
   overflowY: 'auto',
+  // 폭을 가두지 않는다 — 1100px 에 가두면 넓은 화면에서 오른쪽 절반이 비었다. 읽기 좋은 줄 폭은 글 미리보기가 스스로 잡는다.
   padding: `${vars.space.xl} ${vars.space.xxl} ${vars.space.xxxl}`,
-  maxWidth: 1100,
   '@media': {
     '(max-width: 900px)': { padding: vars.space.lg },
   },
@@ -327,9 +327,3 @@ export const dangerButton = style([
   button,
   { background: 'transparent', color: vars.color.brand },
 ])
-
-/**
- * 화면을 넓게 쓰는 페이지. 검토처럼 목록·미리보기가 폭을 그대로 쓰는 자리는
- * 1100px 에 가둘 이유가 없다 — 읽기 좋은 줄 폭은 안쪽 미리보기가 스스로 잡는다.
- */
-export const mainWide = style({ maxWidth: 'none' })
