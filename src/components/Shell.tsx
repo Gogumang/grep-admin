@@ -42,7 +42,10 @@ const GROUPS = [
     key: 'events',
     label: '행사',
     Icon: CalendarIcon,
-    items: [{ href: '/events', label: '행사 일정' }],
+    items: [
+      { href: '/events', label: '행사 일정' },
+      { href: '/events/sources', label: '수집처' },
+    ],
   },
   {
     key: 'github',

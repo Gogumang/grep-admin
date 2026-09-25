@@ -25,7 +25,7 @@ export function RefreshEventsButton() {
         })
       }
     >
-      {isPending ? '티켓타코에서 가져오는 중…' : '티켓타코에서 다시 가져오기'}
+      {isPending ? '판매처에서 가져오는 중…' : '판매처에서 다시 가져오기'}
     </Button>
   )
 }

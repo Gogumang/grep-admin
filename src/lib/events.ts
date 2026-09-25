@@ -2,7 +2,7 @@ import 'server-only'
 import { collector } from './collector'
 
 /**
- * 사이트 이벤트 페이지가 읽는 행사 목록. collector가 매일 티켓타코를 읽어 grep 저장소에 쓴 것이다.
+ * 사이트 이벤트 페이지가 읽는 행사 목록. collector가 매일 판매처(티켓타코·이벤터스)를 읽어 grep 저장소에 쓴 것이다.
  *
  * 모은 행사 목록은 저장소 파일을 바로 읽는다. 행사는 DB에 없고(collector가 매일 통째로 다시 쓴다)
  * 저장소가 공개라 토큰도 필요 없다.
@@ -16,7 +16,7 @@ const REQUEST_TIMEOUT_MS = 10_000
 const REVALIDATE_SECONDS = 300
 
 export interface SiteEvent {
-  /** 티켓타코 행사 코드. */
+  /** 티켓타코는 행사 코드, 이벤터스는 eventus-{번호}. */
   id: string
   title: string
   url: string
@@ -31,6 +31,8 @@ export interface SiteEvent {
   isOnline: boolean
   lowestPrice: number | null
   highestPrice: number | null
+  /** 판매처. collector 가 이 필드를 싣기 전의 파일에는 없고, 그때는 티켓타코뿐이었다. */
+  source?: '티켓타코' | '이벤터스'
   /** 사이트 이벤트 페이지에 실제로 나가는 행사인가 (featured.ts 에 적힌 것). */
   isFeatured: boolean
   /** 사이트에 올린 행사의 이미지. 올리지 않은 행사는 null. */

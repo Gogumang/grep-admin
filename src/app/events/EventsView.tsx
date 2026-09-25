@@ -43,6 +43,9 @@ function EventRow({ event, isEnded }: { event: SiteEvent; isEnded: boolean }) {
                 {event.title}
               </a>
               <span className={styles.badges}>
+                <Badge color={event.source === '이벤터스' ? 'teal' : 'elephant'} variant="weak" size="xsmall">
+                  {event.source ?? '티켓타코'}
+                </Badge>
                 {event.isFeatured && (
                   <Badge color="blue" variant="weak" size="xsmall">
                     사이트에 올림
@@ -92,7 +95,7 @@ export function EventsView({ events, today }: { events: SiteEvent[]; today: stri
       </div>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
         사이트 이벤트 페이지에는 여기서 올린 행사만 나갑니다. 아래 &lsquo;올리지 않은 행사&rsquo;는 collector가 매일 08:30
-        티켓타코에서 모은 후보입니다.
+        판매처(티켓타코·이벤터스)에서 모은 후보입니다.
       </p>
 
       {events.length === 0 ? (
@@ -100,7 +103,7 @@ export function EventsView({ events, today }: { events: SiteEvent[]; today: stri
           <Result
             figure={<img src="/illustrations/empty.png" alt="" width={100} height={100} />}
             title="모은 행사가 없어요"
-            description="collector가 티켓타코에서 행사를 모으면 여기에 나와요."
+            description="collector가 판매처에서 행사를 모으면 여기에 나와요."
           />
         </div>
       ) : (

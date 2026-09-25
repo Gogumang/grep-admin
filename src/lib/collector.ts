@@ -309,7 +309,36 @@ export interface CompanySummary {
   collectedAt: string | null
 }
 
+/** 판매처를 한 번 읽은 기록. isCollected 가 false 면 못 읽어 이미 실린 행사를 그대로 둔 날이다. */
+export interface EventSourceRun {
+  source: 'TICKETA' | 'EVENTUS'
+  ranAt: string
+  isCollected: boolean
+  /** 판매처에서 읽은 행사(지난 행사·개발 외 포함) */
+  readCount: number
+  unreadCount: number
+  endedCount: number
+  offTopicCount: number
+  /** 다른 판매처에 같은 행사가 있어 뺀 수 */
+  duplicateCount: number
+  listedCount: number
+  message: string | null
+}
+
+/** 행사 수집처 하나. collector 의 /api/admin/event-sources 응답 모양이다. */
+export interface EventSourceSummary {
+  key: string
+  label: string
+  homepageUrl: string
+  /** 지금 사이트에 실린 이 판매처 행사 수 */
+  listedNow: number
+  /** 최근 것부터 */
+  recentRuns: EventSourceRun[]
+}
+
 export const collector = {
+  listEventSources: () => request<EventSourceSummary[]>('/api/admin/event-sources'),
+
   listCompanySummaries: () => request<CompanySummary[]>('/api/admin/company-repositories'),
 
   listCompanyRepositories: (login: string) =>

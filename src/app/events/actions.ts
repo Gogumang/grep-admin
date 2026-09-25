@@ -38,7 +38,7 @@ export async function unfeatureEvent(eventId: string): Promise<ActionResult> {
 }
 
 /**
- * 판매처(지금은 티켓타코)를 지금 다시 읽는다. 매일 08:30 에 DAG 가 하는 일을 기다리지 않고 한 번 돌린다.
+ * 판매처(티켓타코·이벤터스)를 지금 다시 읽는다. 매일 08:30 에 DAG 가 하는 일을 기다리지 않고 한 번 돌린다.
  *
  * 모은 목록은 사이트 저장소 파일이라 화면은 GitHub 캐시(최대 5분)가 풀린 뒤 바뀐다 — 그래서 결과를 숫자로 알린다.
  */
@@ -47,6 +47,8 @@ export async function refreshEvents(): Promise<ActionResult> {
 
   try {
     const result = await collector.collectEvents()
+    // 못 읽은 날에도 판매처별 기록은 남으므로 수집처 화면은 늘 새로 그린다.
+    revalidatePath('/events/sources')
     if (result.skippedReason) return { ok: false, message: result.skippedReason }
     revalidatePath('/events')
     const unread = result.unreadPageCount > 0 ? `, 못 읽은 행사 ${result.unreadPageCount}건` : ''
