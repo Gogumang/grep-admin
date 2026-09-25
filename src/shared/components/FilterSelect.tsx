@@ -15,9 +15,11 @@ export interface FilterSelectProps {
   /** 고른 값. null이면 좁히지 않은 상태다. */
   value: string | null
   onChange: (value: string | null) => void
+  /** 맨 위에 "전체"(null) 줄을 둘지. 늘 하나를 골라 둬야 하는 필터(회사 저장소 등)는 끈다. 기본 true. */
+  hasAllOption?: boolean
 }
 
-/** 목록 맨 위의 "전체" 줄. 초기화 버튼이 없으니 좁힌 것을 푸는 길은 이 줄뿐이다. */
+/** 목록 맨 위의 "전체" 줄. 초기화 버튼이 없으니 좁힌 것을 푸는 길은 이 줄뿐이다 (hasAllOption). */
 const ALL_LABEL = '전체'
 
 /**
@@ -30,7 +32,7 @@ const ALL_LABEL = '전체'
  * 네이티브 <select>를 쓰지 않은 이유: 펼친 목록의 모양을 CSS로 바꿀 수 없어 OS 메뉴가 그대로 뜬다.
  * 대신 listbox 역할과 방향키 이동을 직접 붙였다.
  */
-export function FilterSelect({ label, options, value, onChange }: FilterSelectProps) {
+export function FilterSelect({ label, options, value, onChange, hasAllOption = true }: FilterSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -38,8 +40,10 @@ export function FilterSelect({ label, options, value, onChange }: FilterSelectPr
   const listRef = useRef<HTMLUListElement>(null)
   const baseId = useId()
 
-  // 0번 줄은 "전체"(null)다. 나머지는 options를 한 칸씩 밀어 둔다.
-  const rows: { value: string | null; label: string }[] = [{ value: null, label: ALL_LABEL }, ...options]
+  // "전체"(null)를 두면 0번 줄이고 나머지는 한 칸씩 밀린다.
+  const rows: { value: string | null; label: string }[] = hasAllOption
+    ? [{ value: null, label: ALL_LABEL }, ...options]
+    : options
   const selectedOption = options.find((option) => option.value === value)
 
   function open() {

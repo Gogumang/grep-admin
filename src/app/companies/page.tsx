@@ -4,6 +4,7 @@ import { Result } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import * as chart from '../repositories/repositories.css'
+import { CompanySelect } from './CompanySelect'
 import * as styles from './companies.css'
 
 export const dynamic = 'force-dynamic'
@@ -56,21 +57,13 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
     <>
       <h1 className={console.pageTitle}>회사 저장소 · {summaries.length}곳</h1>
 
-      {/* 회사는 로고와 이름만 — 고르는 자리다. 숫자(저장소 수·별 합계)는 고르는 데 쓰이지 않았다. */}
-      <ul className={styles.companyGrid}>
-        {summaries.map((summary) => (
-          <li key={summary.login}>
-            <a
-              className={`${styles.companyCard} ${summary.login === selected?.login ? styles.companyCardSelected : ''}`}
-              href={`/companies?org=${encodeURIComponent(summary.login)}`}
-              aria-current={summary.login === selected?.login ? 'true' : undefined}
-            >
-              <img className={styles.companyLogo} src={organizationLogo(summary.login)} alt="" width={32} height={32} loading="lazy" />
-              <span className={styles.companyName}>{summary.company}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
+      {/* 회사가 스무 곳을 넘어 카드로 늘어놓으면 화면 절반을 차지한다. 칩 하나를 눌러 고르게 둔다. */}
+      <div className={styles.filterBar}>
+        <CompanySelect
+          companies={summaries.map(({ login, company }) => ({ login, company }))}
+          selectedLogin={selected?.login ?? null}
+        />
+      </div>
 
       {selected && (
         <>

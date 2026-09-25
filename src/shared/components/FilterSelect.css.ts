@@ -1,8 +1,11 @@
 import { style } from '@vanilla-extract/css'
 import { vars } from '@/styles/contract.css'
 
-/** 트리거와 팝오버를 한 덩어리로 묶는다 — 팝오버를 트리거 바로 아래에 붙이는 기준점이다. */
-export const root = style({ position: 'relative', display: 'inline-flex' })
+/**
+ * 트리거와 팝오버를 한 덩어리로 묶는다 — 팝오버를 트리거 바로 아래에 붙이는 기준점이다.
+ * flex 부모 안에서 세로로 늘어나면 top: 100%가 부모 바닥을 가리켜 팝오버가 멀리 떨어진다. 그래서 늘어나지 않게 막는다.
+ */
+export const root = style({ position: 'relative', display: 'inline-flex', alignSelf: 'flex-start' })
 
 /**
  * 필터 칩. 토스증권 스크리너 필터 칩의 치수(높이 28, 글자 13/600, 모서리 7)를 따랐다.

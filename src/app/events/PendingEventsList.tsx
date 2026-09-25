@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { Badge, Button, Checkbox, ListRow, useToast } from '@/shared'
+import { Badge, Button, Checkbox, FilterSelect, ListRow, useToast } from '@/shared'
 import type { EventCandidate } from '@/lib/collector'
 import * as review from '../review/ReviewWorkbench.css'
 import * as styles from '../jobs/jobReview.css'
@@ -35,11 +35,7 @@ export function PendingEventsList({ events }: { events: EventCandidate[] }) {
   const [failure, setFailure] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const sources = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const event of events) counts.set(event.source, (counts.get(event.source) ?? 0) + 1)
-    return [...counts.entries()]
-  }, [events])
+  const sources = useMemo(() => [...new Set(events.map((event) => event.source))], [events])
 
   const visibleEvents = source ? events.filter((event) => event.source === source) : events
   // 판매처를 바꿔도 고른 것은 남긴다. 처리 대상은 지금 보이는 행사로만 — 안 보이는 것을 함께 올리면 놀란다.
@@ -92,14 +88,12 @@ export function PendingEventsList({ events }: { events: EventCandidate[] }) {
   return (
     <div className={review.listPanel}>
       <div className={styles.filterBar}>
-        <Button size="small" color={source === null ? 'primary' : 'light'} onClick={() => setSource(null)}>
-          전체 {events.length}
-        </Button>
-        {sources.map(([name, count]) => (
-          <Button key={name} size="small" color={source === name ? 'primary' : 'light'} onClick={() => setSource(name)}>
-            {name} {count}
-          </Button>
-        ))}
+        <FilterSelect
+          label="판매처"
+          options={sources.map((name) => ({ value: name, label: name }))}
+          value={source}
+          onChange={setSource}
+        />
       </div>
 
       <div className={styles.actionBar}>
