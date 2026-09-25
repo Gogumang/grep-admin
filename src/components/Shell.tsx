@@ -23,6 +23,7 @@ const GROUPS = [
       { href: '/', label: '대시보드' },
       { href: '/review', label: '검증' },
       { href: '/posts', label: '글' },
+      { href: '/blogs', label: '블로그' },
     ],
   },
   /*
@@ -62,7 +63,6 @@ const GROUPS = [
     label: '관리',
     Icon: SlidersIcon,
     items: [
-      { href: '/blogs', label: '블로그' },
       { href: '/collect', label: '수집 실행' },
       { href: '/devices', label: '기기' },
       { href: '/admins', label: '허용 계정' },
