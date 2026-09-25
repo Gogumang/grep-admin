@@ -334,6 +334,8 @@ export interface EventSourceSummary {
   listedNow: number
   /** 최근 것부터 */
   recentRuns: EventSourceRun[]
+  /** 끈 판매처는 매일 수집에서 빠진다. */
+  enabled: boolean
 }
 
 /** 검증을 기다리는 행사. collector 의 /api/admin/events/candidates/pending 응답 모양이다. 날짜·시각은 한국 기준. */
@@ -446,6 +448,12 @@ export const collector = {
     }),
 
   listEventSources: () => request<EventSourceSummary[]>('/api/admin/event-sources'),
+
+  setEventSourceEnabled: (key: string, enabled: boolean) =>
+    request<{ key: string; label: string; enabled: boolean }>(`/api/admin/event-sources/${encodeURIComponent(key)}/enabled`, {
+      method: 'PUT',
+      body: JSON.stringify({ enabled }),
+    }),
 
   listCompanySummaries: () => request<CompanySummary[]>('/api/admin/company-repositories'),
 

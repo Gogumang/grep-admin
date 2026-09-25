@@ -7,5 +7,3 @@ export const sourceLink = style({
   textDecoration: 'none',
   selectors: { '&:hover': { textDecoration: 'underline' } },
 })
-
-export const runCell = style({ display: 'inline-flex', alignItems: 'center', gap: vars.space.sm })
