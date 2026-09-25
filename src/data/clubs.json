@@ -6,210 +6,147 @@
       "name": "SOPT",
       "siteUrl": "https://sopt.org",
       "recruitUrl": "https://sopt.org/recruit",
-      "cadence": "연 2회 (3월, 8~9월)",
-      "method": "auto",
-      "howToRead": "공개 JSON API (기수·접수 시작·마감 시각)",
-      "note": null
+      "method": "auto"
     },
     {
       "key": "depromeet",
       "name": "디프만",
       "siteUrl": "https://depromeet.com",
       "recruitUrl": "https://depromeet.com/recruit",
-      "cadence": "연 2회 (2월, 7~10월)",
-      "method": "auto",
-      "howToRead": "페이지 텍스트 (서버가 그린 HTML)",
-      "note": null
+      "method": "auto"
     },
     {
       "key": "dnd",
       "name": "DND",
       "siteUrl": "https://dnd.ac",
       "recruitUrl": "https://dnd.ac",
-      "cadence": "연 2회 (6월, 12월)",
-      "method": "auto",
-      "howToRead": "페이지에 심긴 JSON (eventStatus)",
-      "note": null
+      "method": "auto"
     },
     {
       "key": "nexters",
       "name": "넥스터즈",
       "siteUrl": "https://nexters.co.kr",
       "recruitUrl": "https://nexters.co.kr/recruit",
-      "cadence": "연 2회 (5월, 11월)",
-      "method": "auto",
-      "howToRead": "페이지 텍스트",
-      "note": null
+      "method": "auto"
     },
     {
       "key": "kusitms",
       "name": "큐시즘",
       "siteUrl": "https://kusitms.com",
       "recruitUrl": "https://kusitms.com/recruit",
-      "cadence": "연 2회 (1월, 7월)",
-      "method": "draft",
-      "howToRead": "페이지 텍스트 — 연도를 추론해야 함",
-      "note": null
+      "method": "draft"
     },
     {
       "key": "yapp",
       "name": "YAPP",
       "siteUrl": "https://yapp.co.kr",
       "recruitUrl": "https://yapp.co.kr/recruit",
-      "cadence": "연 2회 (4월, 10월)",
-      "method": "draft",
-      "howToRead": "정적 HTML 텍스트 — 연도·기수 없음",
-      "note": null
+      "method": "draft"
     },
     {
       "key": "sipe",
       "name": "SIPE",
       "siteUrl": "https://sipe.team",
       "recruitUrl": "https://sipe.team/recruit",
-      "cadence": "연 1회 (12~1월)",
-      "method": "draft",
-      "howToRead": "페이지 텍스트 — 연도 없음",
-      "note": null
+      "method": "draft"
     },
     {
       "key": "pirogramming",
       "name": "피로그래밍",
       "siteUrl": "https://pirogramming.com",
       "recruitUrl": "https://pirogramming.com",
-      "cadence": "연 2회 (5~6월, 11~12월)",
-      "method": "draft",
-      "howToRead": "정적 HTML 텍스트",
-      "note": null
+      "method": "draft"
     },
     {
       "key": "mashup",
       "name": "Mash-Up",
       "siteUrl": "https://mash-up.kr",
       "recruitUrl": "https://recruit.mash-up.kr",
-      "cadence": "연 1회 (1~2월)",
-      "method": "draft",
-      "howToRead": "페이지 JSON — 비모집 때는 빈 일정",
-      "note": "모집 기간이 아닐 때 화면에 오늘 날짜가 채워진다 — 화면 날짜를 믿지 않는다"
+      "method": "draft"
     },
     {
       "key": "cotato",
       "name": "코테이토",
       "siteUrl": "https://cotato.kr",
       "recruitUrl": "https://cotato.kr/recruit",
-      "cadence": "연 2회 (2월, 8월)",
-      "method": "manual",
-      "howToRead": "날짜 없음 — 알림 신청 버튼만",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "likelion",
       "name": "멋쟁이사자처럼 대학",
       "siteUrl": "https://likelion.university",
       "recruitUrl": "https://likelion.university",
-      "cadence": "연 1회 (학교별 2~3월)",
-      "method": "manual",
-      "howToRead": "학교별 모집",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "umc",
       "name": "UMC",
       "siteUrl": "https://umc.makeus.in",
       "recruitUrl": "https://umc.makeus.in/recruitment",
-      "cadence": "연 2회",
-      "method": "manual",
-      "howToRead": "학교별 모집 · 구글 폼",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "gdgoc",
       "name": "GDGoC",
       "siteUrl": "https://gdg.community.dev",
       "recruitUrl": "https://gdg.community.dev",
-      "cadence": "연 1회 (8~9월)",
-      "method": "manual",
-      "howToRead": "학교별 챕터 · 구글 폼",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "goormthon-univ",
       "name": "구름톤 유니브",
       "siteUrl": "https://9oormthon.university",
       "recruitUrl": "https://9oormthon.university",
-      "cadence": "연 1회 (2~3월)",
-      "method": "manual",
-      "howToRead": "학교별 모집 · 화면을 스크립트로 그림",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "prography",
       "name": "프로그라피",
       "siteUrl": "https://prography.org",
       "recruitUrl": "https://prography.org",
-      "cadence": "연 1회 (2월)",
-      "method": "manual",
-      "howToRead": "구글 폼만 있음",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "ceos",
       "name": "CEOS",
       "siteUrl": "https://ceos-sinchon.com",
       "recruitUrl": "https://ceos-sinchon.com/recruit",
-      "cadence": "연 2회 (2월, 8월)",
-      "method": "manual",
-      "howToRead": "날짜를 브라우저에서 불러옴",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "tave",
       "name": "TAVE",
       "siteUrl": "https://tave-wave.com",
       "recruitUrl": "https://tave-wave.com",
-      "cadence": "연 2회 (2월, 8월)",
-      "method": "manual",
-      "howToRead": "화면을 스크립트로 그림",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "boaz",
       "name": "BOAZ",
       "siteUrl": "https://bigdataboaz.com",
       "recruitUrl": "https://bigdataboaz.com",
-      "cadence": "연 2회 (6월, 12월)",
-      "method": "manual",
-      "howToRead": "화면을 스크립트로 그림",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "cloudclub",
       "name": "Cloud Club",
       "siteUrl": "https://cloudclub.kr",
       "recruitUrl": "https://cloudclub.kr",
-      "cadence": "연 2회 (1월, 7월)",
-      "method": "manual",
-      "howToRead": "날짜 없음",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "cmc",
       "name": "CMC",
       "siteUrl": "https://cmc.makeus.in",
       "recruitUrl": "https://cmc.makeus.in",
-      "cadence": "연 2회",
-      "method": "manual",
-      "howToRead": "사이트 접속 실패(2026-09-25)",
-      "note": null
+      "method": "manual"
     },
     {
       "key": "ddd",
       "name": "DDD",
       "siteUrl": null,
       "recruitUrl": "https://www.instagram.com/dynamic_ddd",
-      "cadence": "연 2회 (1월, 10월)",
-      "method": "manual",
-      "howToRead": "인스타그램에만 공지",
-      "note": null
+      "method": "manual"
     }
   ]
 }

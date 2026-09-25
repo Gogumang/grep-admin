@@ -18,10 +18,7 @@ interface Club {
   /** 공식 사이트. 인스타그램에만 공지하는 동아리는 null. */
   siteUrl: string | null
   recruitUrl: string
-  cadence: string
   method: CollectMethod
-  howToRead: string
-  note: string | null
 }
 
 const ICON_SIZE = 24
@@ -42,7 +39,7 @@ const SECTIONS: { method: CollectMethod; title: string; description: string }[] 
 ]
 
 /**
- * 개발 동아리 수집처. 어디서 모집 정보를 가져올 수 있는지와 모집 주기를 본다.
+ * 개발 동아리 수집처. 어디서 모집 정보를 가져올 수 있는지 본다.
  * 목록은 src/data/clubs.json 에 있다(2026-09-25 조사). 자동으로 읽을 수 있는 네 곳은 collector 가 매일 08:45 에
  * 모집 일정을 읽어 쌓는다 — 여기서는 그 수집이 잘 도는지(마지막 확인·실패)만 보고, 모집 날짜는 보여 주지 않는다.
  */
@@ -60,8 +57,7 @@ export default async function ClubsPage() {
         <CollectClubsButton />
       </div>
       <p className={shared.mutedText}>
-        IT 연합 동아리의 모집 페이지와 모집 주기, 읽는 방법이에요. 자동으로 읽을 수 있는 네 곳은 매일 08:45에 모집 일정을
-        가져와요.
+        IT 연합 동아리의 모집 페이지예요. 자동으로 읽을 수 있는 네 곳은 매일 08:45에 모집 일정을 가져와요.
       </p>
       {collected === null && <p className={shared.errorNotice}>collector 에서 수집 상태를 불러오지 못했어요.</p>}
 
@@ -80,9 +76,7 @@ export default async function ClubsPage() {
                 <thead>
                   <tr>
                     <th className={shared.tableHead}>동아리</th>
-                    <th className={shared.tableHead}>모집 주기</th>
                     <th className={shared.tableHead}>수집 상태</th>
-                    <th className={shared.tableHead}>읽는 방법</th>
                     <th className={shared.tableHead}>모집 페이지</th>
                   </tr>
                 </thead>
@@ -101,17 +95,12 @@ export default async function ClubsPage() {
                           )}
                         </span>
                       </td>
-                      <td className={shared.tableCell}>{club.cadence}</td>
                       <td className={shared.tableCell}>
                         {club.method === 'auto' && collected !== null ? (
                           <CollectStatus collected={collectedByClub.get(club.key)} />
                         ) : (
                           <span className={shared.mutedText}>{club.method === 'auto' ? '—' : '자동 수집 안 함'}</span>
                         )}
-                      </td>
-                      <td className={shared.tableCell}>
-                        {club.howToRead}
-                        {club.note && <span className={styles.note}>{club.note}</span>}
                       </td>
                       <td className={shared.tableCell}>
                         <a href={club.recruitUrl} target="_blank" rel="noreferrer" className={shared.truncatedUrl}>
