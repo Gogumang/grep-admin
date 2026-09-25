@@ -1,4 +1,5 @@
-import { listSiteEvents, type SiteEvent } from '@/lib/events'
+import { collector } from '@/lib/collector'
+import { listSiteEvents } from '@/lib/events'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
@@ -15,16 +16,17 @@ function todayInSeoul(): string {
 }
 
 /**
- * 티켓타코에서 모은 개발 행사. 목록은 collector가 매일 통째로 다시 쓰고,
- * 이벤트 페이지에 올릴 행사는 여기서 사람이 고른다(자동으로 올라가는 행사는 없다).
+ * 판매처(티켓타코·이벤터스)에서 모은 개발 행사를 한 화면에서 다룬다.
+ *   새로 모은 행사(검증 대기) → 올리면 사이트 후보('올리지 않은 행사') → 이미지를 붙여 올리면 이벤트 페이지
+ * 자동으로 올라가는 단계는 없다.
  */
 export default async function EventsPage() {
   await requireAdmin()
 
-  let events: SiteEvent[]
-  try {
-    events = await listSiteEvents()
-  } catch (error) {
+  // 새로 모은 행사는 보조다 — collector 가 잠깐 안 되면 그 영역만 알리고 나머지 화면은 그린다.
+  const [siteEvents, pending] = await Promise.allSettled([listSiteEvents(), collector.listPendingEvents()])
+  if (siteEvents.status === 'rejected') {
+    const error = siteEvents.reason
     return (
       <>
         <h1 className={console.pageTitle}>행사 일정</h1>
@@ -33,5 +35,12 @@ export default async function EventsPage() {
     )
   }
 
-  return <EventsView events={events} today={todayInSeoul()} />
+  return (
+    <EventsView
+      events={siteEvents.value}
+      pending={pending.status === 'fulfilled' ? pending.value : []}
+      pendingError={pending.status === 'rejected' ? (pending.reason as Error).message : null}
+      today={todayInSeoul()}
+    />
+  )
 }

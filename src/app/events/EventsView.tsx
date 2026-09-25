@@ -1,9 +1,11 @@
 import { Badge, ListRow, Result } from '@/shared'
+import type { EventCandidate } from '@/lib/collector'
 import type { SiteEvent } from '@/lib/events'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import * as styles from './events.css'
 import { EventFeatureControl } from './EventFeatureControl'
+import { PendingEventsList } from './PendingEventsList'
 import { RefreshEventsButton } from './RefreshEventsButton'
 
 /** YYYY-MM-DD → 9/14(월). 행사는 요일이 중요하다 — 평일이면 휴가를 내야 한다. */
@@ -79,7 +81,17 @@ function EventRow({ event, isEnded }: { event: SiteEvent; isEnded: boolean }) {
 }
 
 /** 목록을 그리기만 한다. 오늘을 밖에서 받아, 끝난 행사를 가르는 기준을 호출하는 쪽이 정한다. */
-export function EventsView({ events, today }: { events: SiteEvent[]; today: string }) {
+export function EventsView({
+  events,
+  pending,
+  pendingError,
+  today,
+}: {
+  events: SiteEvent[]
+  pending: EventCandidate[]
+  pendingError: string | null
+  today: string
+}) {
   const upcoming = events.filter((event) => event.endDate >= today)
   // 사이트 이벤트 페이지와 같은 목록이다 — 다가오는 행사 중 올린 것만. 둘을 나란히 열어 대조할 수 있어야 한다.
   const onSite = upcoming.filter((event) => event.isFeatured)
@@ -94,9 +106,14 @@ export function EventsView({ events, today }: { events: SiteEvent[]; today: stri
         <RefreshEventsButton />
       </div>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
-        사이트 이벤트 페이지에는 여기서 올린 행사만 나갑니다. 아래 &lsquo;올리지 않은 행사&rsquo;는 collector가 매일 08:30
-        판매처(티켓타코·이벤터스)에서 모은 후보입니다.
+        collector가 매일 08:30 판매처(티켓타코·이벤터스)에서 모은 행사는 &lsquo;새로 모은 행사&rsquo;에 쌓여요. 후보로 올리면
+        &lsquo;올리지 않은 행사&rsquo;로 내려가고, 거기서 이미지를 붙여 올린 행사만 사이트 이벤트 페이지에 나가요.
       </p>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>새로 모은 행사 {pending.length}</h2>
+        {pendingError ? <p className={shared.errorNotice}>{pendingError}</p> : <PendingEventsList events={pending} />}
+      </section>
 
       {events.length === 0 ? (
         <div className={shared.card}>

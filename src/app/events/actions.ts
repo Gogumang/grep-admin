@@ -67,3 +67,29 @@ function describe(error: unknown): string {
   if (error instanceof CollectorRequestError) return error.message
   return `알 수 없는 오류: ${(error as Error).message}`
 }
+
+
+
+/** 새로 모은 행사를 사이트 후보 목록에 올린다. collector 가 곧장 events.json 을 다시 쓴다(커밋 한 번). */
+export async function approveEvents(eventIds: string[]): Promise<ActionResult> {
+  await requireAdmin()
+  try {
+    const result = await collector.approveEvents(eventIds)
+    revalidatePath('/events')
+    return { ok: true, message: `행사 ${result.affectedEventCount}건을 올렸습니다. 몇 분 안에 '올리지 않은 행사'에 나옵니다.` }
+  } catch (error) {
+    return { ok: false, message: describe(error) }
+  }
+}
+
+/** 올리지 않을 행사를 치운다. 다시 모여도 대기로 돌아오지 않는다. */
+export async function rejectEvents(eventIds: string[]): Promise<ActionResult> {
+  await requireAdmin()
+  try {
+    const result = await collector.rejectEvents(eventIds)
+    revalidatePath('/events')
+    return { ok: true, message: `행사 ${result.affectedEventCount}건을 치웠습니다.` }
+  } catch (error) {
+    return { ok: false, message: describe(error) }
+  }
+}

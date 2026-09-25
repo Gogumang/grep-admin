@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { Badge, Button, Checkbox, ListRow, useToast } from '@/shared'
 import type { EventCandidate } from '@/lib/collector'
-import * as review from '../../review/ReviewWorkbench.css'
-import * as styles from '../../jobs/jobReview.css'
+import * as review from '../review/ReviewWorkbench.css'
+import * as styles from '../jobs/jobReview.css'
 import { type ActionResult, approveEvents, rejectEvents } from './actions'
 
 function schedule(event: EventCandidate): string {
@@ -23,10 +23,11 @@ function price(event: EventCandidate): string | null {
 }
 
 /**
- * 행사 검증 목록. 제목·주최만으로 판단되는 경우가 대부분이라(교육 과정·강의 판매 등) 여러 건을 골라 한 번에 처리한다.
+ * 새로 모은 행사(검증 대기). 행사 일정 화면 맨 위에 둔다 — 올리면 아래 '올리지 않은 행사'(사이트 후보)로 내려가고,
+ * 거기서 이미지를 붙여 이벤트 페이지에 올린다. 제목·주최만으로 판단되는 경우가 대부분이라 여러 건을 골라 한 번에 처리한다.
  * 자세한 내용은 제목을 눌러 판매처 페이지에서 본다 — 설명은 약관상 옮기지 않는다.
  */
-export function EventReviewList({ events }: { events: EventCandidate[] }) {
+export function PendingEventsList({ events }: { events: EventCandidate[] }) {
   const router = useRouter()
   const { openToast } = useToast()
   const [source, setSource] = useState<string | null>(null)
@@ -83,7 +84,7 @@ export function EventReviewList({ events }: { events: EventCandidate[] }) {
   if (events.length === 0) {
     return (
       <div className={review.panel}>
-        <p className={review.emptyState}>검증할 행사가 없습니다. 매일 08:30 수집이 돌면 새 행사가 여기에 쌓입니다.</p>
+        <p className={review.emptyState}>새로 모은 행사가 없습니다. 매일 08:30 수집이 돌면 여기에 쌓입니다.</p>
       </div>
     )
   }
@@ -125,7 +126,7 @@ export function EventReviewList({ events }: { events: EventCandidate[] }) {
           loading={isPending}
           onClick={() => run(approveEvents)}
         >
-          고른 행사 올리기
+          고른 행사를 후보로 올리기
         </Button>
       </div>
 

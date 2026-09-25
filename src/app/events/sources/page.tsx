@@ -122,8 +122,8 @@ export default async function EventSourcesPage() {
         <RefreshEventsButton />
       </div>
       <p className={shared.mutedText}>
-        매일 08:30에 판매처마다 행사를 읽어 개발 행사만 골라 검증 대기로 모아요. 행사 → 검증에서 올린 것만 사이트 후보가
-        돼요. 한 곳을 못 읽으면 그곳 행사는 전날 것을 그대로 둬요. 두 곳에 같은 행사가 있으면 티켓타코 것을 남겨요.
+        매일 08:30에 판매처마다 행사를 읽어 개발 행사만 골라 검증 대기로 모아요. 행사 일정의 &lsquo;새로 모은 행사&rsquo;에서 올린 것만 사이트
+        후보가 돼요. 한 곳을 못 읽으면 그곳 행사는 전날 것을 그대로 둬요. 두 곳에 같은 행사가 있으면 티켓타코 것을 남겨요.
       </p>
       {sources.length === 0 ? (
         <div className={shared.card}>
