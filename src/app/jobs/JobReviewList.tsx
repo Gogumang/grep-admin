@@ -30,10 +30,13 @@ export function JobReviewList({ jobs, mode }: { jobs: ReviewedJob[]; mode: 'pend
   const [failure, setFailure] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
+  // 건수는 보여 주지 않지만 순서는 공고 많은 회사부터 둔다 — 자주 고르는 회사가 위에 온다.
   const companies = useMemo(() => {
     const counts = new Map<string, number>()
     for (const job of jobs) counts.set(job.companyName, (counts.get(job.companyName) ?? 0) + 1)
-    return [...counts.entries()].sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'ko'))
+    return [...counts.entries()]
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'ko'))
+      .map(([name]) => name)
   }, [jobs])
 
   const visibleJobs = company ? jobs.filter((job) => job.companyName === company) : jobs
@@ -94,8 +97,7 @@ export function JobReviewList({ jobs, mode }: { jobs: ReviewedJob[]; mode: 'pend
       <div className={styles.filterBar}>
         <FilterSelect
           label="회사"
-          description={`전체 ${jobs.length}건 · 공고 많은 순`}
-          options={companies.map(([name, count]) => ({ value: name, label: name, count }))}
+          options={companies.map((name) => ({ value: name, label: name }))}
           value={company}
           onChange={setCompany}
         />

@@ -47,30 +47,19 @@ export const popover = style({
   zIndex: 900,
   display: 'flex',
   flexDirection: 'column',
-  width: 320,
+  minWidth: 200,
   maxWidth: 'calc(100vw - 32px)',
-  padding: vars.space.lg,
-  borderRadius: 20,
+  padding: vars.space.sm,
+  borderRadius: vars.radius.xl,
   background: vars.color.surface,
   boxShadow: '0 8px 28px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.04)',
 })
-
-export const header = style({
-  display: 'flex',
-  alignItems: 'baseline',
-  gap: 6,
-  padding: `${vars.space.xs} ${vars.space.sm} ${vars.space.md}`,
-})
-
-export const title = style({ fontSize: vars.fontSize.lg, fontWeight: vars.fontWeight.bold, color: vars.color.inkStrong })
-
-export const description = style({ fontSize: vars.fontSize.sm, color: vars.color.inkFaint })
 
 /** 회사가 스무 곳을 넘어도 팝오버가 화면 밖으로 밀리지 않게 목록만 스크롤한다. */
 export const list = style({
   display: 'flex',
   flexDirection: 'column',
-  maxHeight: 320,
+  maxHeight: 360,
   margin: 0,
   padding: 0,
   overflowY: 'auto',
@@ -100,21 +89,14 @@ export const option = style({
   },
 })
 
-export const optionLabel = style({ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' })
-
-export const optionCount = style({
-  fontSize: vars.fontSize.sm,
-  fontWeight: vars.fontWeight.regular,
-  color: vars.color.inkFaint,
-  fontVariantNumeric: 'tabular-nums',
+export const optionLabel = style({
+  flex: 1,
+  minWidth: 0,
+  paddingRight: vars.space.sm,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 })
 
 /** 체크 자리는 고르지 않은 줄에도 비워 둔다 — 고를 때마다 글자 폭이 흔들리지 않게. */
 export const check = style({ flexShrink: 0, width: 16, height: 16, color: vars.color.accent })
-
-export const footer = style({
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: vars.space.sm,
-  paddingTop: vars.space.lg,
-})
