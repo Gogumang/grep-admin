@@ -34,6 +34,19 @@ export async function collectCompanyJobs(companyKey: string): Promise<CompanyCol
   }
 }
 
+/** 회사 하나의 매일 수집을 켜거나 끈다. 다음 수집(매일 08:00·지금 가져오기)부터 반영된다. */
+export async function setJobSourceEnabled(companyKey: string, enabled: boolean): Promise<{ ok: boolean; message: string }> {
+  await requireAdmin()
+  try {
+    const source = await collector.setJobSourceEnabled(companyKey, enabled)
+    revalidatePath('/jobs/sources')
+    return { ok: true, message: `${source.companyName} 수집 ${source.enabled ? '켬' : '끔'}` }
+  } catch (error) {
+    const message = error instanceof CollectorRequestError ? error.message : `알 수 없는 오류: ${(error as Error).message}`
+    return { ok: false, message }
+  }
+}
+
 /** 다 돈 뒤 한 번 부른다. 새 공고는 채용 검증에, 닫힌 공고는 공개한 공고에서 빠진다. */
 export async function refreshJobScreens(): Promise<void> {
   await requireAdmin()

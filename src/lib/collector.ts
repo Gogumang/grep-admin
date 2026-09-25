@@ -360,6 +360,8 @@ export interface JobSource {
   boardType: string
   boardUrl: string
   homepageUrl: string
+  /** 끈 회사는 매일 수집에서 빠진다. */
+  enabled: boolean
 }
 
 /** 회사 하나를 한 번 수집한 결과. failureMessage 가 있으면 그 회사는 실패했고 기존 공고는 그대로다. */
@@ -411,7 +413,14 @@ export const collector = {
       method: 'POST',
     }),
 
-  listJobSources: () => request<JobSource[]>('/api/jobs/sources'),
+  /** 끈 회사까지 전부. /api/jobs/sources 는 켜 둔 회사만 준다. */
+  listJobSources: () => request<JobSource[]>('/api/admin/jobs/sources'),
+
+  setJobSourceEnabled: (companyKey: string, enabled: boolean) =>
+    request<JobSource>(`/api/admin/jobs/sources/${encodeURIComponent(companyKey)}/enabled`, {
+      method: 'PUT',
+      body: JSON.stringify({ enabled }),
+    }),
 
   /** 회사 하나를 지금 다시 받는다. 수집처 화면이 회사를 하나씩 차례로 부르며 진행을 보여 준다. */
   collectCompanyJobs: (companyKey: string) =>
