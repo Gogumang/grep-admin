@@ -361,6 +361,11 @@ export interface EventCandidate {
   highestPrice: number | null
   source: '티켓타코' | '이벤터스'
   firstSeenAt: string
+  /**
+   * 수집할 때 찾아 둔 공식 사이트 대표 이미지. 못 찾았으면 null.
+   * collector 가 이 필드를 싣기 전(feat/event-image-at-collect 배포 전)에는 없다.
+   */
+  imageUrl?: string | null
 }
 
 /** 채용공고를 받아오는 회사 하나(collector job_source). boardType 은 채용 시스템 종류다. */
