@@ -96,15 +96,15 @@
       "key": "goormthon-univ",
       "name": "구름톤 유니브",
       "siteUrl": "https://9oormthon.university",
-      "recruitUrl": "https://9oormthon.university",
-      "method": "manual"
+      "recruitUrl": "https://9oormthon.university/recruit",
+      "method": "auto"
     },
     {
       "key": "prography",
       "name": "프로그라피",
       "siteUrl": "https://prography.org",
       "recruitUrl": "https://prography.org",
-      "method": "manual"
+      "method": "auto"
     },
     {
       "key": "ceos",

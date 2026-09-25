@@ -378,12 +378,12 @@ export interface CompanyJobResult {
 /** 회사 하나는 목록과 새 공고 본문까지 받아 보통 수십 초, 공고가 많은 곳(쿠팡 120여 건)은 더 걸린다. */
 const COMPANY_JOB_COLLECTION_TIMEOUT_MILLISECONDS = 110_000
 
-/** 동아리 모집 한 번. 시각은 한국 시각 ISO-8601 이다. */
+/** 동아리 모집 한 번. 시각은 한국 시각 ISO-8601 이다. 시작·마감이 둘 다 null 이면 기간은 모르고 지금 모집 중이다(프로그라피). */
 export interface ClubRecruitment {
   title: string
   generation: number | null
-  applyStartAt: string
-  applyEndAt: string
+  applyStartAt: string | null
+  applyEndAt: string | null
   pageUrl: string
 }
 

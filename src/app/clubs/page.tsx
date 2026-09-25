@@ -40,7 +40,7 @@ const SECTIONS: { method: CollectMethod; title: string; description: string }[] 
 
 /**
  * 개발 동아리 수집처. 어디서 모집 정보를 가져올 수 있는지 본다.
- * 목록은 src/data/clubs.json 에 있다(2026-09-25 조사). 자동으로 읽을 수 있는 네 곳은 collector 가 매일 08:45 에
+ * 목록은 src/data/clubs.json 에 있다(2026-09-25 조사). 자동으로 읽을 수 있는 곳은 collector 가 매일 08:45 에
  * 모집 일정을 읽어 쌓는다 — 여기서는 동아리마다 자동 수집을 켜고 끈다.
  */
 export default async function ClubsPage() {
@@ -57,7 +57,7 @@ export default async function ClubsPage() {
         <CollectClubsButton />
       </div>
       <p className={shared.mutedText}>
-        IT 연합 동아리의 모집 페이지예요. 자동으로 읽을 수 있는 네 곳은 매일 08:45에 모집 일정을 가져와요.
+        IT 연합 동아리의 모집 페이지예요. 자동으로 읽을 수 있는 곳은 매일 08:45에 모집 일정을 가져와요.
       </p>
       {sources === null && <p className={shared.errorNotice}>collector 에서 자동 수집 설정을 불러오지 못했어요.</p>}
 
