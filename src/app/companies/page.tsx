@@ -10,6 +10,17 @@ export const dynamic = 'force-dynamic'
 
 const dateFormat = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'numeric', day: 'numeric' })
 
+/**
+ * 회사 로고. GitHub 조직 프로필 이미지를 쓴다 — 회사들이 조직 프로필에 로고를 올려 두어서 따로 받아 둘 것이 없다.
+ * 크기는 2배로 받아 레티나에서 흐리지 않게 한다.
+ *
+ * avatars.githubusercontent.com/{login} 이 아니라 github.com/{login}.png 다 — 앞의 것은 당근·라인 등 8곳에서
+ * 로고 대신 기본 그림을 줬다(2026-09-25). 뒤의 것은 조직의 실제 이미지(u/{id})로 넘겨 준다.
+ */
+function organizationLogo(login: string): string {
+  return `https://github.com/${encodeURIComponent(login)}.png?size=64`
+}
+
 function formatDate(value: string | null): string {
   return value ? dateFormat.format(new Date(value)) : '—'
 }
@@ -45,42 +56,27 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
     <>
       <h1 className={console.pageTitle}>회사 저장소 · {summaries.length}곳</h1>
 
-      <div className={shared.card}>
-        <table className={shared.table}>
-          <thead>
-            <tr>
-              <th className={shared.tableHead}>회사</th>
-              <th className={shared.tableHead}>저장소</th>
-              <th className={shared.tableHead}>전체 별</th>
-              <th className={shared.tableHead}>대표 저장소</th>
-              <th className={shared.tableHead}>최근 push</th>
-            </tr>
-          </thead>
-          <tbody>
-            {summaries.map((summary) => (
-              <tr key={summary.login} className={summary.login === selected?.login ? styles.selectedRow : undefined}>
-                <td className={shared.tableCell}>
-                  <a className={styles.companyLink} href={`/companies?org=${encodeURIComponent(summary.login)}`}>
-                    {summary.company}
-                  </a>{' '}
-                  <span className={shared.mutedText}>{summary.login}</span>
-                </td>
-                <td className={shared.tableCell}>{summary.repositoryCount.toLocaleString()}</td>
-                <td className={shared.tableCell}>★ {summary.totalStars.toLocaleString()}</td>
-                <td className={shared.tableCell}>
-                  {summary.topRepository ? `${summary.topRepository.name} ★${summary.topRepository.stars.toLocaleString()}` : '—'}
-                </td>
-                <td className={shared.tableCell}>{formatDate(summary.lastPushedAt)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* 회사는 로고와 이름만 — 고르는 자리다. 숫자(저장소 수·별 합계)는 고르는 데 쓰이지 않았다. */}
+      <ul className={styles.companyGrid}>
+        {summaries.map((summary) => (
+          <li key={summary.login}>
+            <a
+              className={`${styles.companyCard} ${summary.login === selected?.login ? styles.companyCardSelected : ''}`}
+              href={`/companies?org=${encodeURIComponent(summary.login)}`}
+              aria-current={summary.login === selected?.login ? 'true' : undefined}
+            >
+              <img className={styles.companyLogo} src={organizationLogo(summary.login)} alt="" width={32} height={32} loading="lazy" />
+              <span className={styles.companyName}>{summary.company}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
 
       {selected && (
         <>
           <h2 className={styles.sectionTitle}>
-            {selected.company} 저장소 {repositories.length.toLocaleString()}개
+            <img className={styles.companyLogo} src={organizationLogo(selected.login)} alt="" width={28} height={28} />
+            {selected.company} 저장소
             <span className={shared.mutedText}> · {formatDate(selected.collectedAt)} 수집 · 별이 많은 순</span>
           </h2>
           {repositories.length === 0 ? (
@@ -104,9 +100,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
                       {repository.isArchived && <span className={styles.archived}> 보관됨</span>}
                     </a>
                     {repository.description && <p className={chart.description}>{repository.description}</p>}
-                    <p className={chart.meta}>
-                      {[repository.language, `최근 push ${formatDate(repository.pushedAt)}`].filter(Boolean).join(' · ')}
-                    </p>
+                    {repository.language && <p className={chart.meta}>{repository.language}</p>}
                   </div>
                   <div className={chart.gained}>
                     <div className={chart.gainedCount}>★ {repository.stars.toLocaleString()}</div>
