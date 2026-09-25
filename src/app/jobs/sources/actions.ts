@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { collector, CollectorRequestError, type CompanyJobResult } from '@/lib/collector'
+import { collector, CollectorRequestError } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 
 export interface ActionResult {
@@ -21,10 +21,6 @@ function describe(error: unknown): string {
   return `알 수 없는 오류: ${(error as Error).message}`
 }
 
-function summarize(result: CompanyJobResult): string {
-  if (result.failureMessage) return `${result.companyName}: 실패 — ${result.failureMessage}`
-  return `${result.companyName}: 공고 ${result.fetchedCount}건 읽음, 새 공고 ${result.addedCount}건, 닫힘 ${result.closedCount}건`
-}
 
 /** 채용 화면들을 다시 그린다 — 새 공고는 검증 대기로 들어간다. */
 function revalidateJobScreens() {
@@ -43,18 +39,6 @@ export async function collectAllJobs(): Promise<ActionResult> {
       ok: result.failedCompanies.length === 0,
       message: `${result.companyCount}곳에서 새 공고 ${result.addedCount}건, 닫힌 공고 ${result.closedCount}건${failed}. 새 공고는 채용 검증에 있습니다.`,
     }
-  } catch (error) {
-    return { ok: false, message: describe(error) }
-  }
-}
-
-/** 회사 하나만 다시 받는다. 한 곳이 개편돼 실패했을 때 그 회사만 확인하는 길이다. */
-export async function collectCompanyJobs(companyKey: string): Promise<ActionResult> {
-  await requireAdmin()
-  try {
-    const result = await collector.collectCompanyJobs(companyKey)
-    revalidateJobScreens()
-    return { ok: result.failureMessage === null, message: summarize(result) }
   } catch (error) {
     return { ok: false, message: describe(error) }
   }

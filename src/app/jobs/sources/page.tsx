@@ -23,7 +23,7 @@ const BOARD_LABEL: Record<string, string> = {
 
 /**
  * 채용공고를 어디서 가져오는지. collector 가 매일 08:00 에 여기 적힌 회사의 채용 페이지를 읽어
- * 새 공고를 검증 대기에 넣는다. 수동으로 바로 가져올 수도 있다(전체 또는 회사 하나).
+ * 새 공고를 검증 대기에 넣는다. 수동으로 바로(전체) 가져올 수도 있다.
  */
 export default async function JobSourcesPage() {
   await requireAdmin()
@@ -52,8 +52,8 @@ export default async function JobSourcesPage() {
         <CollectJobsButton label="전체 지금 가져오기" />
       </div>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
-        매일 08:00에 아래 회사의 채용 페이지를 읽어 새 공고를 채용 검증에 넣어요. 전체 가져오기는 몇 분 걸려요. 한 회사만
-        확인하려면 그 줄의 버튼을 누르세요.
+        매일 08:00에 아래 회사의 채용 페이지를 읽어 새 공고를 채용 검증에 넣어요. 지금 바로 가져오려면 위 버튼을 누르세요
+        (몇 분 걸려요).
       </p>
 
       <div className={shared.card}>
@@ -64,7 +64,6 @@ export default async function JobSourcesPage() {
               <th className={shared.tableHead}>채용 시스템</th>
               <th className={shared.tableHead} title="지금 사이트에 공개된 공고. 검증 대기·치운 공고는 세지 않는다">사이트에 올린 공고</th>
               <th className={shared.tableHead}>읽는 주소</th>
-              <th className={shared.tableHead} />
             </tr>
           </thead>
           <tbody>
@@ -81,9 +80,6 @@ export default async function JobSourcesPage() {
                   <span className={shared.truncatedUrl} title={source.boardUrl}>
                     {source.boardUrl}
                   </span>
-                </td>
-                <td className={`${shared.tableCell} ${shared.actionCell}`}>
-                  <CollectJobsButton companyKey={source.companyKey} label="가져오기" />
                 </td>
               </tr>
             ))}

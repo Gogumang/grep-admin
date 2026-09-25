@@ -2,26 +2,26 @@
 
 import { useTransition } from 'react'
 import { Button, useToast } from '@/shared'
-import { collectAllJobs, collectCompanyJobs } from './actions'
+import { collectAllJobs } from './actions'
 
 /**
- * 채용공고를 지금 다시 가져온다. companyKey 를 주면 그 회사만.
- * 결과는 토스트로 알린다 — 실패한 회사가 있으면 이유까지 함께 보인다.
+ * 모든 회사의 채용공고를 지금 다시 가져온다.
+ * 결과는 토스트로 알린다 — 실패한 회사가 있으면 이름까지 함께 보인다.
  */
-export function CollectJobsButton({ companyKey, label }: { companyKey?: string; label: string }) {
+export function CollectJobsButton({ label }: { label: string }) {
   const { openToast } = useToast()
   const [isPending, startTransition] = useTransition()
 
   return (
     <Button
-      color={companyKey ? 'light' : 'primary'}
-      variant={companyKey ? 'fill' : 'weak'}
+      color="primary"
+      variant="weak"
       size="small"
       disabled={isPending}
       loading={isPending}
       onClick={() =>
         startTransition(async () => {
-          const outcome = companyKey ? await collectCompanyJobs(companyKey) : await collectAllJobs()
+          const outcome = await collectAllJobs()
           openToast(outcome.message)
         })
       }

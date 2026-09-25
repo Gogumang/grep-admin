@@ -396,12 +396,6 @@ export const collector = {
   collectAllJobs: () =>
     request<JobCollectionResult>('/api/jobs/collect', { method: 'POST' }, JOB_COLLECTION_TIMEOUT_MILLISECONDS),
 
-  collectCompanyJobs: (companyKey: string) =>
-    request<CompanyJobResult>(
-      `/api/jobs/collect?company=${encodeURIComponent(companyKey)}`,
-      { method: 'POST' },
-      JOB_COLLECTION_TIMEOUT_MILLISECONDS,
-    ),
 
   listPendingEvents: () => request<EventCandidate[]>('/api/admin/events/candidates/pending'),
 
