@@ -38,6 +38,3 @@ export const blogName = style({
   alignItems: 'center',
   gap: vars.space.sm,
 })
-
-/** 추가 버튼은 표의 오른쪽 끝(수집 스위치 열)에 맞춘다. */
-export const addRow = style({ justifyContent: 'flex-end' })

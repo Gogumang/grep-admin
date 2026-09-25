@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { Button, Loader, Stepper, StepperRow, useToast } from '@/shared'
 import { BlogIcon } from '@/components/BlogIcon'
-import { collectOneFeed, commitCollection, startCollection, type FeedResult } from './actions'
+import { collectOneFeed, commitCollection, startCollection, type FeedResult } from './collectActions'
 import * as styles from './CollectRunner.css'
 import * as shared from '@/components/shared.css'
 
@@ -61,7 +61,11 @@ function describe(result: FeedResult | undefined, isRunning: boolean): string {
   return result.message ? `${newPosts} (${result.message})` : newPosts
 }
 
-export function CollectRunner() {
+/**
+ * 블로그 수집 실행. 블로그 수집처 화면에서 "추가" 버튼과 한 줄에 놓인다 — children이 그 옆 버튼이다.
+ * 진행 상황은 버튼 줄 바로 아래, 블로그 표 위에 뜬다.
+ */
+export function CollectRunner({ children }: { children?: ReactNode }) {
   const { openToast } = useToast()
   const [phase, setPhase] = useState<Phase>('idle')
   const [blogs, setBlogs] = useState<Blog[]>([])
@@ -108,10 +112,11 @@ export function CollectRunner() {
 
   return (
     <>
-      <div className={shared.formRow}>
+      <div className={shared.formRow} style={{ justifyContent: 'flex-end' }}>
         <Button color="primary" variant="weak" size="small" onClick={run} disabled={isBusy}>
           {isBusy ? '수집 중…' : '수집 실행'}
         </Button>
+        {children}
       </div>
 
       {startError && <p className={shared.errorNotice}>{startError}</p>}

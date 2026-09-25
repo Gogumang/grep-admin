@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Button, Loader, Stepper, StepperRow, useToast } from '@/shared'
-import * as collectStyles from '../../collect/CollectRunner.css'
+import * as collectStyles from '../../blogs/CollectRunner.css'
 import * as shared from '@/components/shared.css'
 import { type CompanyCollectOutcome, collectCompanyJobs, refreshJobScreens } from './actions'
 

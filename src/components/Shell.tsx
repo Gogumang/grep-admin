@@ -70,7 +70,6 @@ const GROUPS = [
     Icon: SlidersIcon,
     items: [
       { href: '/', label: '대시보드' },
-      { href: '/collect', label: '수집 실행' },
       { href: '/devices', label: '기기' },
       { href: '/admins', label: '허용 계정' },
     ],

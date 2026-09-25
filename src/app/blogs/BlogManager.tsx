@@ -5,6 +5,7 @@ import { Button, Switch, TextField, useDialog, useToast } from '@/shared'
 import type { BlogFeed } from '@/lib/collector'
 import { BlogIcon } from '@/components/BlogIcon'
 import { addBlog, setBlogActive, type ActionResult } from './actions'
+import { CollectRunner } from './CollectRunner'
 import * as styles from '@/components/shared.css'
 import * as local from './blogManager.css'
 
@@ -133,11 +134,11 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
     <>
       {failure && <p className={styles.errorNotice}>{failure.message}</p>}
 
-      <div className={`${styles.formRow} ${local.addRow}`}>
+      <CollectRunner>
         <Button color="primary" variant="weak" size="small" onClick={openAddDialog}>
           추가
         </Button>
-      </div>
+      </CollectRunner>
 
       <div className={styles.card}>
         <table className={styles.table}>
