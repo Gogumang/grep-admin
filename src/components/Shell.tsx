@@ -23,7 +23,7 @@ const GROUPS = [
       { href: '/', label: '대시보드' },
       { href: '/review', label: '검증' },
       { href: '/posts', label: '글' },
-      { href: '/blogs', label: '블로그' },
+      { href: '/blogs', label: '수집처' },
     ],
   },
   /*
