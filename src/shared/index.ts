@@ -24,6 +24,8 @@ export { Button } from './components/Button'
 export type { ButtonColor, ButtonDisplay, ButtonSize, ButtonVariant } from './components/Button'
 export { Checkbox } from './components/Checkbox'
 export type { CheckboxInputType, CheckboxProps } from './components/Checkbox'
+export { FilterSelect } from './components/FilterSelect'
+export type { FilterSelectOption, FilterSelectProps } from './components/FilterSelect'
 export { ListRow } from './components/ListRow'
 export type {
   ListRowAlignment,

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { Badge, Button, Checkbox, ListRow, useToast } from '@/shared'
+import { Badge, Button, Checkbox, FilterSelect, ListRow, useToast } from '@/shared'
 import type { ReviewedJob } from '@/lib/collector'
 import * as review from '../review/ReviewWorkbench.css'
 import { type ActionResult, publishJobs, rejectJobs, unpublishJobs } from './actions'
@@ -90,23 +90,15 @@ export function JobReviewList({ jobs, mode }: { jobs: ReviewedJob[]; mode: 'pend
 
   return (
     <div className={review.listPanel}>
-      {/* 회사가 열 곳을 넘어 버튼으로 늘어놓으면 두세 줄로 접힌다. 고르는 칸 하나로 둔다. */}
+      {/* 회사가 열 곳을 넘어 버튼으로 늘어놓으면 두세 줄로 접힌다. 칩 하나를 눌러 고르게 둔다. */}
       <div className={styles.filterBar}>
-        <label className={styles.companyFilter}>
-          <span className={styles.companyFilterLabel}>회사</span>
-          <select
-            className={styles.companySelect}
-            value={company ?? ''}
-            onChange={(event) => setCompany(event.target.value === '' ? null : event.target.value)}
-          >
-            <option value="">전체 {jobs.length}</option>
-            {companies.map(([name, count]) => (
-              <option key={name} value={name}>
-                {name} {count}
-              </option>
-            ))}
-          </select>
-        </label>
+        <FilterSelect
+          label="회사"
+          description={`전체 ${jobs.length}건 · 공고 많은 순`}
+          options={companies.map(([name, count]) => ({ value: name, label: name, count }))}
+          value={company}
+          onChange={setCompany}
+        />
       </div>
 
       <div className={styles.actionBar}>
