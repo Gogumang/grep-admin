@@ -1,5 +1,5 @@
 {
-  "_comment": "개발 동아리 수집처. 2026-09-25 사이트마다 실제로 요청해 확인했다. method — auto: 모집 일정을 자동으로 읽을 수 있음 / draft: 날짜는 있지만 연도·기수가 빠져 사람이 확정 / manual: 사람이 입력. 아이콘은 scripts/fetch-club-icons.py 가 public/club-icons/<key>.png 로 받는다.",
+  "_comment": "개발 동아리·부트캠프 수집처. 2026-09-25(부트캠프는 2026-09-26) 사이트마다 실제로 요청해 확인했다. kind — club(생략 시) / bootcamp. method — auto: 모집 일정을 자동으로 읽을 수 있음 / draft: 날짜는 있지만 연도·기수가 빠져 사람이 확정 / manual: 사람이 입력. 아이콘은 scripts/fetch-club-icons.py 가 public/club-icons/<key>.png 로 받는다.",
   "clubs": [
     {
       "key": "sopt",
@@ -147,6 +147,54 @@
       "siteUrl": null,
       "recruitUrl": "https://www.instagram.com/dynamic_ddd",
       "method": "manual"
+    },
+    {
+      "key": "woowacourse",
+      "name": "우아한테크코스",
+      "siteUrl": "https://www.woowacourse.io",
+      "recruitUrl": "https://apply.techcourse.co.kr",
+      "method": "auto",
+      "kind": "bootcamp"
+    },
+    {
+      "key": "kakao-tech-bootcamp",
+      "name": "카카오테크 부트캠프",
+      "siteUrl": "https://kakaotechbootcamp.com",
+      "recruitUrl": "https://kakaotechbootcamp.com",
+      "method": "auto",
+      "kind": "bootcamp"
+    },
+    {
+      "key": "ssafy",
+      "name": "SSAFY",
+      "siteUrl": "https://www.ssafy.com",
+      "recruitUrl": "https://www.ssafy.com/ksp/jsp/swp/apply/swpApplyProcess.jsp",
+      "method": "draft",
+      "kind": "bootcamp"
+    },
+    {
+      "key": "boostcamp",
+      "name": "네이버 부스트캠프",
+      "siteUrl": "https://boostcamp.connect.or.kr",
+      "recruitUrl": "https://boostcamp.connect.or.kr",
+      "method": "manual",
+      "kind": "bootcamp"
+    },
+    {
+      "key": "swmaestro",
+      "name": "소프트웨어 마에스트로",
+      "siteUrl": "https://www.swmaestro.ai",
+      "recruitUrl": "https://www.swmaestro.ai/sw/main/main.do",
+      "method": "manual",
+      "kind": "bootcamp"
+    },
+    {
+      "key": "42seoul",
+      "name": "42서울",
+      "siteUrl": "https://42seoul.kr",
+      "recruitUrl": "https://42seoul.kr/seoul42/main/view",
+      "method": "manual",
+      "kind": "bootcamp"
     }
   ]
 }

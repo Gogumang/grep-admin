@@ -9,7 +9,7 @@ export interface ActionResult {
   message: string
 }
 
-/** 모집 일정을 자동으로 읽는 동아리(SOPT·디프만·DND·넥스터즈·구름톤 유니브·프로그라피)를 지금 다시 읽는다. 매일 08:45 DAG 와 같은 일이다. */
+/** 모집 일정을 자동으로 읽는 동아리(SOPT·디프만·DND·넥스터즈·구름톤 유니브·프로그라피)와 부트캠프(우아한테크코스·카카오테크 부트캠프)를 지금 다시 읽는다. 매일 08:45 DAG 와 같은 일이다. */
 export async function collectClubRecruitments(): Promise<ActionResult> {
   await requireAdmin()
   try {
