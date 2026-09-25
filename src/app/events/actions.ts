@@ -26,6 +26,20 @@ export async function featureEvent(eventId: string, imageUrl: string): Promise<A
   }
 }
 
+/** 새로 모은 행사를 한 번에 올린다. 후보 등록과 이벤트 페이지 반영을 collector 가 함께 한다(커밋 두 번). */
+export async function publishEvent(eventId: string, imageUrl: string): Promise<ActionResult> {
+  await requireAdmin()
+
+  try {
+    await collector.publishEvent(eventId, imageUrl.trim())
+    revalidatePath('/events')
+    revalidatePath('/events/published')
+    return { ok: true, message: '이벤트 페이지에 올렸습니다. 사이트 배포가 끝나면 보입니다.' }
+  } catch (error) {
+    return { ok: false, message: describe(error) }
+  }
+}
+
 /** 올리기 창에 미리 채울 공식 사이트 이미지. 보조다 — 못 찾거나 실패하면 null 이고 사람이 직접 넣는다. */
 export async function suggestEventImage(eventId: string): Promise<EventImageSuggestion | null> {
   await requireAdmin()
@@ -80,19 +94,6 @@ export async function refreshEvents(): Promise<ActionResult> {
 function describe(error: unknown): string {
   if (error instanceof CollectorRequestError) return error.message
   return `알 수 없는 오류: ${(error as Error).message}`
-}
-
-/** 새로 모은 행사를 사이트 후보 목록에 올린다. collector 가 곧장 events.json 을 다시 쓴다(커밋 한 번). */
-export async function approveEvents(eventIds: string[]): Promise<ActionResult> {
-  await requireAdmin()
-  try {
-    const result = await collector.approveEvents(eventIds)
-    revalidatePath('/events')
-    revalidatePath('/events/published')
-    return { ok: true, message: `행사 ${result.affectedEventCount}건을 올렸습니다. 몇 분 안에 '이미지를 기다리는 행사'에 나옵니다.` }
-  } catch (error) {
-    return { ok: false, message: describe(error) }
-  }
 }
 
 /** 올리지 않을 행사를 치운다. 다시 모여도 대기로 돌아오지 않는다. */

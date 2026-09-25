@@ -443,11 +443,6 @@ export const collector = {
 
   listPendingEvents: () => request<EventCandidate[]>('/api/admin/events/candidates/pending'),
 
-  approveEvents: (eventIds: string[]) =>
-    request<{ affectedEventCount: number }>('/api/admin/events/candidates/approve', {
-      method: 'POST',
-      body: JSON.stringify({ eventIds }),
-    }),
 
   rejectEvents: (eventIds: string[]) =>
     request<{ affectedEventCount: number }>('/api/admin/events/candidates/reject', {
@@ -589,6 +584,14 @@ export const collector = {
   featureEvent: (eventId: string, imageUrl: string) =>
     request<FeaturedEvent>(
       `/api/admin/events/${encodeURIComponent(eventId)}/feature`,
+      { method: 'POST', body: JSON.stringify({ imageUrl }) },
+      FEATURE_EVENT_TIMEOUT_MILLISECONDS,
+    ),
+
+  /** 새로 모은 행사를 한 번에 올린다 — 후보 등록(events.json)과 이벤트 페이지 반영(featured.json)을 함께 한다. */
+  publishEvent: (eventId: string, imageUrl: string) =>
+    request<FeaturedEvent>(
+      `/api/admin/events/${encodeURIComponent(eventId)}/publish`,
       { method: 'POST', body: JSON.stringify({ imageUrl }) },
       FEATURE_EVENT_TIMEOUT_MILLISECONDS,
     ),

@@ -2,7 +2,7 @@
 
 import { type RefObject, useEffect, useRef, useState, useTransition } from 'react'
 import { Button, TextField, useDialog, useToast } from '@/shared'
-import { featureEvent, suggestEventImage, unfeatureEvent } from './actions'
+import { featureEvent, publishEvent, suggestEventImage, unfeatureEvent } from './actions'
 import * as styles from './events.css'
 
 /**
@@ -55,7 +55,8 @@ function ImageUrlField({ eventId, control }: { eventId: string; control: RefObje
     }
   }, [eventId])
 
-  const siteName = suggestion.status === 'found' ? suggestion.officialSiteUrl.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '') : ''
+  // 티켓타코가 링크에 추적 파라미터(utm_source=ticketaco)를 붙여 두어 주소 그대로는 길다 — 도메인만 보인다.
+  const siteName = suggestion.status === 'found' ? new URL(suggestion.officialSiteUrl).hostname.replace(/^www\./, '') : ''
 
   return (
     <div className={styles.fieldStack}>
@@ -95,12 +96,15 @@ export function EventFeatureControl({
   title,
   isFeatured,
   endedOnly = false,
+  isNew = false,
 }: {
   eventId: string
   title: string
   isFeatured: boolean
   /** 끝난 행사. 내리기만 보인다. */
   endedOnly?: boolean
+  /** 새로 모은 행사. 올리면 후보 등록과 이벤트 페이지 반영을 한 번에 한다. */
+  isNew?: boolean
 }) {
   const { openToast } = useToast()
   const { openAsyncConfirm, openConfirm } = useDialog()
@@ -114,7 +118,8 @@ export function EventFeatureControl({
       confirmButton: isFeatured ? '바꾸기' : '올리기',
       closeOnDimmerClick: true,
       onConfirmClick: async () => {
-        const outcome = await featureEvent(eventId, control.current?.read() ?? '')
+        const imageUrl = control.current?.read() ?? ''
+        const outcome = isNew ? await publishEvent(eventId, imageUrl) : await featureEvent(eventId, imageUrl)
         // 실패를 던지면 창이 닫히지 않는다. 방금 넣은 주소를 남겨 둔 채 그 자리에서 알린다.
         if (!outcome.ok) {
           control.current?.showError(outcome.message)

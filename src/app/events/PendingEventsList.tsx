@@ -6,7 +6,9 @@ import { Badge, Button, Checkbox, FilterSelect, ListRow, useToast } from '@/shar
 import type { EventCandidate } from '@/lib/collector'
 import * as review from '../review/ReviewWorkbench.css'
 import * as styles from '../jobs/jobReview.css'
-import { type ActionResult, approveEvents, rejectEvents } from './actions'
+import * as eventStyles from './events.css'
+import { type ActionResult, rejectEvents } from './actions'
+import { EventFeatureControl } from './EventFeatureControl'
 
 function schedule(event: EventCandidate): string {
   const [, startMonth, startDay] = event.startDate.split('-').map(Number)
@@ -23,9 +25,9 @@ function price(event: EventCandidate): string | null {
 }
 
 /**
- * 새로 모은 행사(검증 대기). 행사 검증 화면 맨 위에 둔다 — 올리면 아래 '이미지를 기다리는 행사'(사이트 후보)로 내려가고,
- * 거기서 이미지를 붙여 이벤트 페이지에 올린다. 제목·주최만으로 판단되는 경우가 대부분이라 여러 건을 골라 한 번에 처리한다.
- * 자세한 내용은 제목을 눌러 판매처 페이지에서 본다 — 설명은 약관상 옮기지 않는다.
+ * 새로 모은 행사(검증 대기). 줄마다 '올리기'를 누르면 이미지 창(공식 사이트 이미지를 미리 채움)이 뜨고, 확인하면
+ * 후보 등록과 이벤트 페이지 반영을 한 번에 한다. 올리지 않을 행사는 여러 건을 골라 한 번에 치운다.
+ * 자세한 내용은 원문(판매처 페이지)에서 본다 — 설명은 약관상 옮기지 않는다.
  */
 export function PendingEventsList({ events }: { events: EventCandidate[] }) {
   const router = useRouter()
@@ -113,15 +115,6 @@ export function PendingEventsList({ events }: { events: EventCandidate[] }) {
         >
           치우기
         </Button>
-        <Button
-          color="primary"
-          size="small"
-          disabled={selectedVisibleIds.length === 0 || isPending}
-          loading={isPending}
-          onClick={() => run(approveEvents)}
-        >
-          고른 행사를 후보로 올리기
-        </Button>
       </div>
 
       {failure && <p className={review.errorNotice}>{failure}</p>}
@@ -157,9 +150,12 @@ export function PendingEventsList({ events }: { events: EventCandidate[] }) {
               />
             }
             right={
-              <Button as="a" href={event.url} target="_blank" rel="noreferrer" color="light" size="small">
-                원문
-              </Button>
+              <span className={eventStyles.controls}>
+                <Button as="a" href={event.url} target="_blank" rel="noreferrer" color="light" size="small">
+                  원문
+                </Button>
+                <EventFeatureControl eventId={event.id} title={event.title} isFeatured={false} isNew />
+              </span>
             }
           />
         ))}
