@@ -30,6 +30,8 @@ const REQUEST_TIMEOUT_MILLISECONDS = 15_000
 const COLLECT_EVENTS_TIMEOUT_MILLISECONDS = 120_000
 /** 행사 올리기는 남의 서버에서 이미지를 받아(최대 30초) 굽고 커밋까지 한다 — 보통 요청보다 넉넉히 기다린다. */
 const FEATURE_EVENT_TIMEOUT_MILLISECONDS = 60_000
+/** 이미지 찾기는 행사 페이지와 공식 사이트 몇 곳을 연다. 창을 연 사람을 오래 세워 두지 않게 짧게 끊는다 — 못 찾으면 직접 넣으면 된다. */
+const SUGGEST_EVENT_IMAGE_TIMEOUT_MILLISECONDS = 20_000
 
 export interface BlogFeed {
   blogName: string
@@ -214,6 +216,12 @@ export interface FeaturedEvent {
   id: string
   /** 사이트 기준 경로(/events/x.avif)나 R2 전체 주소. */
   image: string
+}
+
+/** 올리기 창에 미리 채울 이미지. 티켓타코 행사 본문에 적힌 공식 사이트의 대표 이미지(og:image)다. */
+export interface EventImageSuggestion {
+  officialSiteUrl: string
+  imageUrl: string
 }
 
 /** collector가 실패를 알려주는 모양. 그대로 화면에 옮긴다. */
@@ -583,6 +591,14 @@ export const collector = {
       `/api/admin/events/${encodeURIComponent(eventId)}/feature`,
       { method: 'POST', body: JSON.stringify({ imageUrl }) },
       FEATURE_EVENT_TIMEOUT_MILLISECONDS,
+    ),
+
+  /** 공식 사이트에서 찾은 이미지. 못 찾으면 undefined(204). */
+  suggestEventImage: (eventId: string) =>
+    request<EventImageSuggestion | undefined>(
+      `/api/admin/events/${encodeURIComponent(eventId)}/image-suggestion`,
+      undefined,
+      SUGGEST_EVENT_IMAGE_TIMEOUT_MILLISECONDS,
     ),
 
   unfeatureEvent: (eventId: string) =>

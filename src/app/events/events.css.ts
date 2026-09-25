@@ -46,3 +46,13 @@ export const fieldHint = style({ margin: 0, fontSize: vars.fontSize.sm, lineHeig
 
 /** 창을 닫지 않고 그 자리에서 알린다 — 닫으면 방금 넣은 주소가 사라진다. */
 export const fieldError = style({ margin: 0, fontSize: vars.fontSize.xs, lineHeight: 1.5, color: vars.color.brand })
+
+/** 올리기 창의 미리보기. 사이트 목록 썸네일(228:128)과 같은 비율로 잘라, 사이트에 어떻게 보일지 가늠하게 한다. */
+export const imagePreview = style({
+  display: 'block',
+  width: 228,
+  height: 128,
+  objectFit: 'cover',
+  borderRadius: vars.radius.sm,
+  backgroundColor: vars.color.surfaceSunken,
+})

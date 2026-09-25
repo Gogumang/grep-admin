@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { collector, CollectorRequestError } from '@/lib/collector'
+import { collector, CollectorRequestError, type EventImageSuggestion } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 
 export interface ActionResult {
@@ -23,6 +23,17 @@ export async function featureEvent(eventId: string, imageUrl: string): Promise<A
     return { ok: true, message: '이벤트 페이지에 올렸습니다. 사이트 배포가 끝나면 보입니다.' }
   } catch (error) {
     return { ok: false, message: describe(error) }
+  }
+}
+
+/** 올리기 창에 미리 채울 공식 사이트 이미지. 보조다 — 못 찾거나 실패하면 null 이고 사람이 직접 넣는다. */
+export async function suggestEventImage(eventId: string): Promise<EventImageSuggestion | null> {
+  await requireAdmin()
+
+  try {
+    return (await collector.suggestEventImage(eventId)) ?? null
+  } catch {
+    return null
   }
 }
 
