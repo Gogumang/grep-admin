@@ -65,13 +65,6 @@
       "method": "draft"
     },
     {
-      "key": "cotato",
-      "name": "코테이토",
-      "siteUrl": "https://cotato.kr",
-      "recruitUrl": "https://cotato.kr/recruit",
-      "method": "manual"
-    },
-    {
       "key": "likelion",
       "name": "멋쟁이사자처럼 대학",
       "siteUrl": "https://likelion.university",
@@ -105,41 +98,6 @@
       "siteUrl": "https://prography.org",
       "recruitUrl": "https://prography.org",
       "method": "auto"
-    },
-    {
-      "key": "ceos",
-      "name": "CEOS",
-      "siteUrl": "https://ceos-sinchon.com",
-      "recruitUrl": "https://ceos-sinchon.com/recruit",
-      "method": "manual"
-    },
-    {
-      "key": "tave",
-      "name": "TAVE",
-      "siteUrl": "https://tave-wave.com",
-      "recruitUrl": "https://tave-wave.com",
-      "method": "manual"
-    },
-    {
-      "key": "boaz",
-      "name": "BOAZ",
-      "siteUrl": "https://bigdataboaz.com",
-      "recruitUrl": "https://bigdataboaz.com",
-      "method": "manual"
-    },
-    {
-      "key": "cloudclub",
-      "name": "Cloud Club",
-      "siteUrl": "https://cloudclub.kr",
-      "recruitUrl": "https://cloudclub.kr",
-      "method": "manual"
-    },
-    {
-      "key": "cmc",
-      "name": "CMC",
-      "siteUrl": "https://cmc.makeus.in",
-      "recruitUrl": "https://cmc.makeus.in",
-      "method": "manual"
     },
     {
       "key": "ddd",
