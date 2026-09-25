@@ -1,0 +1,180 @@
+{
+  "_comment": "개발자 커뮤니티. 2026-09-26 조사 — 디스코드 초대는 API 로, 오픈채팅은 공개 게시처(TSBM 은 github.com/ts-backend-meetup-ts/meetup)로 확인했다. 페이스북 그룹은 로그인 벽 뒤라 검색 결과로만 확인했다. 대략 활발한 순. 개발바닥은 따로 모이는 방이 없어 유튜브 커뮤니티 탭을 둔다(devground.kr '개발바닥'은 다른 채용 플랫폼이다).",
+  "communities": [
+    {
+      "key": "okky",
+      "name": "OKKY",
+      "platform": "web",
+      "topic": "종합 개발 커뮤니티",
+      "url": "https://okky.kr/community"
+    },
+    {
+      "key": "ts-backend-meetup",
+      "name": "TSBM 타입스크립트 백엔드 밋업",
+      "platform": "kakao",
+      "topic": "TypeScript 백엔드",
+      "url": "https://open.kakao.com/o/gKXJtxEh"
+    },
+    {
+      "key": "devbadak",
+      "name": "개발바닥",
+      "platform": "youtube",
+      "topic": "개발자 토크·커리어",
+      "url": "https://www.youtube.com/@devbadak/community"
+    },
+    {
+      "key": "geeknews",
+      "name": "GeekNews",
+      "platform": "web",
+      "topic": "개발·기술 뉴스 공유",
+      "url": "https://news.hada.io"
+    },
+    {
+      "key": "careerly",
+      "name": "커리어리",
+      "platform": "web",
+      "topic": "개발자 커리어·트렌드",
+      "url": "https://careerly.co.kr"
+    },
+    {
+      "key": "inflearn-community",
+      "name": "인프런 커뮤니티",
+      "platform": "web",
+      "topic": "개발 Q&A·스터디",
+      "url": "https://www.inflearn.com/community/questions"
+    },
+    {
+      "key": "disquiet",
+      "name": "디스콰이엇",
+      "platform": "web",
+      "topic": "메이커·사이드 프로젝트",
+      "url": "https://disquiet.io"
+    },
+    {
+      "key": "awskrug",
+      "name": "AWSKRUG",
+      "platform": "slack",
+      "topic": "AWS·클라우드",
+      "url": "https://slack.awskr.org"
+    },
+    {
+      "key": "ksug",
+      "name": "KSUG 한국 스프링 사용자 모임",
+      "platform": "facebook",
+      "topic": "Spring 백엔드",
+      "url": "https://www.facebook.com/groups/springkorea/"
+    },
+    {
+      "key": "tensorflow-kr",
+      "name": "TensorFlow KR",
+      "platform": "facebook",
+      "topic": "딥러닝·AI",
+      "url": "https://www.facebook.com/groups/TensorFlowKR/"
+    },
+    {
+      "key": "pseudo-lab",
+      "name": "가짜연구소",
+      "platform": "discord",
+      "topic": "AI·ML 스터디",
+      "url": "https://discord.gg/EPurkHVtp2"
+    },
+    {
+      "key": "kubernetes-korea",
+      "name": "Kubernetes Korea Group",
+      "platform": "facebook",
+      "topic": "쿠버네티스·클라우드네이티브",
+      "url": "https://www.facebook.com/groups/k8skr/"
+    },
+    {
+      "key": "python-korea",
+      "name": "파이썬 코리아",
+      "platform": "web",
+      "topic": "Python",
+      "url": "https://www.python.or.kr"
+    },
+    {
+      "key": "gdg-seoul",
+      "name": "GDG Seoul",
+      "platform": "meetup",
+      "topic": "구글 기술 개발자 모임",
+      "url": "https://gdg.community.dev/gdg-seoul/"
+    },
+    {
+      "key": "gdg-campus-korea",
+      "name": "GDG Campus Korea",
+      "platform": "meetup",
+      "topic": "학생·주니어 개발자",
+      "url": "https://gdg.community.dev/gdg-campus-korea/"
+    },
+    {
+      "key": "react-korea",
+      "name": "React Korea",
+      "platform": "facebook",
+      "topic": "React 프론트엔드",
+      "url": "https://www.facebook.com/groups/react.ko/"
+    },
+    {
+      "key": "pytorch-kr",
+      "name": "PyTorchKR",
+      "platform": "web",
+      "topic": "PyTorch·딥러닝",
+      "url": "https://discuss.pytorch.kr"
+    },
+    {
+      "key": "rust-korea",
+      "name": "한국 러스트 사용자 그룹",
+      "platform": "discord",
+      "topic": "Rust",
+      "url": "https://discord.gg/uqXGjEz"
+    },
+    {
+      "key": "kotlin-korea",
+      "name": "Kotlin Korea",
+      "platform": "facebook",
+      "topic": "Kotlin",
+      "url": "https://www.facebook.com/kotlinkr/"
+    },
+    {
+      "key": "flutter-korea",
+      "name": "Flutter 한국 사용자 그룹",
+      "platform": "facebook",
+      "topic": "Flutter 앱 개발",
+      "url": "https://www.facebook.com/groups/flutterkorea/"
+    },
+    {
+      "key": "geultto",
+      "name": "글또",
+      "platform": "slack",
+      "topic": "개발자 글쓰기 모임",
+      "url": "https://geultto.github.io"
+    },
+    {
+      "key": "weirdx",
+      "name": "이상한모임",
+      "platform": "discord",
+      "topic": "개발자 친목·행사",
+      "url": "https://discord.com/invite/yGWRfSqsQz"
+    },
+    {
+      "key": "react-native-korea",
+      "name": "리액트 네이티브 한국 사용자 그룹",
+      "platform": "facebook",
+      "topic": "React Native",
+      "url": "https://www.facebook.com/groups/reactapp/"
+    },
+    {
+      "key": "9xd",
+      "name": "9XD",
+      "platform": "facebook",
+      "topic": "주니어 개발자 모임",
+      "url": "https://www.facebook.com/groups/9xdevelopers/"
+    },
+    {
+      "key": "kldp",
+      "name": "KLDP",
+      "platform": "web",
+      "topic": "리눅스·오픈소스",
+      "url": "https://kldp.org"
+    }
+  ]
+}
