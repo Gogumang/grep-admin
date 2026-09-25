@@ -90,15 +90,23 @@ export function JobReviewList({ jobs, mode }: { jobs: ReviewedJob[]; mode: 'pend
 
   return (
     <div className={review.listPanel}>
+      {/* 회사가 열 곳을 넘어 버튼으로 늘어놓으면 두세 줄로 접힌다. 고르는 칸 하나로 둔다. */}
       <div className={styles.filterBar}>
-        <Button size="small" color={company === null ? 'primary' : 'light'} onClick={() => setCompany(null)}>
-          전체 {jobs.length}
-        </Button>
-        {companies.map(([name, count]) => (
-          <Button key={name} size="small" color={company === name ? 'primary' : 'light'} onClick={() => setCompany(name)}>
-            {name} {count}
-          </Button>
-        ))}
+        <label className={styles.companyFilter}>
+          <span className={styles.companyFilterLabel}>회사</span>
+          <select
+            className={styles.companySelect}
+            value={company ?? ''}
+            onChange={(event) => setCompany(event.target.value === '' ? null : event.target.value)}
+          >
+            <option value="">전체 {jobs.length}</option>
+            {companies.map(([name, count]) => (
+              <option key={name} value={name}>
+                {name} {count}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className={styles.actionBar}>
