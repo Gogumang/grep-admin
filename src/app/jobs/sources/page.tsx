@@ -2,12 +2,17 @@ import { collector, type JobSource } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
+import { CompanyIcon } from './CompanyIcon'
 import { JobCollectRunner } from './JobCollectRunner'
 import { JobSourceSwitch } from './JobSourceSwitch'
 import * as styles from './sources.css'
 import * as blogStyles from '../../blogs/blogManager.css'
+import * as clubStyles from '../../clubs/clubs.css'
 
 export const dynamic = 'force-dynamic'
+
+/** 동아리 수집처와 같은 크기 — 줄 높이를 늘리지 않는다. */
+const ICON_SIZE = 24
 
 /** 회사 하나를 받는 서버 액션이 끝날 때까지 기다린다. 공고가 많은 곳은 본문까지 받아 1분을 넘길 수 있다. */
 export const maxDuration = 120
@@ -62,9 +67,12 @@ export default async function JobSourcesPage() {
             {sources.map((source) => (
               <tr key={source.companyKey} className={source.enabled ? undefined : blogStyles.inactiveRow}>
                 <td className={shared.tableCell}>
-                  <a className={styles.companyLink} href={source.homepageUrl} target="_blank" rel="noreferrer">
-                    {source.companyName}
-                  </a>
+                  <span className={clubStyles.nameCell}>
+                    <CompanyIcon companyKey={source.companyKey} name={source.companyName} size={ICON_SIZE} />
+                    <a className={styles.companyLink} href={source.homepageUrl} target="_blank" rel="noreferrer">
+                      {source.companyName}
+                    </a>
+                  </span>
                 </td>
                 <td className={shared.tableCell}>
                   <span className={shared.truncatedUrl} title={source.boardUrl}>
