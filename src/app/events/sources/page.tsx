@@ -43,7 +43,7 @@ function SourceCard({ source }: { source: EventSourceSummary }) {
 
       <dl className={styles.stats}>
         <div>
-          <dt>지금 사이트 후보</dt>
+          <dt>올린 행사(사이트 후보)</dt>
           <dd>{source.listedNow.toLocaleString()}건</dd>
         </div>
         <div>
@@ -70,7 +70,7 @@ function SourceCard({ source }: { source: EventSourceSummary }) {
               <th className={shared.tableHead} title="끝난 행사">지난 행사</th>
               <th className={shared.tableHead} title="개발 행사가 아니거나 교육 과정·강의 판매">개발 외</th>
               <th className={shared.tableHead} title="다른 판매처에 같은 행사가 있어 뺌">중복</th>
-              <th className={shared.tableHead}>실림</th>
+              <th className={shared.tableHead} title="규칙을 통과해 검증 대상으로 모은 행사">모음</th>
             </tr>
           </thead>
           <tbody>
@@ -122,8 +122,8 @@ export default async function EventSourcesPage() {
         <RefreshEventsButton />
       </div>
       <p className={shared.mutedText}>
-        매일 08:30에 판매처마다 행사를 읽어 개발 행사만 사이트 후보로 올려요. 한 곳을 못 읽으면 그곳 행사는 전날 것을
-        그대로 둬요. 두 곳에 같은 행사가 있으면 티켓타코 것을 남겨요.
+        매일 08:30에 판매처마다 행사를 읽어 개발 행사만 골라 검증 대기로 모아요. 행사 → 검증에서 올린 것만 사이트 후보가
+        돼요. 한 곳을 못 읽으면 그곳 행사는 전날 것을 그대로 둬요. 두 곳에 같은 행사가 있으면 티켓타코 것을 남겨요.
       </p>
       {sources.length === 0 ? (
         <div className={shared.card}>

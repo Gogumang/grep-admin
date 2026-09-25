@@ -336,7 +336,38 @@ export interface EventSourceSummary {
   recentRuns: EventSourceRun[]
 }
 
+/** 검증을 기다리는 행사. collector 의 /api/admin/events/candidates/pending 응답 모양이다. 날짜·시각은 한국 기준. */
+export interface EventCandidate {
+  id: string
+  title: string
+  url: string
+  host: string
+  startDate: string
+  startTime: string
+  endDate: string
+  place: string | null
+  isOnline: boolean
+  lowestPrice: number | null
+  highestPrice: number | null
+  source: '티켓타코' | '이벤터스'
+  firstSeenAt: string
+}
+
 export const collector = {
+  listPendingEvents: () => request<EventCandidate[]>('/api/admin/events/candidates/pending'),
+
+  approveEvents: (eventIds: string[]) =>
+    request<{ affectedEventCount: number }>('/api/admin/events/candidates/approve', {
+      method: 'POST',
+      body: JSON.stringify({ eventIds }),
+    }),
+
+  rejectEvents: (eventIds: string[]) =>
+    request<{ affectedEventCount: number }>('/api/admin/events/candidates/reject', {
+      method: 'POST',
+      body: JSON.stringify({ eventIds }),
+    }),
+
   listEventSources: () => request<EventSourceSummary[]>('/api/admin/event-sources'),
 
   listCompanySummaries: () => request<CompanySummary[]>('/api/admin/company-repositories'),
