@@ -127,9 +127,11 @@ export function FilterSelect({ label, options, value, onChange, hasAllOption = t
         aria-expanded={isOpen}
         aria-controls={isOpen ? listId : undefined}
         data-active={selectedOption ? true : undefined}
+        aria-label={selectedOption ? `${label}: ${selectedOption.label}` : undefined}
         onClick={() => (isOpen ? close({ restoreFocus: false }) : open())}
       >
-        {selectedOption ? `${label} · ${selectedOption.label}` : label}
+        {/* 고르면 필터 이름을 빼고 값만 적는다 — 칩이 파래져서 좁혀졌다는 것은 이미 보인다. */}
+        {selectedOption ? selectedOption.label : label}
         <ChevronIcon />
       </button>
 
