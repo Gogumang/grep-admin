@@ -28,6 +28,24 @@ export async function addBlog(blogName: string, feedUrl: string): Promise<Action
 }
 
 /**
+ * 이름·피드 주소를 고친다.
+ *
+ * 빼고 다시 넣지 않고 고치는 이유 — 다시 넣으면 새 blogKey 가 생겨 지난 글이 주인을 잃는다.
+ * 블로그가 주소를 옮겼을 때(야놀자 → NOL Tech) 이 길로 바꾼다.
+ */
+export async function updateBlog(blogKey: string, blogName: string, feedUrl: string): Promise<ActionResult> {
+  await requireAdmin()
+
+  try {
+    const feed = await collector.updateBlog(blogKey, blogName.trim(), feedUrl.trim())
+    revalidatePath('/blogs')
+    return { ok: true, message: `${feed.blogName} 고침` }
+  } catch (error) {
+    return { ok: false, message: describe(error) }
+  }
+}
+
+/**
  * 수집을 켜거나 끈다.
  *
  * 목록에서 빼는 길을 두지 않은 이유 — 뺐다가 다시 넣으면 collector가 피드 주소로 blogKey를

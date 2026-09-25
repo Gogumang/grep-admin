@@ -495,6 +495,13 @@ export const collector = {
   addBlog: (blogName: string, feedUrl: string) =>
     request<BlogFeed>('/api/admin/feeds', { method: 'POST', body: JSON.stringify({ blogName, feedUrl }) }),
 
+  /** 이름·피드 주소를 고친다. blogKey 는 그대로라 지난 글이 같은 블로그에 남는다. */
+  updateBlog: (blogKey: string, blogName: string, feedUrl: string) =>
+    request<BlogFeed>(`/api/admin/feeds/${encodeURIComponent(blogKey)}`, {
+      method: 'PUT',
+      body: JSON.stringify({ blogName, feedUrl }),
+    }),
+
   /** 수집을 켜거나 끈다. 바뀐 뒤의 모습을 돌려준다. */
   setBlogActive: (blogKey: string, active: boolean) =>
     request<BlogFeed>(`/api/admin/feeds/${encodeURIComponent(blogKey)}/active`, {

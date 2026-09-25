@@ -4,7 +4,7 @@ import { type RefObject, useEffect, useOptimistic, useRef, useState, useTransiti
 import { Button, Switch, TextField, useDialog, useToast } from '@/shared'
 import type { BlogFeed } from '@/lib/collector'
 import { BlogIcon } from '@/components/BlogIcon'
-import { addBlog, setBlogActive, type ActionResult } from './actions'
+import { addBlog, setBlogActive, updateBlog, type ActionResult } from './actions'
 import { CollectRunner } from './CollectRunner'
 import * as styles from '@/components/shared.css'
 import * as local from './blogManager.css'
@@ -15,7 +15,7 @@ interface BlogDraft {
 }
 
 /**
- * 추가 창의 확인 버튼은 창 바깥(OverlayProvider)이 그린다.
+ * 추가·고치기 창의 확인 버튼은 창 바깥(OverlayProvider)이 그린다.
  * 그래서 값을 읽고 실패를 돌려줄 통로를 창 안쪽에서 이 모양으로 남긴다.
  */
 interface AddBlogControl {
@@ -29,8 +29,8 @@ interface AddBlogControl {
  * 입력값을 state가 아니라 ref에 담는 이유 — 한 글자마다 다시 그리면 다이얼로그 전체가
  * 함께 다시 그려진다. 여기서 값을 읽는 곳은 확인 버튼 하나뿐이라 중간 상태가 필요 없다.
  */
-function AddBlogFields({ control }: { control: RefObject<AddBlogControl | null> }) {
-  const draft = useRef<BlogDraft>({ blogName: '', feedUrl: '' })
+function AddBlogFields({ control, initial }: { control: RefObject<AddBlogControl | null>; initial?: BlogDraft }) {
+  const draft = useRef<BlogDraft>(initial ?? { blogName: '', feedUrl: '' })
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -47,6 +47,7 @@ function AddBlogFields({ control }: { control: RefObject<AddBlogControl | null> 
         label="블로그 이름"
         labelOption="sustain"
         placeholder="예: 카카오"
+        defaultValue={initial?.blogName}
         autoFocus
         onChange={(event) => {
           draft.current = { ...draft.current, blogName: event.target.value }
@@ -57,6 +58,7 @@ function AddBlogFields({ control }: { control: RefObject<AddBlogControl | null> 
         label="피드 주소"
         labelOption="sustain"
         placeholder="예: https://tech.kakao.com/feed/"
+        defaultValue={initial?.feedUrl}
         onChange={(event) => {
           draft.current = { ...draft.current, feedUrl: event.target.value }
         }}
@@ -123,6 +125,27 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
     })
   }
 
+  /** 블로그가 주소를 옮겼을 때 쓴다. blogKey 는 그대로라 지난 글이 같은 블로그에 남는다. */
+  function openEditDialog(feed: BlogFeed) {
+    void openAsyncConfirm({
+      title: `${feed.blogName} 고치기`,
+      description: <AddBlogFields control={addControl} initial={{ blogName: feed.blogName, feedUrl: feed.feedUrl }} />,
+      confirmButton: '고치기',
+      closeOnDimmerClick: true,
+      onConfirmClick: async () => {
+        const draft = addControl.current?.read() ?? { blogName: feed.blogName, feedUrl: feed.feedUrl }
+        const outcome = await updateBlog(feed.blogKey, draft.blogName, draft.feedUrl)
+
+        if (!outcome.ok) {
+          addControl.current?.showError(outcome.message)
+          throw new Error(outcome.message)
+        }
+
+        report(outcome)
+      },
+    })
+  }
+
   function toggleActive(feed: BlogFeed, active: boolean) {
     startTransition(async () => {
       applyOptimisticActive({ blogKey: feed.blogKey, active })
@@ -146,6 +169,7 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
             <tr>
               <th className={styles.tableHead}>블로그</th>
               <th className={styles.tableHead}>피드 주소</th>
+              <th className={`${styles.tableHead} ${local.switchCell}`}>고치기</th>
               <th className={`${styles.tableHead} ${local.switchCell}`}>수집</th>
             </tr>
           </thead>
@@ -160,6 +184,11 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
                 </td>
                 <td className={styles.tableCell}>
                   <span className={styles.truncatedUrl}>{feed.feedUrl}</span>
+                </td>
+                <td className={`${styles.tableCell} ${local.switchCell}`}>
+                  <Button color="dark" variant="weak" size="small" onClick={() => openEditDialog(feed)}>
+                    고치기
+                  </Button>
                 </td>
                 <td className={`${styles.tableCell} ${local.switchCell}`}>
                   <Switch
