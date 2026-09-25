@@ -26,3 +26,16 @@ export async function collectClubRecruitments(): Promise<ActionResult> {
     return { ok: false, message }
   }
 }
+
+/** 동아리 하나의 자동 수집을 켜거나 끈다. 다음 수집(매일 08:45·지금 가져오기)부터 반영된다. */
+export async function setClubEnabled(clubKey: string, enabled: boolean): Promise<ActionResult> {
+  await requireAdmin()
+  try {
+    await collector.setClubEnabled(clubKey, enabled)
+    revalidatePath('/clubs')
+    return { ok: true, message: enabled ? '자동 수집을 켰습니다' : '자동 수집을 껐습니다' }
+  } catch (error) {
+    const message = error instanceof CollectorRequestError ? error.message : `알 수 없는 오류: ${(error as Error).message}`
+    return { ok: false, message }
+  }
+}

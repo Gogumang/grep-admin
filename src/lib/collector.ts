@@ -397,6 +397,15 @@ export interface ClubRecruitments {
 export const collector = {
   listClubRecruitments: () => request<ClubRecruitments[]>('/api/admin/clubs/recruitments'),
 
+  /** 모집 일정을 자동으로 읽을 수 있는 동아리와 켜짐 여부. */
+  listClubSources: () => request<{ clubKey: string; enabled: boolean }[]>('/api/admin/clubs/sources'),
+
+  setClubEnabled: (clubKey: string, enabled: boolean) =>
+    request<{ clubKey: string; enabled: boolean }>(`/api/admin/clubs/${encodeURIComponent(clubKey)}/enabled`, {
+      method: 'PUT',
+      body: JSON.stringify({ enabled }),
+    }),
+
   collectClubRecruitments: () =>
     request<{ clubKey: string; isOk: boolean; foundCount: number; message: string | null }[]>('/api/clubs/collect', {
       method: 'POST',

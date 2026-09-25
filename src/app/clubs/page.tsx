@@ -1,11 +1,11 @@
 import clubData from '@/data/clubs.json'
-import { collector, type ClubRecruitments } from '@/lib/collector'
+import { collector } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import { ClubIcon } from './ClubIcon'
 import { CollectClubsButton } from './CollectClubsButton'
-import { CollectStatus } from './CollectStatus'
+import { ClubCollectSwitch } from './ClubCollectSwitch'
 import * as styles from './clubs.css'
 
 export const dynamic = 'force-dynamic'
@@ -41,14 +41,14 @@ const SECTIONS: { method: CollectMethod; title: string; description: string }[] 
 /**
  * 개발 동아리 수집처. 어디서 모집 정보를 가져올 수 있는지 본다.
  * 목록은 src/data/clubs.json 에 있다(2026-09-25 조사). 자동으로 읽을 수 있는 네 곳은 collector 가 매일 08:45 에
- * 모집 일정을 읽어 쌓는다 — 여기서는 그 수집이 잘 도는지(마지막 확인·실패)만 보고, 모집 날짜는 보여 주지 않는다.
+ * 모집 일정을 읽어 쌓는다 — 여기서는 동아리마다 자동 수집을 켜고 끈다.
  */
 export default async function ClubsPage() {
   await requireAdmin()
   const clubs = clubData.clubs as Club[]
-  // 수집 상태는 보조다 — collector 가 잠깐 안 되면 그 칸만 비운다.
-  const collected = await collector.listClubRecruitments().catch(() => null)
-  const collectedByClub = new Map((collected ?? []).map((entry: ClubRecruitments) => [entry.clubKey, entry]))
+  // 스위치 값은 보조다 — collector 가 잠깐 안 되면 스위치 칸만 비운다.
+  const sources = await collector.listClubSources().catch(() => null)
+  const enabledByClub = new Map((sources ?? []).map((source) => [source.clubKey, source.enabled]))
 
   return (
     <>
@@ -59,7 +59,7 @@ export default async function ClubsPage() {
       <p className={shared.mutedText}>
         IT 연합 동아리의 모집 페이지예요. 자동으로 읽을 수 있는 네 곳은 매일 08:45에 모집 일정을 가져와요.
       </p>
-      {collected === null && <p className={shared.errorNotice}>collector 에서 수집 상태를 불러오지 못했어요.</p>}
+      {sources === null && <p className={shared.errorNotice}>collector 에서 자동 수집 설정을 불러오지 못했어요.</p>}
 
       {SECTIONS.map((section) => {
         const inSection = clubs.filter((club) => club.method === section.method)
@@ -76,7 +76,7 @@ export default async function ClubsPage() {
                 <thead>
                   <tr>
                     <th className={shared.tableHead}>동아리</th>
-                    <th className={shared.tableHead}>수집 상태</th>
+                    <th className={shared.tableHead}>자동 수집</th>
                     <th className={shared.tableHead}>모집 페이지</th>
                   </tr>
                 </thead>
@@ -96,10 +96,10 @@ export default async function ClubsPage() {
                         </span>
                       </td>
                       <td className={shared.tableCell}>
-                        {club.method === 'auto' && collected !== null ? (
-                          <CollectStatus collected={collectedByClub.get(club.key)} />
+                        {enabledByClub.has(club.key) ? (
+                          <ClubCollectSwitch clubKey={club.key} name={club.name} enabled={enabledByClub.get(club.key) ?? true} />
                         ) : (
-                          <span className={shared.mutedText}>{club.method === 'auto' ? '—' : '자동 수집 안 함'}</span>
+                          <span className={shared.mutedText}>{club.method === 'auto' ? '—' : '불가'}</span>
                         )}
                       </td>
                       <td className={shared.tableCell}>
