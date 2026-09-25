@@ -90,10 +90,11 @@ export function EventListRow({
 }
 
 /** 사이트 저장소에 있는 행사 한 줄. 검증 화면의 후보와 공개한 행사 화면이 같이 쓴다. */
-export function EventRow({ event, isEnded }: { event: SiteEvent; isEnded: boolean }) {
+export function EventRow({ event, isEnded, leading }: { event: SiteEvent; isEnded: boolean; leading?: ReactNode }) {
   return (
     <EventListRow
       event={event}
+      leading={leading}
       badges={
         <>
           {event.isFeatured && (
