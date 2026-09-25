@@ -2,13 +2,13 @@ import { collector, type JobSource } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
-import { CollectJobsButton } from './CollectJobsButton'
+import { JobCollectRunner } from './JobCollectRunner'
 import * as styles from './sources.css'
 
 export const dynamic = 'force-dynamic'
 
-/** 전체 수집 버튼(서버 액션)이 끝날 때까지 기다린다. 스무 곳 안팎을 읽고 본문까지 받아 몇 분 걸린다. */
-export const maxDuration = 300
+/** 회사 하나를 받는 서버 액션이 끝날 때까지 기다린다. 공고가 많은 곳은 본문까지 받아 1분을 넘길 수 있다. */
+export const maxDuration = 120
 
 /** 채용 시스템 종류를 사람이 읽는 이름으로. collector 의 JobBoardType 과 짝이다. */
 const BOARD_LABEL: Record<string, string> = {
@@ -49,12 +49,13 @@ export default async function JobSourcesPage() {
     <>
       <div className={styles.titleRow}>
         <h1 className={console.pageTitle}>채용 수집처 · {sources.length}곳</h1>
-        <CollectJobsButton label="전체 지금 가져오기" />
       </div>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
-        매일 08:00에 아래 회사의 채용 페이지를 읽어 새 공고를 채용 검증에 넣어요. 지금 바로 가져오려면 위 버튼을 누르세요
-        (몇 분 걸려요).
+        매일 08:00에 아래 회사의 채용 페이지를 읽어 새 공고를 채용 검증에 넣어요. 지금 바로 가져오면 회사를 하나씩 돌며
+        어디를 가져오는 중인지 보여 줘요.
       </p>
+
+      <JobCollectRunner companies={sources.map(({ companyKey, companyName }) => ({ companyKey, companyName }))} />
 
       <div className={shared.card}>
         <table className={shared.table}>

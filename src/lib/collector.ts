@@ -374,18 +374,9 @@ export interface CompanyJobResult {
   failureMessage: string | null
 }
 
-export interface JobCollectionResult {
-  companyCount: number
-  openPostingCount: number
-  addedCount: number
-  closedCount: number
-  removedFromSiteCount: number
-  failedCompanies: string[]
-  companies: CompanyJobResult[]
-}
 
-/** 전체 수집은 회사 스무 곳 안팎을 읽고 새 공고 본문까지 받아 몇 분 걸린다(DAG 는 10분을 준다). */
-const JOB_COLLECTION_TIMEOUT_MILLISECONDS = 290_000
+/** 회사 하나는 목록과 새 공고 본문까지 받아 보통 수십 초, 공고가 많은 곳(쿠팡 120여 건)은 더 걸린다. */
+const COMPANY_JOB_COLLECTION_TIMEOUT_MILLISECONDS = 110_000
 
 export const collector = {
   listJobSources: () => request<JobSource[]>('/api/jobs/sources'),
@@ -393,8 +384,13 @@ export const collector = {
   /** 사이트에 공개된 열린 공고. 회사별 공개 공고 수를 세는 데 쓴다. */
   listOpenJobCompanies: () => request<{ companyKey: string }[]>('/api/jobs?limit=2000'),
 
-  collectAllJobs: () =>
-    request<JobCollectionResult>('/api/jobs/collect', { method: 'POST' }, JOB_COLLECTION_TIMEOUT_MILLISECONDS),
+  /** 회사 하나를 지금 다시 받는다. 수집처 화면이 회사를 하나씩 차례로 부르며 진행을 보여 준다. */
+  collectCompanyJobs: (companyKey: string) =>
+    request<CompanyJobResult>(
+      `/api/jobs/collect?company=${encodeURIComponent(companyKey)}`,
+      { method: 'POST' },
+      COMPANY_JOB_COLLECTION_TIMEOUT_MILLISECONDS,
+    ),
 
 
   listPendingEvents: () => request<EventCandidate[]>('/api/admin/events/candidates/pending'),
