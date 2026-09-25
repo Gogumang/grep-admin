@@ -1,9 +1,11 @@
 import clubData from '@/data/clubs.json'
 import { collector } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
+import { Badge, type BadgeColor } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import { ClubIcon } from './ClubIcon'
+import { ClubKindTabs, type ClubKind } from './ClubKindTabs'
 import { CollectClubsButton } from './CollectClubsButton'
 import { ClubCollectSwitch } from './ClubCollectSwitch'
 import * as styles from './clubs.css'
@@ -19,126 +21,115 @@ interface Club {
   siteUrl: string | null
   recruitUrl: string
   method: CollectMethod
-  /** 생략하면 동아리. 부트캠프는 수집 방법과 상관없이 한 구역에 모은다. */
-  kind?: 'club' | 'bootcamp'
+  /** 생략하면 동아리. */
+  kind?: ClubKind
 }
 
 const ICON_SIZE = 24
 
-/** 수집 방법별로 묶는다. 앞의 것일수록 사람 손이 덜 간다. */
-const SECTIONS: { method: CollectMethod; title: string; description: string }[] = [
-  { method: 'auto', title: '자동으로 읽을 수 있음', description: '모집 일정(기수·시작·마감)을 사이트에서 기계적으로 읽을 수 있어요.' },
-  {
-    method: 'draft',
-    title: '초안을 만들고 사람이 확정',
-    description: '날짜는 보이지만 연도나 기수가 빠져 있어 그대로 믿을 수 없어요.',
-  },
-  {
-    method: 'manual',
-    title: '사람이 입력',
-    description: '날짜를 공개하지 않거나, 학교별로 모집하거나, 인스타그램에만 공지해요.',
-  },
-]
+/** 앞의 것일수록 사람 손이 덜 간다 — 표도 이 순서로 줄을 세운다. */
+const METHOD_ORDER: CollectMethod[] = ['auto', 'draft', 'manual']
 
-const METHOD_ORDER: CollectMethod[] = SECTIONS.map((section) => section.method)
+const METHODS: Record<CollectMethod, { label: string; color: BadgeColor; description: string }> = {
+  auto: { label: '자동', color: 'blue', description: '모집 일정(기수·시작·마감)을 사이트에서 기계적으로 읽을 수 있어요.' },
+  draft: { label: '사람이 확정', color: 'yellow', description: '날짜는 보이지만 연도나 기수가 빠져 있어 그대로 믿을 수 없어요.' },
+  manual: { label: '사람이 입력', color: 'elephant', description: '날짜를 공개하지 않거나, 학교별로 모집하거나, 인스타그램에만 공지해요.' },
+}
+
+const DESCRIPTION: Record<ClubKind, string> = {
+  club: 'IT 연합 동아리의 모집 페이지예요. 자동으로 읽을 수 있는 곳은 매일 08:45에 모집 일정을 가져와요.',
+  bootcamp:
+    '개발 부트캠프의 모집 페이지예요. 우아한테크코스·카카오테크 부트캠프는 자동으로 읽어요. SSAFY 는 날짜에 연도가 없어 사람이 확정하고, 부스트캠프(2026년 쉼)·소프트웨어 마에스트로(로봇 접근 차단)·42서울(상시 모집)은 사람이 봐요.',
+}
 
 /**
  * 개발 동아리·부트캠프 수집처. 어디서 모집 정보를 가져올 수 있는지 본다.
  * 목록은 src/data/clubs.json 에 있다(동아리 2026-09-25, 부트캠프 2026-09-26 조사). 자동으로 읽을 수 있는 곳은 collector 가
  * 매일 08:45 에 모집 일정을 읽어 쌓는다 — 여기서는 곳마다 자동 수집을 켜고 끈다.
+ * 동아리와 부트캠프는 오른쪽 탭(?kind=)으로 나눠 보고, 수집 방법은 한 표 안의 배지로 구분한다.
  */
-export default async function ClubsPage() {
+export default async function ClubsPage({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
   await requireAdmin()
+  const kind: ClubKind = (await searchParams).kind === 'bootcamp' ? 'bootcamp' : 'club'
   const everyone = clubData.clubs as Club[]
-  const clubs = everyone.filter((club) => club.kind !== 'bootcamp')
-  // 자동 → 사람이 확정 → 사람이 입력 순. 손이 덜 가는 곳이 위에 온다.
-  const bootcamps = everyone
-    .filter((club) => club.kind === 'bootcamp')
+  const kindOf = (club: Club): ClubKind => club.kind ?? 'club'
+  const counts: Record<ClubKind, number> = {
+    club: everyone.filter((club) => kindOf(club) === 'club').length,
+    bootcamp: everyone.filter((club) => kindOf(club) === 'bootcamp').length,
+  }
+  const rows = everyone
+    .filter((club) => kindOf(club) === kind)
     .sort((left, right) => METHOD_ORDER.indexOf(left.method) - METHOD_ORDER.indexOf(right.method))
   // 스위치 값은 보조다 — collector 가 잠깐 안 되면 스위치 칸만 비운다.
   const sources = await collector.listClubSources().catch(() => null)
   const enabledByClub = new Map((sources ?? []).map((source) => [source.clubKey, source.enabled]))
 
-  const renderTable = (rows: Club[]) => (
-    <div className={shared.card}>
-      <table className={shared.table}>
-        <thead>
-          <tr>
-            <th className={shared.tableHead}>이름</th>
-            <th className={shared.tableHead}>자동 수집</th>
-            <th className={shared.tableHead}>모집 페이지</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((club) => (
-            <tr key={club.key}>
-              <td className={shared.tableCell}>
-                <span className={styles.nameCell}>
-                  <ClubIcon clubKey={club.key} name={club.name} size={ICON_SIZE} />
-                  {club.siteUrl ? (
-                    <a className={styles.clubName} href={club.siteUrl} target="_blank" rel="noreferrer">
-                      {club.name}
-                    </a>
-                  ) : (
-                    <span className={styles.clubName}>{club.name}</span>
-                  )}
-                </span>
-              </td>
-              <td className={shared.tableCell}>
-                {enabledByClub.has(club.key) ? (
-                  <ClubCollectSwitch clubKey={club.key} name={club.name} enabled={enabledByClub.get(club.key) ?? true} />
-                ) : (
-                  <span className={shared.mutedText}>{club.method === 'auto' ? '—' : '불가'}</span>
-                )}
-              </td>
-              <td className={shared.tableCell}>
-                <a href={club.recruitUrl} target="_blank" rel="noreferrer" className={shared.truncatedUrl}>
-                  {club.recruitUrl.replace(/^https:\/\/(www\.)?/, '')}
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-
   return (
     <>
       <div className={styles.titleRow}>
         <h1 className={console.pageTitle}>
-          동아리 수집처 · {clubs.length}곳 · 부트캠프 {bootcamps.length}곳
+          {kind === 'club' ? '동아리' : '부트캠프'} 수집처 · {rows.length}곳
         </h1>
-        <CollectClubsButton />
+        <div className={styles.titleActions}>
+          <ClubKindTabs kind={kind} counts={counts} />
+          <CollectClubsButton />
+        </div>
       </div>
-      <p className={shared.mutedText}>
-        IT 연합 동아리와 개발 부트캠프의 모집 페이지예요. 자동으로 읽을 수 있는 곳은 매일 08:45에 모집 일정을 가져와요.
+      <p className={shared.mutedText} style={{ marginBottom: 16 }}>
+        {DESCRIPTION[kind]}
       </p>
       {sources === null && <p className={shared.errorNotice}>collector 에서 자동 수집 설정을 불러오지 못했어요.</p>}
 
-      {SECTIONS.map((section) => {
-        const inSection = clubs.filter((club) => club.method === section.method)
-        return (
-          <section key={section.method} className={styles.section}>
-            <h2 className={styles.sectionTitle}>
-              {section.title} {inSection.length}
-            </h2>
-            <p className={shared.mutedText} style={{ marginBottom: 8 }}>
-              {section.description}
-            </p>
-            {renderTable(inSection)}
-          </section>
-        )
-      })}
-
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>부트캠프 {bootcamps.length}</h2>
-        <p className={shared.mutedText} style={{ marginBottom: 8 }}>
-          우아한테크코스·카카오테크 부트캠프는 자동으로 읽어요. SSAFY 는 날짜에 연도가 없어 사람이 확정하고, 부스트캠프(2026년
-          쉼)·소프트웨어 마에스트로(로봇 접근 차단)·42서울(상시 모집)은 사람이 봐요.
-        </p>
-        {renderTable(bootcamps)}
-      </section>
+      <div className={shared.card}>
+        <table className={shared.table}>
+          <thead>
+            <tr>
+              <th className={shared.tableHead}>이름</th>
+              <th className={shared.tableHead}>수집 방법</th>
+              <th className={shared.tableHead}>자동 수집</th>
+              <th className={shared.tableHead}>모집 페이지</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((club) => {
+              const method = METHODS[club.method]
+              return (
+                <tr key={club.key}>
+                  <td className={shared.tableCell}>
+                    <span className={styles.nameCell}>
+                      <ClubIcon clubKey={club.key} name={club.name} size={ICON_SIZE} />
+                      {club.siteUrl ? (
+                        <a className={styles.clubName} href={club.siteUrl} target="_blank" rel="noreferrer">
+                          {club.name}
+                        </a>
+                      ) : (
+                        <span className={styles.clubName}>{club.name}</span>
+                      )}
+                    </span>
+                  </td>
+                  <td className={shared.tableCell}>
+                    <Badge color={method.color} variant="weak" size="xsmall" title={method.description}>
+                      {method.label}
+                    </Badge>
+                  </td>
+                  <td className={shared.tableCell}>
+                    {enabledByClub.has(club.key) ? (
+                      <ClubCollectSwitch clubKey={club.key} name={club.name} enabled={enabledByClub.get(club.key) ?? true} />
+                    ) : (
+                      <span className={shared.mutedText}>{club.method === 'auto' ? '—' : '불가'}</span>
+                    )}
+                  </td>
+                  <td className={shared.tableCell}>
+                    <a href={club.recruitUrl} target="_blank" rel="noreferrer" className={shared.truncatedUrl}>
+                      {club.recruitUrl.replace(/^https:\/\/(www\.)?/, '')}
+                    </a>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </>
   )
 }

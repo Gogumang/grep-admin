@@ -24,9 +24,15 @@ export const clubName = style({
   selectors: { '&:hover': { textDecoration: 'underline' } },
 })
 
-export const section = style({ marginTop: vars.space.xl })
+export const titleRow = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: vars.space.md,
+})
 
-export const titleRow = style({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: vars.space.md })
+export const titleActions = style({ display: 'flex', alignItems: 'center', gap: vars.space.sm })
 
 export const sectionTitle = style({
   margin: `0 0 ${vars.space.sm}`,
