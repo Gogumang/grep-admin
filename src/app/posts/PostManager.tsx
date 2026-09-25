@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
-import { Result, useToast } from '@/shared'
+import { FilterSelect, Result, useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
 import { SiteImage } from '@/components/SiteImage'
 import { togglePostHidden, type ActionResult } from './actions'
@@ -47,6 +47,8 @@ export interface PostListItem {
 
 export function PostManager({ posts }: { posts: PostListItem[] }) {
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
+  /** 고른 회사(블로그 이름). null이면 모든 회사. 숨김 갈래와 함께 걸린다. */
+  const [blogName, setBlogName] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [, startTransition] = useTransition()
   const { openToast } = useToast()
@@ -64,9 +66,23 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
   /** 화면이 믿을 상태. 방금 누른 값이 있으면 그것이, 없으면 서버가 준 값이 이긴다. */
   const isHidden = (post: PostListItem) => justToggled.get(post.id) ?? post.hidden
 
+  // 글이 많은 회사부터 둔다 — 자주 찾는 회사가 위에 온다.
+  const blogNames = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const post of posts) counts.set(post.blogName, (counts.get(post.blogName) ?? 0) + 1)
+    return [...counts.entries()]
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'ko'))
+      .map(([name]) => name)
+  }, [posts])
+
   const matched = useMemo(
-    () => (showHiddenOnly ? posts.filter((post) => justToggled.get(post.id) ?? post.hidden) : posts),
-    [posts, showHiddenOnly, justToggled],
+    () =>
+      posts.filter(
+        (post) =>
+          (blogName === null || post.blogName === blogName) &&
+          (!showHiddenOnly || (justToggled.get(post.id) ?? post.hidden)),
+      ),
+    [posts, blogName, showHiddenOnly, justToggled],
   )
 
   const visible = matched.slice(0, visibleCount)
@@ -94,6 +110,11 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
   /** 갈래를 바꾸면 목록이 통째로 달라진다 — 앞의 스크롤 위치만큼 그려 둘 이유가 없다. */
   function selectTab(hiddenOnly: boolean) {
     setShowHiddenOnly(hiddenOnly)
+    setVisibleCount(PAGE_SIZE)
+  }
+
+  function selectBlog(name: string | null) {
+    setBlogName(name)
     setVisibleCount(PAGE_SIZE)
   }
 
@@ -138,6 +159,14 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
         >
           숨긴 글만
         </button>
+        <div className={list.filter}>
+          <FilterSelect
+            label="회사"
+            options={blogNames.map((name) => ({ value: name, label: name }))}
+            value={blogName}
+            onChange={selectBlog}
+          />
+        </div>
       </div>
 
       <div className={styles.card}>
@@ -147,7 +176,11 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
             <Result
               figure={EMPTY_FIGURE}
               title="숨긴 글이 없어요"
-              description={'사이트에 모든 글이 공개돼 있어요.\n전체 목록에서 공개 스위치를 끄면 여기에 모여요.'}
+              description={
+                blogName === null
+                  ? '사이트에 모든 글이 공개돼 있어요.\n전체 목록에서 공개 스위치를 끄면 여기에 모여요.'
+                  : `${blogName} 글은 모두 공개돼 있어요.\n전체 목록에서 공개 스위치를 끄면 여기에 모여요.`
+              }
               button={<Result.Button onClick={() => selectTab(false)}>전체 글 보기</Result.Button>}
             />
           ) : (

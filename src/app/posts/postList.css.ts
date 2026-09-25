@@ -14,9 +14,13 @@ import { vars } from '@/styles/contract.css'
 /** 갈래 줄. 버튼처럼 칠하지 않고 글자 색과 굵기로만 고른 것을 표시한다. */
 export const tabs = style({
   display: 'flex',
+  alignItems: 'center',
   gap: vars.space.lg,
   marginBottom: vars.space.xl,
 })
+
+/** 회사 필터는 갈래 줄 오른쪽 끝에 둔다 — 갈래(전체/숨긴 글만)와 함께 걸리는 조건이다. */
+export const filter = style({ marginLeft: 'auto' })
 
 export const tab = style({
   border: 0,
