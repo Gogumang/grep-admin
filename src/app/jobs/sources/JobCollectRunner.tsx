@@ -70,9 +70,9 @@ export function JobCollectRunner({ companies }: { companies: JobCompany[] }) {
 
   return (
     <>
-      <div className={shared.formRow}>
+      <div className={shared.formRow} style={{ justifyContent: 'flex-end' }}>
         <Button color="primary" variant="weak" size="small" onClick={run} disabled={isRunning || companies.length === 0}>
-          {isRunning ? '가져오는 중…' : '전체 지금 가져오기'}
+          {isRunning ? '가져오는 중…' : '채용 가져오기'}
         </Button>
       </div>
 
