@@ -7,12 +7,8 @@ import { Result } from '@/shared'
 import { EventRow } from './EventRow'
 import * as styles from './events.css'
 import { PendingEventsList } from './PendingEventsList'
-import { RefreshEventsButton } from './RefreshEventsButton'
 
 export const dynamic = 'force-dynamic'
-
-/** 갱신 버튼(서버 액션)이 판매처를 다 읽을 때까지 기다린다. 기본 제한 시간으로는 중간에 끊긴다. */
-export const maxDuration = 120
 
 /**
  * 행사 검증. 판매처(티켓타코·이벤터스)에서 모은 행사가 사이트에 나가기 전까지 거치는 두 단계를 한 화면에서 본다.
@@ -32,12 +28,7 @@ export default async function EventReviewPage() {
 
   return (
     <>
-      <div className={styles.header}>
-        <h1 className={console.pageTitle}>
-          행사 검증{pending.status === 'fulfilled' ? ` ${pending.value.length}건` : ''}
-        </h1>
-        <RefreshEventsButton />
-      </div>
+      <h1 className={console.pageTitle}>행사 검증{pending.status === 'fulfilled' ? ` ${pending.value.length}건` : ''}</h1>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
         collector가 매일 08:30 판매처(티켓타코·이벤터스)에서 모은 행사는 &lsquo;새로 모은 행사&rsquo;에 쌓여요. 후보로 올리면
         &lsquo;이미지를 기다리는 행사&rsquo;로 내려가고, 거기서 이미지를 붙여 올린 행사만 사이트 이벤트 페이지에 나가요.

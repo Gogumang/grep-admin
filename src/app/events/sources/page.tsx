@@ -1,12 +1,15 @@
 import { collector, type EventSourceRun, type EventSourceSummary } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
-import { Badge, Result } from '@/shared'
+import { Badge } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import { RefreshEventsButton } from '../RefreshEventsButton'
 import * as styles from './sources.css'
 
 export const dynamic = 'force-dynamic'
+
+/** 갱신 버튼(서버 액션)이 판매처를 다 읽을 때까지 기다린다. 기본 제한 시간으로는 중간에 끊긴다. */
+export const maxDuration = 120
 
 const timeFormat = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
@@ -19,7 +22,7 @@ const timeFormat = new Intl.DateTimeFormat('ko-KR', {
 function RunStatus({ run }: { run: EventSourceRun }) {
   return run.isCollected ? (
     <Badge color="green" variant="weak" size="xsmall">
-      반영
+      정상
     </Badge>
   ) : (
     <Badge color="red" variant="weak" size="xsmall" title={run.message ?? undefined}>
@@ -28,77 +31,14 @@ function RunStatus({ run }: { run: EventSourceRun }) {
   )
 }
 
-function SourceCard({ source }: { source: EventSourceSummary }) {
-  const latest = source.recentRuns[0]
-  return (
-    <section className={shared.card}>
-      <header className={styles.cardHeader}>
-        <h2 className={styles.sourceName}>
-          <a href={source.homepageUrl} target="_blank" rel="noreferrer">
-            {source.label}
-          </a>
-        </h2>
-        {latest && <RunStatus run={latest} />}
-      </header>
-
-      <dl className={styles.stats}>
-        <div>
-          <dt>올린 행사(사이트 후보)</dt>
-          <dd>{source.listedNow.toLocaleString()}건</dd>
-        </div>
-        <div>
-          <dt>마지막 수집</dt>
-          <dd>{latest ? timeFormat.format(new Date(latest.ranAt)) : '—'}</dd>
-        </div>
-        <div>
-          <dt>읽은 행사</dt>
-          <dd>{latest ? `${latest.readCount.toLocaleString()}건` : '—'}</dd>
-        </div>
-      </dl>
-
-      {latest && !latest.isCollected && latest.message && <p className={shared.errorNotice}>{latest.message}</p>}
-
-      {source.recentRuns.length === 0 ? (
-        <p className={shared.mutedText}>아직 수집 기록이 없어요. 매일 08:30에 모으고, 위 버튼으로 바로 돌릴 수 있어요.</p>
-      ) : (
-        <table className={shared.table}>
-          <thead>
-            <tr>
-              <th className={shared.tableHead}>시각</th>
-              <th className={shared.tableHead}>결과</th>
-              <th className={shared.tableHead}>읽음</th>
-              <th className={shared.tableHead} title="끝난 행사">지난 행사</th>
-              <th className={shared.tableHead} title="개발 행사가 아니거나 교육 과정·강의 판매">개발 외</th>
-              <th className={shared.tableHead} title="다른 판매처에 같은 행사가 있어 뺌">중복</th>
-              <th className={shared.tableHead} title="규칙을 통과해 검증 대상으로 모은 행사">모음</th>
-            </tr>
-          </thead>
-          <tbody>
-            {source.recentRuns.map((run) => (
-              <tr key={run.ranAt}>
-                <td className={shared.tableCell}>{timeFormat.format(new Date(run.ranAt))}</td>
-                <td className={shared.tableCell}>
-                  <RunStatus run={run} />
-                </td>
-                <td className={shared.tableCell}>{run.readCount.toLocaleString()}</td>
-                <td className={shared.tableCell}>{run.endedCount.toLocaleString()}</td>
-                <td className={shared.tableCell}>{run.offTopicCount.toLocaleString()}</td>
-                <td className={shared.tableCell}>{run.duplicateCount.toLocaleString()}</td>
-                <td className={shared.tableCell}>
-                  <strong>{run.listedCount.toLocaleString()}</strong>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </section>
-  )
+/** 모은 행사 수 위에 올리면 무엇이 왜 빠졌는지 보인다 — 칸을 늘리지 않고 확인할 수 있게. */
+function breakdown(run: EventSourceRun): string {
+  return `읽음 ${run.readCount} · 지난 행사 ${run.endedCount} · 개발 외 ${run.offTopicCount} · 중복 ${run.duplicateCount}`
 }
 
 /**
- * 행사를 어디서 가져오는지와, 판매처마다 최근에 몇 건을 읽어 몇 건을 싣고 무엇이 왜 빠졌는지.
- * collector 가 매일 08:30 에 모을 때마다 판매처별로 기록을 남긴다(event_source_run).
+ * 행사를 어디서 가져오는지. collector 가 매일 08:30 에 판매처마다 행사를 읽어 검증 대기에 넣는다.
+ * 판매처별 마지막 수집 결과는 event_source_run 기록에서 온다.
  */
 export default async function EventSourcesPage() {
   await requireAdmin()
@@ -115,27 +55,75 @@ export default async function EventSourcesPage() {
     )
   }
 
+  const failures = sources.flatMap((source) => {
+    const latest = source.recentRuns[0]
+    return latest && !latest.isCollected && latest.message ? [`${source.label}: ${latest.message}`] : []
+  })
+
   return (
     <>
-      <div className={styles.titleRow}>
-        <h1 className={console.pageTitle}>행사 수집처 · {sources.length}곳</h1>
+      <h1 className={console.pageTitle}>행사 수집처 · {sources.length}곳</h1>
+      <p className={shared.mutedText} style={{ marginBottom: 20 }}>
+        매일 08:30에 판매처마다 행사를 읽어 검증 대기로 모아요. 티켓타코는 전부, 이벤터스는 개발 행사만 모아요. 한 곳을 못
+        읽으면 그곳 행사는 전날 것을 그대로 둬요. 두 곳에 같은 행사가 있으면 티켓타코 것을 남겨요.
+      </p>
+
+      <div className={shared.formRow} style={{ justifyContent: 'flex-end' }}>
         <RefreshEventsButton />
       </div>
-      <p className={shared.mutedText}>
-        매일 08:30에 판매처마다 행사를 읽어 검증 대기로 모아요. 티켓타코는 전부, 이벤터스는 개발 행사만 모아요. 행사 검증의 &lsquo;새로 모은 행사&rsquo;에서 올린 것만 사이트
-        후보가 돼요. 한 곳을 못 읽으면 그곳 행사는 전날 것을 그대로 둬요. 두 곳에 같은 행사가 있으면 티켓타코 것을 남겨요.
-      </p>
-      {sources.length === 0 ? (
-        <div className={shared.card}>
-          <Result title="수집처가 없어요" description="collector 설정을 확인해 주세요." />
-        </div>
-      ) : (
-        <div className={styles.cards}>
-          {sources.map((source) => (
-            <SourceCard key={source.key} source={source} />
-          ))}
-        </div>
-      )}
+
+      {failures.map((failure) => (
+        <p key={failure} className={shared.errorNotice}>
+          {failure}
+        </p>
+      ))}
+
+      <div className={shared.card}>
+        <table className={shared.table}>
+          <thead>
+            <tr>
+              <th className={shared.tableHead}>판매처</th>
+              <th className={shared.tableHead}>읽는 주소</th>
+              <th className={shared.tableHead}>마지막 수집</th>
+              <th className={shared.tableHead} title="지난 행사·개발 외·중복을 빼고 검증 대상으로 모은 행사">
+                모은 행사
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sources.map((source) => {
+              const latest = source.recentRuns[0]
+              return (
+                <tr key={source.key}>
+                  <td className={shared.tableCell}>
+                    <a className={styles.sourceLink} href={source.homepageUrl} target="_blank" rel="noreferrer">
+                      {source.label}
+                    </a>
+                  </td>
+                  <td className={shared.tableCell}>
+                    <span className={shared.truncatedUrl} title={source.homepageUrl}>
+                      {source.homepageUrl}
+                    </span>
+                  </td>
+                  <td className={shared.tableCell}>
+                    {latest ? (
+                      <span className={styles.runCell}>
+                        {timeFormat.format(new Date(latest.ranAt))}
+                        <RunStatus run={latest} />
+                      </span>
+                    ) : (
+                      <span className={shared.mutedText}>기록 없음</span>
+                    )}
+                  </td>
+                  <td className={shared.tableCell}>
+                    {latest ? <span title={breakdown(latest)}>{latest.listedCount.toLocaleString()}건</span> : '—'}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </>
   )
 }
