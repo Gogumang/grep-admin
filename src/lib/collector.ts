@@ -353,7 +353,56 @@ export interface EventCandidate {
   firstSeenAt: string
 }
 
+/** 채용공고를 받아오는 회사 하나(collector job_source). boardType 은 채용 시스템 종류다. */
+export interface JobSource {
+  companyKey: string
+  companyName: string
+  boardType: string
+  boardUrl: string
+  homepageUrl: string
+}
+
+/** 회사 하나를 한 번 수집한 결과. failureMessage 가 있으면 그 회사는 실패했고 기존 공고는 그대로다. */
+export interface CompanyJobResult {
+  companyKey: string
+  companyName: string
+  fetchedCount: number
+  addedCount: number
+  closedCount: number
+  bodyCount: number
+  skippedEmpty: boolean
+  failureMessage: string | null
+}
+
+export interface JobCollectionResult {
+  companyCount: number
+  openPostingCount: number
+  addedCount: number
+  closedCount: number
+  removedFromSiteCount: number
+  failedCompanies: string[]
+  companies: CompanyJobResult[]
+}
+
+/** 전체 수집은 회사 스무 곳 안팎을 읽고 새 공고 본문까지 받아 몇 분 걸린다(DAG 는 10분을 준다). */
+const JOB_COLLECTION_TIMEOUT_MILLISECONDS = 290_000
+
 export const collector = {
+  listJobSources: () => request<JobSource[]>('/api/jobs/sources'),
+
+  /** 사이트에 공개된 열린 공고. 회사별 공개 공고 수를 세는 데 쓴다. */
+  listOpenJobCompanies: () => request<{ companyKey: string }[]>('/api/jobs?limit=2000'),
+
+  collectAllJobs: () =>
+    request<JobCollectionResult>('/api/jobs/collect', { method: 'POST' }, JOB_COLLECTION_TIMEOUT_MILLISECONDS),
+
+  collectCompanyJobs: (companyKey: string) =>
+    request<CompanyJobResult>(
+      `/api/jobs/collect?company=${encodeURIComponent(companyKey)}`,
+      { method: 'POST' },
+      JOB_COLLECTION_TIMEOUT_MILLISECONDS,
+    ),
+
   listPendingEvents: () => request<EventCandidate[]>('/api/admin/events/candidates/pending'),
 
   approveEvents: (eventIds: string[]) =>

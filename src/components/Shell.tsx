@@ -36,6 +36,7 @@ const GROUPS = [
     items: [
       { href: '/jobs', label: '검증' },
       { href: '/jobs/published', label: '공개한 공고' },
+      { href: '/jobs/sources', label: '수집처' },
     ],
   },
   {
