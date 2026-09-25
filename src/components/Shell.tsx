@@ -44,7 +44,8 @@ const GROUPS = [
     label: '행사',
     Icon: CalendarIcon,
     items: [
-      { href: '/events', label: '행사 일정' },
+      { href: '/events', label: '검증' },
+      { href: '/events/published', label: '공개한 행사' },
       { href: '/events/sources', label: '수집처' },
     ],
   },

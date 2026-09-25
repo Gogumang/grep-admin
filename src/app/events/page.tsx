@@ -1,46 +1,71 @@
 import { collector } from '@/lib/collector'
-import { listSiteEvents } from '@/lib/events'
+import { listSiteEvents, todayInSeoul } from '@/lib/events'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
-import { EventsView } from './EventsView'
+import { Result } from '@/shared'
+import { EventRow } from './EventRow'
+import * as styles from './events.css'
+import { PendingEventsList } from './PendingEventsList'
+import { RefreshEventsButton } from './RefreshEventsButton'
 
 export const dynamic = 'force-dynamic'
 
 /** 갱신 버튼(서버 액션)이 판매처를 다 읽을 때까지 기다린다. 기본 제한 시간으로는 중간에 끊긴다. */
 export const maxDuration = 120
 
-/** 오늘(서울). 끝난 행사를 가르는 기준이다 — 서버가 UTC로 돌아서 그냥 쓰면 아침 아홉 시 전까지 하루가 밀린다. */
-function todayInSeoul(): string {
-  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date())
-}
-
 /**
- * 판매처(티켓타코·이벤터스)에서 모은 개발 행사를 한 화면에서 다룬다.
- *   새로 모은 행사(검증 대기) → 올리면 사이트 후보('올리지 않은 행사') → 이미지를 붙여 올리면 이벤트 페이지
+ * 행사 검증. 판매처(티켓타코·이벤터스)에서 모은 행사가 사이트에 나가기 전까지 거치는 두 단계를 한 화면에서 본다.
+ *   새로 모은 행사(검증 대기) → 올리면 사이트 후보('이미지를 기다리는 행사') → 이미지를 붙여 올리면 '공개한 행사'
  * 자동으로 올라가는 단계는 없다.
  */
-export default async function EventsPage() {
+export default async function EventReviewPage() {
   await requireAdmin()
 
-  // 새로 모은 행사는 보조다 — collector 가 잠깐 안 되면 그 영역만 알리고 나머지 화면은 그린다.
-  const [siteEvents, pending] = await Promise.allSettled([listSiteEvents(), collector.listPendingEvents()])
-  if (siteEvents.status === 'rejected') {
-    const error = siteEvents.reason
-    return (
-      <>
-        <h1 className={console.pageTitle}>행사 일정</h1>
-        <p className={shared.errorNotice}>{(error as Error).message}</p>
-      </>
-    )
-  }
+  // 두 목록은 서로 다른 곳에서 읽는다 — 하나가 잠깐 안 되면 그 영역만 알리고 나머지는 그린다.
+  const [pending, siteEvents] = await Promise.allSettled([collector.listPendingEvents(), listSiteEvents()])
+  const today = todayInSeoul()
+  const candidates =
+    siteEvents.status === 'fulfilled'
+      ? siteEvents.value.filter((event) => !event.isFeatured && event.endDate >= today)
+      : []
 
   return (
-    <EventsView
-      events={siteEvents.value}
-      pending={pending.status === 'fulfilled' ? pending.value : []}
-      pendingError={pending.status === 'rejected' ? (pending.reason as Error).message : null}
-      today={todayInSeoul()}
-    />
+    <>
+      <div className={styles.header}>
+        <h1 className={console.pageTitle}>
+          행사 검증{pending.status === 'fulfilled' ? ` ${pending.value.length}건` : ''}
+        </h1>
+        <RefreshEventsButton />
+      </div>
+      <p className={shared.mutedText} style={{ marginBottom: 20 }}>
+        collector가 매일 08:30 판매처(티켓타코·이벤터스)에서 모은 행사는 &lsquo;새로 모은 행사&rsquo;에 쌓여요. 후보로 올리면
+        &lsquo;이미지를 기다리는 행사&rsquo;로 내려가고, 거기서 이미지를 붙여 올린 행사만 사이트 이벤트 페이지에 나가요.
+      </p>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>새로 모은 행사 {pending.status === 'fulfilled' ? pending.value.length : ''}</h2>
+        {pending.status === 'rejected' ? (
+          <p className={shared.errorNotice}>{(pending.reason as Error).message}</p>
+        ) : (
+          <PendingEventsList events={pending.value} />
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>이미지를 기다리는 행사 {candidates.length}</h2>
+        {siteEvents.status === 'rejected' ? (
+          <p className={shared.errorNotice}>{(siteEvents.reason as Error).message}</p>
+        ) : (
+          <div className={shared.card}>
+            {candidates.length === 0 ? (
+              <Result title="이미지를 기다리는 행사가 없어요" description="새로 모은 행사를 후보로 올리면 여기에 나와요." />
+            ) : (
+              candidates.map((event) => <EventRow key={event.id} event={event} isEnded={false} />)
+            )}
+          </div>
+        )}
+      </section>
+    </>
   )
 }

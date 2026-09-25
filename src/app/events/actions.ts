@@ -19,6 +19,7 @@ export async function featureEvent(eventId: string, imageUrl: string): Promise<A
   try {
     await collector.featureEvent(eventId, imageUrl.trim())
     revalidatePath('/events')
+    revalidatePath('/events/published')
     return { ok: true, message: '이벤트 페이지에 올렸습니다. 사이트 배포가 끝나면 보입니다.' }
   } catch (error) {
     return { ok: false, message: describe(error) }
@@ -31,6 +32,7 @@ export async function unfeatureEvent(eventId: string): Promise<ActionResult> {
   try {
     const { removed } = await collector.unfeatureEvent(eventId)
     revalidatePath('/events')
+    revalidatePath('/events/published')
     return { ok: true, message: removed ? '이벤트 페이지에서 내렸습니다.' : '이미 내려가 있는 행사입니다.' }
   } catch (error) {
     return { ok: false, message: describe(error) }
@@ -51,6 +53,7 @@ export async function refreshEvents(): Promise<ActionResult> {
     revalidatePath('/events/sources')
     if (result.skippedReason) return { ok: false, message: result.skippedReason }
     revalidatePath('/events')
+    revalidatePath('/events/published')
     const unread = result.unreadPageCount > 0 ? `, 못 읽은 행사 ${result.unreadPageCount}건` : ''
     return {
       ok: true,
@@ -68,15 +71,14 @@ function describe(error: unknown): string {
   return `알 수 없는 오류: ${(error as Error).message}`
 }
 
-
-
 /** 새로 모은 행사를 사이트 후보 목록에 올린다. collector 가 곧장 events.json 을 다시 쓴다(커밋 한 번). */
 export async function approveEvents(eventIds: string[]): Promise<ActionResult> {
   await requireAdmin()
   try {
     const result = await collector.approveEvents(eventIds)
     revalidatePath('/events')
-    return { ok: true, message: `행사 ${result.affectedEventCount}건을 올렸습니다. 몇 분 안에 '올리지 않은 행사'에 나옵니다.` }
+    revalidatePath('/events/published')
+    return { ok: true, message: `행사 ${result.affectedEventCount}건을 올렸습니다. 몇 분 안에 '이미지를 기다리는 행사'에 나옵니다.` }
   } catch (error) {
     return { ok: false, message: describe(error) }
   }
@@ -88,6 +90,7 @@ export async function rejectEvents(eventIds: string[]): Promise<ActionResult> {
   try {
     const result = await collector.rejectEvents(eventIds)
     revalidatePath('/events')
+    revalidatePath('/events/published')
     return { ok: true, message: `행사 ${result.affectedEventCount}건을 치웠습니다.` }
   } catch (error) {
     return { ok: false, message: describe(error) }

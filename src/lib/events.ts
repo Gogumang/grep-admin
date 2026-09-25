@@ -72,3 +72,8 @@ export async function listSiteEvents(): Promise<SiteEvent[]> {
     })
     .sort((left, right) => left.startDate.localeCompare(right.startDate))
 }
+
+/** 오늘(서울). 끝난 행사를 가르는 기준이다 — 서버가 UTC로 돌아서 그냥 쓰면 아침 아홉 시 전까지 하루가 밀린다. */
+export function todayInSeoul(): string {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date())
+}
