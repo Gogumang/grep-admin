@@ -26,6 +26,8 @@ export const clubName = style({
 
 export const section = style({ marginTop: vars.space.xl })
 
+export const titleRow = style({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: vars.space.md })
+
 export const sectionTitle = style({
   margin: `0 0 ${vars.space.sm}`,
   fontSize: vars.fontSize.lg,

@@ -378,7 +378,30 @@ export interface CompanyJobResult {
 /** 회사 하나는 목록과 새 공고 본문까지 받아 보통 수십 초, 공고가 많은 곳(쿠팡 120여 건)은 더 걸린다. */
 const COMPANY_JOB_COLLECTION_TIMEOUT_MILLISECONDS = 110_000
 
+/** 동아리 모집 한 번. 시각은 한국 시각 ISO-8601 이다. */
+export interface ClubRecruitment {
+  title: string
+  generation: number | null
+  applyStartAt: string
+  applyEndAt: string
+  pageUrl: string
+}
+
+/** 동아리 하나의 마지막 확인 결과와 쌓인 모집(시작이 늦은 것부터). */
+export interface ClubRecruitments {
+  clubKey: string
+  check: { checkedAt: string; isOk: boolean; foundCount: number; message: string | null } | null
+  recruitments: ClubRecruitment[]
+}
+
 export const collector = {
+  listClubRecruitments: () => request<ClubRecruitments[]>('/api/admin/clubs/recruitments'),
+
+  collectClubRecruitments: () =>
+    request<{ clubKey: string; isOk: boolean; foundCount: number; message: string | null }[]>('/api/clubs/collect', {
+      method: 'POST',
+    }),
+
   listJobSources: () => request<JobSource[]>('/api/jobs/sources'),
 
   /** 사이트에 공개된 열린 공고. 회사별 공개 공고 수를 세는 데 쓴다. */

@@ -1,9 +1,12 @@
 import clubData from '@/data/clubs.json'
+import { collector, type ClubRecruitments } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 import { Badge } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import { ClubIcon } from './ClubIcon'
+import { CollectClubsButton } from './CollectClubsButton'
+import { RecruitmentStatus } from './RecruitmentStatus'
 import * as styles from './clubs.css'
 
 export const dynamic = 'force-dynamic'
@@ -43,19 +46,28 @@ const SECTIONS: { method: CollectMethod; title: string; description: string }[] 
 
 /**
  * 개발 동아리 수집처. 어디서 모집 정보를 가져올 수 있는지와 모집 주기를 본다.
- * 목록은 src/data/clubs.json 에 있다(2026-09-25 조사). 아직 자동 수집은 붙이지 않았다.
+ * 목록은 src/data/clubs.json 에 있다(2026-09-25 조사). 자동으로 읽을 수 있는 네 곳은 collector 가 매일 08:45 에
+ * 모집 일정을 읽어 쌓는다 — 그 네 곳은 '최근 모집'에 가져온 일정과 상태를 보여 준다.
  */
 export default async function ClubsPage() {
   await requireAdmin()
   const clubs = clubData.clubs as Club[]
+  // 가져온 일정은 보조다 — collector 가 잠깐 안 되면 조사 때 적어 둔 값으로 보여 준다.
+  const collected = await collector.listClubRecruitments().catch(() => null)
+  const collectedByClub = new Map((collected ?? []).map((entry: ClubRecruitments) => [entry.clubKey, entry]))
+  const now = new Date()
 
   return (
     <>
-      <h1 className={console.pageTitle}>동아리 수집처 · {clubs.length}곳</h1>
+      <div className={styles.titleRow}>
+        <h1 className={console.pageTitle}>동아리 수집처 · {clubs.length}곳</h1>
+        <CollectClubsButton />
+      </div>
       <p className={shared.mutedText}>
-        IT 연합 동아리의 모집 페이지와 모집 주기예요. &lsquo;최근 모집&rsquo;은 2026-09-25에 사이트에서 확인한 값이고, 아직 매일
-        가져오지는 않아요.
+        IT 연합 동아리의 모집 페이지와 모집 주기예요. 자동으로 읽을 수 있는 네 곳은 매일 08:45에 모집 일정을 가져오고, 나머지의
+        &lsquo;최근 모집&rsquo;은 2026-09-25에 사이트에서 확인한 값이에요.
       </p>
+      {collected === null && <p className={shared.errorNotice}>collector 에서 가져온 모집 일정을 불러오지 못해 조사 때 값으로 보여 줘요.</p>}
 
       {SECTIONS.map((section) => {
         const inSection = clubs.filter((club) => club.method === section.method)
@@ -95,7 +107,11 @@ export default async function ClubsPage() {
                       </td>
                       <td className={shared.tableCell}>{club.cadence}</td>
                       <td className={shared.tableCell}>
-                        {club.latestRecruitment ?? (
+                        {club.method === 'auto' && collected !== null ? (
+                          <RecruitmentStatus collected={collectedByClub.get(club.key)} now={now} />
+                        ) : club.latestRecruitment ? (
+                          club.latestRecruitment
+                        ) : (
                           <Badge color="elephant" variant="weak" size="xsmall">
                             날짜 비공개
                           </Badge>
