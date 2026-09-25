@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/session'
 import { Badge, type BadgeColor } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
+import { ClubCheckCell } from './ClubCheckCell'
 import { ClubIcon } from './ClubIcon'
 import { ClubKindTabs, type ClubKind, type SourceTab } from './ClubKindTabs'
 import { CommunityTable, type Community } from './CommunityTable'
@@ -50,7 +51,8 @@ const TITLE: Record<SourceTab, string> = { club: '동아리', bootcamp: '부트�
 /**
  * 개발 동아리·부트캠프 수집처. 어디서 모집 정보를 가져올 수 있는지 본다.
  * 목록은 src/data/clubs.json 에 있다(동아리 2026-09-25, 부트캠프 2026-09-26 조사). 자동으로 읽을 수 있는 곳은 collector 가
- * 매일 08:45 에 모집 일정을 읽어 쌓는다 — 여기서는 곳마다 자동 수집을 켜고 끈다.
+ * 매일 08:45 에 모집 일정을 읽어 쌓는다 — 여기서는 곳마다 자동 수집을 켜고 끈다. 날짜를 읽을 수 없는 곳은 같은 시각에 모집 페이지가
+ * 바뀌었는지만 보고, 바뀌었으면 '변경됨' 배지로 사람이 날짜를 다시 맞추게 한다('확인했어요'로 내린다).
  * 동아리·부트캠프·커뮤니티는 오른쪽 탭(?kind=)으로 나눠 보고, 수집 방법은 한 표 안의 배지로 구분한다.
  * 커뮤니티 목록은 src/data/communities.json 에 있다 — 모집 일정이 없어 수집 대상이 아니다.
  */
@@ -72,6 +74,16 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
   // 스위치 값은 보조다 — collector 가 잠깐 안 되면 스위치 칸만 비운다. 커뮤니티 탭에는 스위치가 없어 부르지 않는다.
   const sources = kind === 'community' ? [] : await collector.listClubSources().catch(() => null)
   const enabledByClub = new Map((sources ?? []).map((source) => [source.clubKey, source.enabled]))
+  // 마지막 확인 결과도 보조다 — 못 불러오면 칸만 비운다.
+  const statuses = kind === 'community' ? [] : await collector.listClubRecruitments().catch(() => null)
+  const statusByClub = new Map((statuses ?? []).map((status) => [status.clubKey, status]))
+  // 확인 칸의 "실패"만으로는 지나치기 쉽다. 켜 둔 자동 수집과 모집 페이지 확인의 마지막 실패를 위에 모아 알린다.
+  const failures = rows.flatMap((club) => {
+    const status = statusByClub.get(club.key)
+    const check = status?.check ?? status?.pageCheck
+    const isEnabled = enabledByClub.get(club.key) ?? true
+    return check && !check.isOk && isEnabled ? [`${club.name}: ${check.message ?? '읽지 못했어요'}`] : []
+  })
 
   return (
     <>
@@ -88,6 +100,12 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
         {DESCRIPTION[kind]}
       </p>
       {sources === null && <p className={shared.errorNotice}>collector 에서 자동 수집 설정을 불러오지 못했어요.</p>}
+      {statuses === null && <p className={shared.errorNotice}>collector 에서 마지막 확인 결과를 불러오지 못했어요.</p>}
+      {failures.map((failure) => (
+        <p key={failure} className={shared.errorNotice}>
+          {failure}
+        </p>
+      ))}
 
       {kind === 'community' ? (
         <CommunityTable communities={communities} />
@@ -99,6 +117,9 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
                 <th className={shared.tableHead}>이름</th>
                 <th className={shared.tableHead}>수집 방법</th>
                 <th className={shared.tableHead}>자동 수집</th>
+                <th className={shared.tableHead} title="자동 수집은 모집 일정을, 사람이 입력하는 곳은 모집 페이지가 바뀌었는지를 매일 08:45에 봐요">
+                  마지막 확인
+                </th>
                 <th className={shared.tableHead}>모집 페이지</th>
               </tr>
             </thead>
@@ -130,6 +151,9 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
                       ) : (
                         <span className={shared.mutedText}>{club.method === 'auto' ? '—' : '불가'}</span>
                       )}
+                    </td>
+                    <td className={shared.tableCell}>
+                      <ClubCheckCell status={statusByClub.get(club.key)} />
                     </td>
                     <td className={shared.tableCell}>
                       <a href={club.recruitUrl} target="_blank" rel="noreferrer" className={shared.truncatedUrl}>

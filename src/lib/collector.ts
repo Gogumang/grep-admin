@@ -404,10 +404,24 @@ export interface ClubRecruitment {
   pageUrl: string
 }
 
-/** 동아리 하나의 마지막 확인 결과와 쌓인 모집(시작이 늦은 것부터). */
+/**
+ * 사람이 일정을 적는 곳의 모집 페이지를 마지막으로 본 결과. collector 가 매일 보이는 글자의 지문을 어제와 견준다.
+ * changedAt 은 처음 본 날 비어 있다(기준만 잡는다). hasUnacknowledgedChange 면 바뀐 뒤 아무도 '확인했어요'를 누르지 않았다.
+ */
+export interface ClubPageCheck {
+  checkedAt: string
+  isOk: boolean
+  message: string | null
+  changedAt: string | null
+  acknowledgedAt: string | null
+  hasUnacknowledgedChange: boolean
+}
+
+/** 동아리 하나의 마지막 확인 결과와 쌓인 모집(시작이 늦은 것부터). check 는 자동으로 읽는 곳, pageCheck 는 사람이 적는 곳의 것이다. */
 export interface ClubRecruitments {
   clubKey: string
   check: { checkedAt: string; isOk: boolean; foundCount: number; message: string | null } | null
+  pageCheck: ClubPageCheck | null
   recruitments: ClubRecruitment[]
 }
 
@@ -427,6 +441,15 @@ export const collector = {
     request<{ clubKey: string; isOk: boolean; foundCount: number; message: string | null }[]>('/api/clubs/collect', {
       method: 'POST',
     }),
+
+  /** 사람이 일정을 적는 곳의 모집 페이지가 바뀌었는지 지금 본다. 매일 08:45 DAG 가 모집 일정 수집 다음에 부르는 것과 같다. */
+  checkClubPages: () =>
+    request<{ clubKey: string; isOk: boolean; isChanged: boolean; message: string | null }[]>('/api/clubs/pages/check', {
+      method: 'POST',
+    }),
+
+  acknowledgeClubPageChange: (clubKey: string) =>
+    request<ClubPageCheck>(`/api/admin/clubs/${encodeURIComponent(clubKey)}/page-change/acknowledge`, { method: 'PUT' }),
 
   /** 끈 회사까지 전부. /api/jobs/sources 는 켜 둔 회사만 준다. */
   listJobSources: () => request<JobSource[]>('/api/admin/jobs/sources'),
