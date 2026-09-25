@@ -40,11 +40,6 @@ export default async function JobSourcesPage() {
     )
   }
 
-  // 회사별 공개 공고 수는 보조다 — 못 읽으면 칸을 비운다. /api/jobs 는 사이트에 공개된 열린 공고만 준다.
-  const openCounts = new Map<string, number>()
-  const openJobs = await collector.listOpenJobCompanies().catch(() => null)
-  for (const job of openJobs ?? []) openCounts.set(job.companyKey, (openCounts.get(job.companyKey) ?? 0) + 1)
-
   return (
     <>
       <div className={styles.titleRow}>
@@ -63,7 +58,6 @@ export default async function JobSourcesPage() {
             <tr>
               <th className={shared.tableHead}>회사</th>
               <th className={shared.tableHead}>채용 시스템</th>
-              <th className={shared.tableHead} title="지금 사이트에 공개된 공고. 검증 대기·치운 공고는 세지 않는다">사이트에 올린 공고</th>
               <th className={shared.tableHead}>읽는 주소</th>
             </tr>
           </thead>
@@ -76,7 +70,6 @@ export default async function JobSourcesPage() {
                   </a>
                 </td>
                 <td className={shared.tableCell}>{BOARD_LABEL[source.boardType] ?? source.boardType}</td>
-                <td className={shared.tableCell}>{openJobs ? `${(openCounts.get(source.companyKey) ?? 0).toLocaleString()}건` : '—'}</td>
                 <td className={shared.tableCell}>
                   <span className={shared.truncatedUrl} title={source.boardUrl}>
                     {source.boardUrl}

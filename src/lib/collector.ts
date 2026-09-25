@@ -413,9 +413,6 @@ export const collector = {
 
   listJobSources: () => request<JobSource[]>('/api/jobs/sources'),
 
-  /** 사이트에 공개된 열린 공고. 회사별 공개 공고 수를 세는 데 쓴다. */
-  listOpenJobCompanies: () => request<{ companyKey: string }[]>('/api/jobs?limit=2000'),
-
   /** 회사 하나를 지금 다시 받는다. 수집처 화면이 회사를 하나씩 차례로 부르며 진행을 보여 준다. */
   collectCompanyJobs: (companyKey: string) =>
     request<CompanyJobResult>(
