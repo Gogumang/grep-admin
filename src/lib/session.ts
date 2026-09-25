@@ -27,6 +27,11 @@ if (allowedGithubIds.length === 0) {
   )
 }
 
+/** 허용 목록 그대로. 관리 → 허용 계정 화면이 보여준다 — 값은 환경변수라 화면에서 바꿀 수 없다. */
+export function listAllowedGithubIds(): readonly string[] {
+  return allowedGithubIds
+}
+
 /** 로그인한 사용자. 없으면 null. 한 렌더 안에서는 한 번만 확인한다. */
 export const getSessionUser = cache(async (): Promise<User | null> => {
   const supabase = await createClient()
