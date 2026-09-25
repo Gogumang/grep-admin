@@ -23,6 +23,9 @@ export const thumbnail = style({
   backgroundColor: vars.color.surfaceSunken,
 })
 
+/** 고르기 칸과 썸네일을 한 덩어리로 왼쪽에 둔다. */
+export const leading = style({ display: 'inline-flex', alignItems: 'center', gap: vars.space.md })
+
 export const titleLink = style({
   color: 'inherit',
   textDecoration: 'none',

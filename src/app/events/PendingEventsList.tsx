@@ -2,32 +2,20 @@
 
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { Badge, Button, Checkbox, FilterSelect, ListRow, useToast } from '@/shared'
+import { Button, Checkbox, FilterSelect, useToast } from '@/shared'
 import type { EventCandidate } from '@/lib/collector'
+import * as shared from '@/components/shared.css'
 import * as review from '../review/ReviewWorkbench.css'
 import * as styles from '../jobs/jobReview.css'
-import * as eventStyles from './events.css'
 import { type ActionResult, rejectEvents } from './actions'
 import { EventFeatureControl } from './EventFeatureControl'
-
-function schedule(event: EventCandidate): string {
-  const [, startMonth, startDay] = event.startDate.split('-').map(Number)
-  const start = `${startMonth}/${startDay} ${event.startTime}`
-  if (event.endDate === event.startDate) return start
-  const [, endMonth, endDay] = event.endDate.split('-').map(Number)
-  return `${start} ~ ${endMonth}/${endDay}`
-}
-
-function price(event: EventCandidate): string | null {
-  if (event.lowestPrice === null) return null
-  if (event.lowestPrice === 0 && (event.highestPrice ?? 0) === 0) return '무료'
-  return `${event.lowestPrice.toLocaleString()}원~`
-}
+import { EventListRow } from './EventRow'
 
 /**
  * 새로 모은 행사(검증 대기). 줄마다 '올리기'를 누르면 이미지 창(공식 사이트 이미지를 미리 채움)이 뜨고, 확인하면
  * 후보 등록과 이벤트 페이지 반영을 한 번에 한다. 올리지 않을 행사는 여러 건을 골라 한 번에 치운다.
- * 자세한 내용은 원문(판매처 페이지)에서 본다 — 설명은 약관상 옮기지 않는다.
+ * 줄 모양은 '이미지를 기다리는 행사'(EventRow)와 같다 — 아직 이미지가 없어 썸네일 자리는 비어 있다.
+ * 자세한 내용은 제목을 눌러 원문(판매처 페이지)에서 본다 — 설명은 약관상 옮기지 않는다.
  */
 export function PendingEventsList({ events }: { events: EventCandidate[] }) {
   const router = useRouter()
@@ -81,14 +69,14 @@ export function PendingEventsList({ events }: { events: EventCandidate[] }) {
 
   if (events.length === 0) {
     return (
-      <div className={review.panel}>
+      <div className={shared.card}>
         <p className={review.emptyState}>새로 모은 행사가 없습니다. 매일 08:30 수집이 돌면 여기에 쌓입니다.</p>
       </div>
     )
   }
 
   return (
-    <div className={review.listPanel}>
+    <div className={shared.card}>
       <div className={styles.filterBar}>
         <FilterSelect
           label="판매처"
@@ -119,47 +107,21 @@ export function PendingEventsList({ events }: { events: EventCandidate[] }) {
 
       {failure && <p className={review.errorNotice}>{failure}</p>}
 
-      <div className={review.pendingList}>
-        {visibleEvents.map((event) => (
-          <ListRow
-            key={event.id}
-            verticalPadding="small"
-            horizontalPadding="small"
-            border="none"
-            left={
-              <Checkbox.Line
-                size={20}
-                checked={selected.has(event.id)}
-                onCheckedChange={(checked) => toggle(event.id, checked)}
-                aria-label={`${event.title} 고르기`}
-              />
-            }
-            contents={
-              <ListRow.Texts
-                title={event.title}
-                description={
-                  <>
-                    {[schedule(event), event.host, event.isOnline ? '온라인' : event.place, price(event)]
-                      .filter(Boolean)
-                      .join(' · ')}
-                    <Badge color={event.source === '이벤터스' ? 'teal' : 'elephant'} variant="weak" size="xsmall">
-                      {event.source}
-                    </Badge>
-                  </>
-                }
-              />
-            }
-            right={
-              <span className={eventStyles.controls}>
-                <Button as="a" href={event.url} target="_blank" rel="noreferrer" color="light" size="small">
-                  원문
-                </Button>
-                <EventFeatureControl eventId={event.id} title={event.title} isFeatured={false} isNew />
-              </span>
-            }
-          />
-        ))}
-      </div>
+      {visibleEvents.map((event) => (
+        <EventListRow
+          key={event.id}
+          event={event}
+          leading={
+            <Checkbox.Line
+              size={20}
+              checked={selected.has(event.id)}
+              onCheckedChange={(checked) => toggle(event.id, checked)}
+              aria-label={`${event.title} 고르기`}
+            />
+          }
+          right={<EventFeatureControl eventId={event.id} title={event.title} isFeatured={false} isNew />}
+        />
+      ))}
     </div>
   )
 }
