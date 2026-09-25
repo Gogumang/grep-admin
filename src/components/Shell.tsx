@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import * as styles from '@/styles/console.css'
-import { BriefcaseIcon, CalendarIcon, DocumentIcon, MenuIcon, SlidersIcon, StarIcon } from './icons'
+import { BriefcaseIcon, CalendarIcon, DocumentIcon, MenuIcon, PeopleIcon, SlidersIcon, StarIcon } from './icons'
 import { GrepLogo } from './Logo'
 
 /**
@@ -48,6 +48,12 @@ const GROUPS = [
       { href: '/events', label: '행사 일정' },
       { href: '/events/sources', label: '수집처' },
     ],
+  },
+  {
+    key: 'clubs',
+    label: '동아리',
+    Icon: PeopleIcon,
+    items: [{ href: '/clubs', label: '수집처' }],
   },
   {
     key: 'github',

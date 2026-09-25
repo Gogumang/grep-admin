@@ -85,6 +85,17 @@ export function CalendarIcon({ size, strokeWidth }: IconProps) {
   )
 }
 
+/** 동아리 갈래 — 사람 둘 */
+export function PeopleIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <Glyph size={size} strokeWidth={strokeWidth}>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3.5 19.5c0-3 2.5-5.3 5.5-5.3s5.5 2.3 5.5 5.3" />
+      <path d="M15.5 5.3a3 3 0 010 5.6M17.5 14.5c1.8.7 3 2.5 3 5" />
+    </Glyph>
+  )
+}
+
 /** GitHub 갈래 — 별 */
 export function StarIcon({ size, strokeWidth }: IconProps) {
   return (
