@@ -15,7 +15,7 @@ export default async function AdminsPage() {
 
   return (
     <>
-      <h1 className={console.pageTitle}>허용 계정 {accounts.length}개</h1>
+      <h1 className={console.pageTitle}>허용 계정</h1>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
         추가·삭제는 Vercel 환경변수 ADMIN_ALLOWED_GITHUB_IDS(쉼표로 나열한 GitHub 숫자 id)를 바꾸고 다시 배포해야 반영됩니다.
       </p>

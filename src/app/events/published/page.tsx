@@ -35,10 +35,10 @@ export default async function PublishedEventsPage() {
 
   return (
     <>
-      <h1 className={console.pageTitle}>공개한 행사 {onSite.length}건</h1>
+      <h1 className={console.pageTitle}>공개한 행사</h1>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>사이트에 나가는 행사 {onSite.length}</h2>
+        <h2 className={styles.sectionTitle}>사이트에 나가는 행사</h2>
         <div className={shared.card}>
           {onSite.length === 0 ? (
             <Result title="사이트에 올린 행사가 없어요" description="행사 검증에서 이미지를 붙여 올리면 여기에 나와요." />
@@ -50,7 +50,7 @@ export default async function PublishedEventsPage() {
 
       {ended.length > 0 && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>올려 둔 채 끝난 행사 {ended.length}</h2>
+          <h2 className={styles.sectionTitle}>올려 둔 채 끝난 행사</h2>
           <div className={shared.card}>
             {ended.map((event) => (
               <EventRow key={event.id} event={event} isEnded />

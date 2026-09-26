@@ -13,9 +13,7 @@ export default async function DevicesPage() {
     const { devices, enrollmentRequests } = await collector.listDevices()
     return (
       <>
-        <h1 className={console.pageTitle}>
-          기기 {devices.length}대{enrollmentRequests.length > 0 && ` · 승인 대기 ${enrollmentRequests.length}건`}
-        </h1>
+        <h1 className={console.pageTitle}>기기</h1>
         <DeviceManager devices={devices} enrollmentRequests={enrollmentRequests} />
       </>
     )

@@ -36,16 +36,12 @@ export default async function JobSourcesPage() {
     )
   }
 
-  // 꺼둔 회사는 목록에 그대로 있어서, 세지 않으면 수집이 몇 곳에서 도는지 알 수 없다.
   const enabledSources = sources.filter((source) => source.enabled)
-  const disabledCount = sources.length - enabledSources.length
 
   return (
     <>
       <div className={styles.titleRow}>
-        <h1 className={console.pageTitle}>
-          채용 수집처 · {sources.length}곳{disabledCount > 0 && ` · ${disabledCount}곳 꺼둠`}
-        </h1>
+        <h1 className={console.pageTitle}>채용 수집처</h1>
       </div>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
         매일 08:00에 켜 둔 회사의 채용 페이지를 읽어 새 공고를 채용 검증에 넣어요. 지금 바로 가져오면 회사를 하나씩 돌며

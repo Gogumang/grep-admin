@@ -17,7 +17,7 @@ export function ClubKindTabs({ kind }: { kind: SourceTab }) {
     { key: 'community', label: '커뮤니티' },
   ]
 
-  // TDS 기본형 그대로 — 본문 맨 위에 전체 폭, 세 칸이 폭을 똑같이 나눈다. 곳 수는 제목에 있다.
+  // TDS 기본형 그대로 — 본문 맨 위에 전체 폭, 세 칸이 폭을 똑같이 나눈다.
   return (
     <Tab ariaLabel="수집처 종류" onChange={(_, key) => router.replace(`/clubs?kind=${String(key)}`)}>
       {items.map((item) => (

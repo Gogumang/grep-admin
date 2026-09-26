@@ -17,7 +17,7 @@ export default async function PublishedJobsPage() {
     const published = await collector.listPublishedJobs()
     return (
       <>
-        <h1 className={console.pageTitle}>공개한 채용공고 {published.length}건</h1>
+        <h1 className={console.pageTitle}>공개한 채용공고</h1>
         <JobReviewList jobs={published} mode="published" />
       </>
     )

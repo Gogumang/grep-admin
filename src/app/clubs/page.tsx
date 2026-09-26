@@ -55,11 +55,6 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
   const communities = communityData.communities as Community[]
   const everyone = clubData.clubs as Club[]
   const kindOf = (club: Club): ClubKind => club.kind ?? 'club'
-  const counts: Record<SourceTab, number> = {
-    club: everyone.filter((club) => kindOf(club) === 'club').length,
-    bootcamp: everyone.filter((club) => kindOf(club) === 'bootcamp').length,
-    community: communities.length,
-  }
   const rows = everyone
     .filter((club) => kindOf(club) === kind)
     .sort((left, right) => METHOD_ORDER.indexOf(left.method) - METHOD_ORDER.indexOf(right.method))
@@ -80,9 +75,7 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <div className={styles.titleRow}>
-        <h1 className={console.pageTitle}>
-          {TITLE[kind]} 수집처 · {counts[kind]}곳
-        </h1>
+        <h1 className={console.pageTitle}>{TITLE[kind]} 수집처</h1>
         {kind !== 'community' && <CollectClubsButton />}
       </div>
       <div className={styles.kindTabs}>

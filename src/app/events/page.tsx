@@ -36,11 +36,10 @@ export default async function EventReviewPage() {
       : []
 
   const pendingEvents = pending.status === 'fulfilled' ? pending.value : []
-  const waitingCount = pendingEvents.length + candidates.length
 
   return (
     <>
-      <h1 className={console.pageTitle}>행사 검증 {waitingCount}건</h1>
+      <h1 className={console.pageTitle}>행사 검증</h1>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
         collector가 매일 08:30 판매처(티켓타코·이벤터스), Dev-Event(해커톤), Meetup·Luma(서울 개발 모임)에서 모은 행사가 &lsquo;검토를 기다리는 행사&rsquo;에 쌓여요.
         모을 때 공식 사이트(Meetup·Luma는 그 행사 페이지) 이미지를 미리 찾아 두고, &lsquo;올리기&rsquo;를 누르면 그 이미지를 채워 보여 줘요.
@@ -49,7 +48,7 @@ export default async function EventReviewPage() {
       </p>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>검토를 기다리는 행사 {waitingCount}</h2>
+        <h2 className={styles.sectionTitle}>검토를 기다리는 행사</h2>
         {pending.status === 'rejected' && <p className={shared.errorNotice}>{(pending.reason as Error).message}</p>}
         {siteEvents.status === 'rejected' && <p className={shared.errorNotice}>{(siteEvents.reason as Error).message}</p>}
         {/* 둘 다 못 읽었으면 목록을 그리지 않는다 — 빈 목록 안내가 '기다리는 행사 없음'으로 읽힌다. */}

@@ -55,7 +55,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <h1 className={console.pageTitle}>회사 저장소 · {summaries.length}곳</h1>
+      <h1 className={console.pageTitle}>회사 저장소</h1>
 
       {/* 회사가 스무 곳을 넘어 카드로 늘어놓으면 화면 절반을 차지한다. 칩 하나를 눌러 고르게 둔다. */}
       <div className={styles.filterBar}>
