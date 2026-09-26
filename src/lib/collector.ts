@@ -477,6 +477,9 @@ export const collector = {
 
   listPendingEvents: () => request<EventCandidate[]>('/api/admin/events/candidates/pending'),
 
+  /** 사이트 후보에 실린(게시된) 행사. 검증 화면은 아직 올리지 않은 후보의 썸네일(수집 때 찾아 둔 이미지)만 여기서 읽는다. */
+  listPublishedEvents: () => request<EventCandidate[]>('/api/admin/events/candidates/published'),
+
 
   rejectEvents: (eventIds: string[]) =>
     request<{ affectedEventCount: number }>('/api/admin/events/candidates/reject', {

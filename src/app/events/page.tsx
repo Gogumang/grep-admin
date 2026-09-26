@@ -18,11 +18,21 @@ export default async function EventReviewPage() {
   await requireAdmin()
 
   // 두 목록은 서로 다른 곳에서 읽는다 — 하나가 잠깐 안 되면 그 실패만 알리고 나머지로 목록을 그린다.
-  const [pending, siteEvents] = await Promise.allSettled([collector.listPendingEvents(), listSiteEvents()])
+  const [pending, siteEvents, published] = await Promise.allSettled([
+    collector.listPendingEvents(),
+    listSiteEvents(),
+    collector.listPublishedEvents(),
+  ])
   const today = todayInSeoul()
+  // 썸네일은 보조다 — 게시 행사를 못 읽으면 후보를 이미지 없이 그린다. 알릴 만큼의 실패가 아니다.
+  const imageById = new Map(
+    published.status === 'fulfilled' ? published.value.map((event) => [event.id, event.imageUrl ?? null]) : [],
+  )
   const candidates =
     siteEvents.status === 'fulfilled'
-      ? siteEvents.value.filter((event) => !event.isFeatured && event.endDate >= today)
+      ? siteEvents.value
+          .filter((event) => !event.isFeatured && event.endDate >= today)
+          .map((event) => ({ ...event, imageUrl: imageById.get(event.id) ?? null }))
       : []
 
   const pendingEvents = pending.status === 'fulfilled' ? pending.value : []

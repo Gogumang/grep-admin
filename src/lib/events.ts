@@ -38,7 +38,7 @@ export interface SiteEvent {
   source?: EventSourceLabel
   /** 사이트 이벤트 페이지에 실제로 나가는 행사인가 (featured.ts 에 적힌 것). */
   isFeatured: boolean
-  /** 사이트에 올린 행사의 이미지. 올리지 않은 행사는 null. */
+  /** 사이트에 올린 행사의 이미지. 올리지 않은 행사는 null — 검증 화면은 여기에 수집 때 찾아 둔 이미지를 채워 그린다. */
   imageUrl: string | null
 }
 
