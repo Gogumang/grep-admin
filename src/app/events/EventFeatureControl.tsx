@@ -14,7 +14,10 @@ interface ImageUrlControl {
   showError: (message: string) => void
 }
 
-type SuggestionState = { status: 'searching' } | { status: 'found'; officialSiteUrl: string } | { status: 'none' }
+type SuggestionState =
+  | { status: 'searching' }
+  | { status: 'found'; officialSiteUrl: string; isEventPageImage: boolean }
+  | { status: 'none' }
 
 /**
  * 창이 열리면 collector 가 티켓타코 행사 본문의 공식 사이트에서 대표 이미지를 찾아 칸을 채운다.
@@ -47,7 +50,7 @@ function ImageUrlField({ eventId, control }: { eventId: string; control: RefObje
         setSuggestion({ status: 'none' })
         return
       }
-      setSuggestion({ status: 'found', officialSiteUrl: found.officialSiteUrl })
+      setSuggestion({ status: 'found', officialSiteUrl: found.officialSiteUrl, isEventPageImage: found.isEventPageImage })
       if (!hasTyped.current) change(found.imageUrl)
     })
     return () => {
@@ -62,7 +65,15 @@ function ImageUrlField({ eventId, control }: { eventId: string; control: RefObje
     <div className={styles.fieldStack}>
       <p className={styles.fieldHint}>
         {suggestion.status === 'searching' && '공식 사이트에서 이미지를 찾는 중이에요…'}
-        {suggestion.status === 'found' && `${siteName}의 대표 이미지를 채워 뒀어요. 맞는지 보고 올려 주세요.`}
+        {suggestion.status === 'found' &&
+          !suggestion.isEventPageImage &&
+          `${siteName}의 대표 이미지를 채워 뒀어요. 맞는지 보고 올려 주세요.`}
+        {suggestion.status === 'found' && suggestion.isEventPageImage && (
+          <span className={styles.fieldWarning}>
+            공식 사이트 이미지를 찾지 못해 티켓타코 행사 페이지 이미지를 채워 뒀어요. 티켓타코 약관(제11조)상 옮기면 안 되는
+            콘텐츠일 수 있으니, 주최 측 이미지가 있으면 바꿔 넣어 주세요.
+          </span>
+        )}
         {suggestion.status === 'none' && '주최 측 공식 사이트의 이미지 주소를 넣어 주세요. 티켓타코 포스터는 약관상 쓸 수 없습니다.'}
       </p>
       <TextField

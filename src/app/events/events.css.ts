@@ -1,5 +1,6 @@
 import { style } from '@vanilla-extract/css'
 import { vars } from '@/styles/contract.css'
+import { tone } from '@/shared/styles/palette.css'
 
 export const section = style({ marginBottom: vars.space.xl })
 
@@ -49,6 +50,9 @@ export const fieldStack = style({
 })
 
 export const fieldHint = style({ margin: 0, fontSize: vars.fontSize.sm, lineHeight: 1.5, color: vars.color.inkMuted })
+
+/** 티켓타코 이미지를 채웠을 때 — 그대로 올려도 되는지 사람이 한 번 더 보게 눈에 띄게 둔다. */
+export const fieldWarning = style({ color: tone.yellow.onWeak })
 
 /** 창을 닫지 않고 그 자리에서 알린다 — 닫으면 방금 넣은 주소가 사라진다. */
 export const fieldError = style({ margin: 0, fontSize: vars.fontSize.xs, lineHeight: 1.5, color: vars.color.brand })
