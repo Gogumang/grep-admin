@@ -3,8 +3,9 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { ArticlePreview, type ArticleDraft } from '@/components/preview/ArticlePreview'
-import { Button, useToast } from '@/shared'
+import { Button, FilterSelect, useToast } from '@/shared'
 import type { PendingPost, PendingPostDetail, PendingPostEdit } from '@/lib/collector'
+import { POST_CATEGORY_OPTIONS } from '@/lib/postCategories'
 import * as console from '@/styles/console.css'
 import * as styles from '../ReviewWorkbench.css'
 import { publishPending, rejectPending, savePending } from '../actions'
@@ -16,6 +17,7 @@ function toDraft(post: PendingPost, postBody: string | null): ArticleDraft {
     tags: post.tags.join(', '),
     sourceThumbnail: post.sourceThumbnail ?? '',
     body: postBody ?? '',
+    category: post.category ?? '',
   }
 }
 
@@ -33,6 +35,7 @@ function toEdit(draft: ArticleDraft, original: ArticleDraft): PendingPostEdit {
   }
   if (draft.sourceThumbnail !== original.sourceThumbnail) edit.sourceThumbnail = draft.sourceThumbnail
   if (draft.body !== original.body) edit.body = draft.body
+  if (draft.category !== original.category) edit.category = draft.category
   return edit
 }
 
@@ -97,6 +100,15 @@ export function ReviewEditor({ detail }: { detail: PendingPostDetail }) {
           </span>
 
           <span className={styles.tabSpacer} />
+
+          {/* collector 가 낱말로 추천한 분류가 채워져 온다. 확신이 없던 글은 비어 있다 — 비운 채 공개하면 사이트는 Engineering 으로 본다. */}
+          <FilterSelect
+            label="분류"
+            options={POST_CATEGORY_OPTIONS}
+            value={draft.category || null}
+            onChange={(category) => setDraft((previous) => ({ ...previous, category: category ?? '' }))}
+            hasAllOption={false}
+          />
 
           <Button
             color="light"

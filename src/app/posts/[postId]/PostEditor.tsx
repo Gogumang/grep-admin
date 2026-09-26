@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { ArticlePreview, type ArticleDraft } from '@/components/preview/ArticlePreview'
-import { Badge, Button, useToast } from '@/shared'
+import { Badge, Button, FilterSelect, useToast } from '@/shared'
 import type { PendingPostEdit, PostDetail } from '@/lib/collector'
+import { POST_CATEGORY_OPTIONS } from '@/lib/postCategories'
 import * as console from '@/styles/console.css'
 import { savePost } from './actions'
 import * as styles from './postDetail.css'
@@ -16,6 +17,7 @@ function toDraft(detail: PostDetail): ArticleDraft {
     sourceThumbnail: detail.post.sourceThumbnail ?? '',
     tags: detail.post.tags.join(', '),
     body: detail.body ?? '',
+    category: detail.post.category ?? '',
   }
 }
 
@@ -29,6 +31,7 @@ function toEdit(draft: ArticleDraft, original: ArticleDraft): PendingPostEdit {
   if (draft.summary !== original.summary) edit.summary = draft.summary
   if (draft.sourceThumbnail !== original.sourceThumbnail) edit.sourceThumbnail = draft.sourceThumbnail
   if (draft.body !== original.body) edit.body = draft.body
+  if (draft.category !== original.category) edit.category = draft.category
   if (draft.tags !== original.tags) {
     edit.tags = draft.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
   }
@@ -90,6 +93,13 @@ export function PostEditor({ detail }: { detail: PostDetail }) {
         <span className={styles.editHint}>
           {dirty ? '고친 내용이 있습니다' : '미리보기의 글자를 눌러 고칩니다'}
         </span>
+        <FilterSelect
+          label="분류"
+          options={POST_CATEGORY_OPTIONS}
+          value={draft.category || null}
+          onChange={(category) => setDraft((previous) => ({ ...previous, category: category ?? '' }))}
+          hasAllOption={false}
+        />
         <Button color="primary" variant="weak" size="small" disabled={!dirty || isPending} onClick={save}>
           {dirty ? '저장' : '고친 내용 없음'}
         </Button>

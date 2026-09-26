@@ -20,8 +20,8 @@ export const tabs = style({
   marginBottom: vars.space.xl,
 })
 
-/** 회사 필터는 갈래 줄 바로 아래 왼쪽에 둔다 — 갈래(전체/숨긴 글만)와 함께 걸리는 조건이다. */
-export const filter = style({ display: 'flex', marginBottom: vars.space.xl })
+/** 회사·분류 필터는 갈래 줄 바로 아래 왼쪽에 둔다 — 갈래(전체/숨긴 글만)와 함께 걸리는 조건이다. */
+export const filter = style({ display: 'flex', gap: vars.space.sm, marginBottom: vars.space.xl })
 
 export const tab = style({
   border: 0,

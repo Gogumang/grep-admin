@@ -13,6 +13,8 @@ export interface ArticleDraft {
   sourceThumbnail: string
   tags: string
   body: string
+  /** 분류. 미리보기 안이 아니라 편집 줄의 선택 칸에서 고른다. 없으면 빈 문자열. */
+  category: string
 }
 
 /**

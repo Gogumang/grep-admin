@@ -78,6 +78,8 @@ export interface Post {
   sourceThumbnail: string | null
   tags: string[]
   hidden: boolean
+  /** 분류(POST_CATEGORIES 중 하나). 아직 매기지 않은 글은 null — 사이트는 Engineering 으로 본다. */
+  category: string | null
   /** 최근 7일 조회수. GA4를 아직 붙이지 않았으면 0이다. */
   recentViews: number
   totalViews: number
@@ -101,6 +103,7 @@ export interface PostDetail {
     sourceThumbnail: string | null
     tags: string[]
     hidden: boolean
+    category: string | null
   }
   /** 본문 파일이 없는 글이 있다 — 그때는 null이고, 화면이 "본문 없음"으로 알린다. */
   body: string | null
@@ -118,6 +121,8 @@ export interface PendingPost {
   sourceThumbnail: string | null
   tags: string[]
   hasBody: boolean
+  /** 수집할 때 collector 가 낱말로 추천한 분류. 확신이 없으면 null 이고 검토에서 고른다. */
+  category: string | null
 }
 
 /**
@@ -147,6 +152,8 @@ export interface PendingPostEdit {
   tags?: string[]
   sourceThumbnail?: string
   body?: string
+  /** POST_CATEGORIES 중 하나. collector 는 그 밖의 이름을 400 으로 막는다. */
+  category?: string
 }
 
 /**

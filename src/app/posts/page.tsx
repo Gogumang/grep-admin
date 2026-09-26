@@ -24,6 +24,7 @@ function toPostListItem(post: Post): PostListItem {
     publishedAt: post.publishedAt,
     sourceThumbnail: post.sourceThumbnail,
     hidden: post.hidden,
+    category: post.category,
     recentViews: post.recentViews,
     totalViews: post.totalViews,
   }

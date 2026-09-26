@@ -6,6 +6,7 @@ import type { Post } from '@/lib/collector'
 import { SiteImage } from '@/components/SiteImage'
 import { togglePostHidden, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
+import { POST_CATEGORY_OPTIONS } from '@/lib/postCategories'
 import * as list from './postList.css'
 
 /** 처음 그리는 글 수. 스크롤이 끝에 닿을 때마다 이만큼씩 잇는다. */
@@ -41,14 +42,21 @@ export interface PostListItem {
   publishedAt: string
   sourceThumbnail: string | null
   hidden: boolean
+  /** 분류. 아직 매기지 않은 글은 null 이고, 필터에서는 사이트처럼 Engineering 으로 본다. */
+  category: string | null
   recentViews: number
   totalViews: number
 }
+
+/** 사이트는 분류가 없는 글을 Engineering 으로 보여 준다 — 어드민 필터도 같게 걸러야 둘을 대조할 수 있다. */
+const UNCATEGORIZED_AS = 'Engineering'
 
 export function PostManager({ posts }: { posts: PostListItem[] }) {
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
   /** 고른 회사(블로그 이름). null이면 모든 회사. 숨김 갈래와 함께 걸린다. */
   const [blogName, setBlogName] = useState<string | null>(null)
+  /** 고른 분류. null이면 모든 분류. 회사·숨김 갈래와 함께 걸린다. */
+  const [category, setCategory] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [, startTransition] = useTransition()
   const { openToast } = useToast()
@@ -80,9 +88,10 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
       posts.filter(
         (post) =>
           (blogName === null || post.blogName === blogName) &&
+          (category === null || (post.category ?? UNCATEGORIZED_AS) === category) &&
           (!showHiddenOnly || (justToggled.get(post.id) ?? post.hidden)),
       ),
-    [posts, blogName, showHiddenOnly, justToggled],
+    [posts, blogName, category, showHiddenOnly, justToggled],
   )
 
   const visible = matched.slice(0, visibleCount)
@@ -115,6 +124,11 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
 
   function selectBlog(name: string | null) {
     setBlogName(name)
+    setVisibleCount(PAGE_SIZE)
+  }
+
+  function selectCategory(next: string | null) {
+    setCategory(next)
     setVisibleCount(PAGE_SIZE)
   }
 
@@ -167,6 +181,7 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
           value={blogName}
           onChange={selectBlog}
         />
+        <FilterSelect label="분류" options={POST_CATEGORY_OPTIONS} value={category} onChange={selectCategory} />
       </div>
 
       <div className={styles.card}>
