@@ -655,9 +655,18 @@ export const collector = {
   unfeatureEvent: (eventId: string) =>
     request<{ removed: boolean }>(`/api/admin/events/${encodeURIComponent(eventId)}/feature`, { method: 'DELETE' }),
 
-  /** 가장 최근 인기 저장소 차트. 아직 쌓인 차트가 없으면 undefined(204). */
-  getRepositoryChart: (period: ChartPeriod) =>
-    request<RepositoryChart | undefined>(`/api/admin/repository-chart?period=${period}`),
+  /**
+   * 인기 저장소 차트. date(YYYY-MM-DD)를 주면 그날(없으면 그 앞 가장 가까운 날), 주지 않으면 가장 최근 차트다.
+   * 해당하는 차트가 없으면 undefined(204).
+   */
+  getRepositoryChart: (period: ChartPeriod, date?: string) =>
+    request<RepositoryChart | undefined>(
+      `/api/admin/repository-chart?period=${period}${date ? `&date=${encodeURIComponent(date)}` : ''}`,
+    ),
+
+  /** 차트가 쌓인 날짜(YYYY-MM-DD, 오래된 날부터). 달력이 고를 수 있는 날을 가린다. */
+  listRepositoryChartDates: (period: ChartPeriod) =>
+    request<{ dates: string[] }>(`/api/admin/repository-chart/dates?period=${period}`),
 
   /** 행사 판매처를 지금 다시 읽어 사이트 목록을 맞춘다. 매일 08:30 DAG 가 하는 일을 바로 한 번 한다. */
   collectEvents: () =>

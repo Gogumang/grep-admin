@@ -3,7 +3,8 @@ import type { ChartPeriod, RankedRepository, RepositoryChart } from '@/lib/colle
 import * as shared from '@/components/shared.css'
 import * as styles from './repositories.css'
 
-const PERIOD_LABEL: Record<ChartPeriod, string> = { daily: '오늘', weekly: '이번 주', monthly: '이번 달' }
+/** 지난 차트도 고를 수 있어 '오늘·이번 주' 대신 기간 길이로 적는다. */
+const PERIOD_LABEL: Record<ChartPeriod, string> = { daily: '하루', weekly: '1주', monthly: '4주' }
 
 /** 차트가 비었을 때 언제 채워지는지. 급상승만 3시간마다 다시 쌓는다. */
 const COLLECTION_SCHEDULE: Record<ChartPeriod, string> = {
@@ -68,7 +69,7 @@ export function RepositoryChartView({ chart, period }: { chart: RepositoryChart 
   return (
     <>
       <p className={shared.mutedText} style={{ marginBottom: 12 }}>
-        {chart.chartDate} 기준 · {PERIOD_LABEL[period]} 늘어난 별이 많은 순
+        {chart.chartDate} 기준 · {PERIOD_LABEL[period]} 동안 늘어난 별이 많은 순
         {hasPrevious ? ` · 순위 변동은 ${chart.previousChartDate} 대비` : ' · 첫 차트라 순위 변동은 내일부터 보여요'}
       </p>
       <ol className={shared.card} style={{ listStyle: 'none', margin: 0, padding: 0 }}>

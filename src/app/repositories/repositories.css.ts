@@ -3,6 +3,19 @@ import { vars } from '@/styles/contract.css'
 
 export const tabs = style({ marginBottom: vars.space.lg })
 
+/** 차트 옆에 달력. 좁은 화면에서는 달력이 차트 위로 올라간다 — 날을 고르고 아래로 읽어 내려간다. */
+export const layout = style({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr) 320px',
+  alignItems: 'start',
+  gap: vars.space.lg,
+  '@media': { '(max-width: 900px)': { gridTemplateColumns: 'minmax(0, 1fr)' } },
+})
+
+export const chartColumn = style({ minWidth: 0, '@media': { '(max-width: 900px)': { order: 2 } } })
+
+export const calendarColumn = style({ position: 'sticky', top: vars.space.lg, '@media': { '(max-width: 900px)': { position: 'static', order: 1 } } })
+
 export const row = style({
   display: 'grid',
   gridTemplateColumns: '56px minmax(0, 1fr) auto',
