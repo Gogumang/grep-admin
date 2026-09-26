@@ -43,10 +43,6 @@ export default async function JobSourcesPage() {
       <div className={styles.titleRow}>
         <h1 className={console.pageTitle}>채용 수집처</h1>
       </div>
-      <p className={shared.mutedText} style={{ marginBottom: 20 }}>
-        매일 08:00에 켜 둔 회사의 채용 페이지를 읽어 새 공고를 채용 검증에 넣어요. 지금 바로 가져오면 회사를 하나씩 돌며
-        어디를 가져오는 중인지 보여 줘요.
-      </p>
 
       <JobCollectRunner companies={enabledSources.map(({ companyKey, companyName }) => ({ companyKey, companyName }))} />
 

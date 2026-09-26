@@ -18,9 +18,6 @@ export default async function JobReviewPage() {
     return (
       <>
         <h1 className={console.pageTitle}>채용 검증</h1>
-        <p className={shared.mutedText} style={{ marginBottom: 20 }}>
-          대기에 들어온 지 두 시간이 지나면 자동으로 공개됩니다. 올리지 않을 공고는 그 전에 치워 주세요.
-        </p>
         <JobReviewList jobs={pending} mode="pending" />
       </>
     )
