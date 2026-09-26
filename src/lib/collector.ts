@@ -529,6 +529,68 @@ export type ReferenceRun =
 /** 코딩테스트 어드민 경로. 다른 어드민 API 와 같은 접두사 아래 둔다. */
 const CODING_PATH = '/api/admin/coding'
 
+/** 코딩테스트 문제를 가져오는 곳. collector 의 CodingProblemSourceKind.key 와 같아야 한다. */
+export type CodingSourceKey = 'programmers' | 'leetcode' | 'codeforces' | 'solved_ac'
+
+/** 수집처를 한 번 읽은 기록. isCollected 가 false 면 못 읽은 날이다 — 쌓아 둔 후보는 그대로다. */
+export interface CodingSourceRun {
+  key: CodingSourceKey
+  ranAt: string
+  isCollected: boolean
+  readCount: number
+  newCount: number
+  message: string | null
+}
+
+/** 수집처 하나. collector 의 GET /api/admin/coding/sources 응답 모양이다. */
+export interface CodingSourceSummary {
+  key: CodingSourceKey
+  label: string
+  homepageUrl: string
+  candidateCount: number
+  /** 최근 것부터 */
+  recentRuns: CodingSourceRun[]
+  enabled: boolean
+}
+
+/** 다른 곳의 문제 하나. 지문은 없다 — 가져올 때 그 문제 하나만 받는다. */
+export interface CodingCandidate {
+  source: CodingSourceKey
+  sourceLabel: string
+  externalId: string
+  title: string
+  url: string
+  /** 그곳 표기 그대로(Lv. 2 · Medium · 1600 · Gold V). 모르면 null. */
+  difficultyLabel: string | null
+  /** 우리 난이도 1..3. 모르면 null. */
+  level: number | null
+  tags: string[]
+  solvedCount: number | null
+  firstSeenAt: string
+  /** 이미 초안으로 가져왔으면 그 문제 id. */
+  importedProblemId: string | null
+}
+
+export interface CodingCandidatePage {
+  candidates: CodingCandidate[]
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
+export interface CodingCandidateFilter {
+  source?: CodingSourceKey
+  level?: number
+  keyword?: string
+  page: number
+}
+
+/** 수집처 네 곳을 다 읽는 데 1분 남짓 걸린다(2026-09-27). 여유를 둔다. */
+const COLLECT_CODING_PROBLEMS_TIMEOUT_MILLISECONDS = 180_000
+
+/** 가져오기는 지문 한 문제를 받는다. 그곳이 느리면 몇 초 걸린다. */
+const IMPORT_CODING_CANDIDATE_TIMEOUT_MILLISECONDS = 30_000
+
 export const collector = {
   listClubRecruitments: () => request<ClubRecruitments[]>('/api/admin/clubs/recruitments'),
 
@@ -805,5 +867,33 @@ export const collector = {
       `${CODING_PATH}/problems/${encodeURIComponent(problemId)}/unpublish`,
       { method: 'POST' },
       CODING_COMMIT_TIMEOUT_MILLISECONDS,
+    ),
+
+  listCodingSources: () => request<CodingSourceSummary[]>(`${CODING_PATH}/sources`),
+
+  setCodingSourceEnabled: (key: CodingSourceKey, enabled: boolean) =>
+    request<{ key: CodingSourceKey; label: string; enabled: boolean }>(`${CODING_PATH}/sources/${encodeURIComponent(key)}/enabled`, {
+      method: 'PUT',
+      body: JSON.stringify({ enabled }),
+    }),
+
+  /** 켜 둔 수집처를 지금 읽는다. 다 읽을 때까지 기다리고 수집처마다 결과를 준다. */
+  collectCodingProblems: () =>
+    request<CodingSourceRun[]>(`${CODING_PATH}/sources/collect`, { method: 'POST' }, COLLECT_CODING_PROBLEMS_TIMEOUT_MILLISECONDS),
+
+  listCodingCandidates: (filter: CodingCandidateFilter) => {
+    const query = new URLSearchParams({ page: String(filter.page) })
+    if (filter.source) query.set('source', filter.source)
+    if (filter.level) query.set('level', String(filter.level))
+    if (filter.keyword) query.set('keyword', filter.keyword)
+    return request<CodingCandidatePage>(`${CODING_PATH}/candidates?${query}`)
+  },
+
+  /** 후보 하나를 문제 초안으로 가져온다. 이미 가져왔으면 isNew 가 false 이고 그 문제 id 를 준다. */
+  importCodingCandidate: (source: CodingSourceKey, externalId: string) =>
+    request<{ problemId: string; isNew: boolean }>(
+      `${CODING_PATH}/candidates/${encodeURIComponent(source)}/${encodeURIComponent(externalId)}/import`,
+      { method: 'POST' },
+      IMPORT_CODING_CANDIDATE_TIMEOUT_MILLISECONDS,
     ),
 }

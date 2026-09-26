@@ -64,12 +64,19 @@ const GROUPS = [
       { href: '/companies', label: '회사 저장소' },
     ],
   },
-  /* 코딩테스트는 수집하지 않고 직접 만든다 — 검증·수집처가 없고 문제 하나가 곧 편집 화면이다. */
+  /*
+   * 코딩테스트 문제는 직접 만든다 — 검증 단계가 없고 문제 하나가 곧 편집 화면이다.
+   * 수집처는 다른 곳의 문제 목록만 후보로 모으고, 후보에서 고른 문제를 초안으로 가져와 고쳐 쓴다.
+   */
   {
     key: 'coding',
     label: '코딩테스트',
     Icon: CodeIcon,
-    items: [{ href: '/coding', label: '문제' }],
+    items: [
+      { href: '/coding', label: '문제' },
+      { href: '/coding/candidates', label: '문제 후보' },
+      { href: '/coding/sources', label: '수집처' },
+    ],
   },
   {
     key: 'manage',
