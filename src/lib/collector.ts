@@ -530,7 +530,7 @@ export type ReferenceRun =
 const CODING_PATH = '/api/admin/coding'
 
 /** 코딩테스트 문제를 가져오는 곳. collector 의 CodingProblemSourceKind.key 와 같아야 한다. */
-export type CodingSourceKey = 'programmers' | 'leetcode' | 'codeforces' | 'solved_ac'
+export type CodingSourceKey = 'programmers' | 'leetcode' | 'codeforces' | 'solved_ac' | 'koi'
 
 /** 수집처를 한 번 읽은 기록. isCollected 가 false 면 못 읽은 날이다 — 쌓아 둔 후보는 그대로다. */
 export interface CodingSourceRun {

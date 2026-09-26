@@ -11,7 +11,7 @@ import * as styles from './candidates.css'
 
 export const dynamic = 'force-dynamic'
 
-const SOURCE_KEYS: CodingSourceKey[] = ['programmers', 'leetcode', 'codeforces', 'solved_ac']
+const SOURCE_KEYS: CodingSourceKey[] = ['programmers', 'leetcode', 'codeforces', 'solved_ac', 'koi']
 const LEVEL_LABELS: Record<number, string> = { 1: '쉬움', 2: '보통', 3: '어려움' }
 
 /** 태그는 앞의 몇 개만 — Codeforces 는 한 문제에 태그가 대여섯 개라 줄이 넘친다. */
@@ -29,7 +29,7 @@ function parseFilters(params: { source?: string; level?: string; keyword?: strin
 }
 
 /**
- * 다른 곳(프로그래머스·LeetCode·Codeforces·solved.ac)에서 모은 문제 목록. 푼 사람이 많은 순이다.
+ * 다른 곳(프로그래머스·LeetCode·Codeforces·solved.ac·KOI)에서 모은 문제 목록. 푼 사람이 많은 순이다.
  * '가져오기'를 누르면 그 문제 하나를 초안으로 만들어 편집 화면으로 간다 — 지문은 그때 받는다.
  */
 export default async function CodingCandidatesPage({

@@ -13,6 +13,7 @@ const SOURCES: { value: CodingSourceKey; label: string }[] = [
   { value: 'leetcode', label: 'LeetCode' },
   { value: 'codeforces', label: 'Codeforces' },
   { value: 'solved_ac', label: 'solved.ac(백준)' },
+  { value: 'koi', label: 'KOI(한국정보올림피아드)' },
 ]
 
 const LEVELS = [
