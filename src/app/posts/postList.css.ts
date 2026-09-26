@@ -16,7 +16,8 @@ export const tabs = style({
   display: 'flex',
   alignItems: 'center',
   gap: vars.space.lg,
-  marginBottom: vars.space.md,
+  // 아래 회사 필터와 붙어 보이지 않게 목록과 같은 만큼 띄운다.
+  marginBottom: vars.space.xl,
 })
 
 /** 회사 필터는 갈래 줄 바로 아래 왼쪽에 둔다 — 갈래(전체/숨긴 글만)와 함께 걸리는 조건이다. */
