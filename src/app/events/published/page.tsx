@@ -38,7 +38,6 @@ export default async function PublishedEventsPage() {
       <h1 className={console.pageTitle}>공개한 행사</h1>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>사이트에 나가는 행사</h2>
         <div className={shared.card}>
           {onSite.length === 0 ? (
             <Result title="사이트에 올린 행사가 없어요" description="행사 검증에서 이미지를 붙여 올리면 여기에 나와요." />

@@ -31,13 +31,6 @@ const ICON_SIZE = 24
 /** 앞의 것일수록 사람 손이 덜 간다 — 표도 이 순서로 줄을 세운다. */
 const METHOD_ORDER: CollectMethod[] = ['auto', 'draft', 'manual']
 
-const DESCRIPTION: Record<SourceTab, string> = {
-  club: 'IT 연합 동아리의 모집 페이지예요. 자동으로 읽을 수 있는 곳은 매일 08:45에 모집 일정을 가져와요.',
-  bootcamp:
-    '개발 부트캠프의 모집 페이지예요. 우아한테크코스·카카오테크 부트캠프는 자동으로 읽어요. SSAFY 는 날짜에 연도가 없어 사람이 확정하고, 부스트캠프(2026년 쉼)·소프트웨어 마에스트로(로봇 접근 차단)·42서울(상시 모집)은 사람이 봐요.',
-  community: '개발자가 모여 이야기하는 곳이에요. 모집 일정이 없어 자동으로 가져오지 않고, 어디에 있는지만 모아 둬요.',
-}
-
 const TITLE: Record<SourceTab, string> = { club: '동아리', bootcamp: '부트캠프', community: '커뮤니티' }
 
 /**
@@ -81,9 +74,6 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
       <div className={styles.kindTabs}>
         <ClubKindTabs kind={kind} />
       </div>
-      <p className={shared.mutedText} style={{ marginBottom: 16 }}>
-        {DESCRIPTION[kind]}
-      </p>
       {sources === null && <p className={shared.errorNotice}>collector 에서 자동 수집 설정을 불러오지 못했어요.</p>}
       {statuses === null && <p className={shared.errorNotice}>collector 에서 마지막 확인 결과를 불러오지 못했어요.</p>}
       {failures.map((failure) => (

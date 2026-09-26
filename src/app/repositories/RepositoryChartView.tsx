@@ -68,10 +68,6 @@ export function RepositoryChartView({ chart, period }: { chart: RepositoryChart 
 
   return (
     <>
-      <p className={shared.mutedText} style={{ marginBottom: 12 }}>
-        {chart.chartDate} 기준 · {PERIOD_LABEL[period]} 동안 늘어난 별이 많은 순
-        {hasPrevious ? ` · 순위 변동은 ${chart.previousChartDate} 대비` : ' · 첫 차트라 순위 변동은 내일부터 보여요'}
-      </p>
       <ol className={shared.card} style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {chart.entries.map((entry) => (
           <ChartRow key={entry.repository.fullName} entry={entry} period={period} hasPrevious={hasPrevious} />
