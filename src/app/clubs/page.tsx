@@ -53,7 +53,7 @@ const TITLE: Record<SourceTab, string> = { club: '동아리', bootcamp: '부트�
  * 목록은 src/data/clubs.json 에 있다(동아리 2026-09-25, 부트캠프 2026-09-26 조사). 자동으로 읽을 수 있는 곳은 collector 가
  * 매일 08:45 에 모집 일정을 읽어 쌓는다 — 여기서는 곳마다 자동 수집을 켜고 끈다. 날짜를 읽을 수 없는 곳은 같은 시각에 모집 페이지가
  * 바뀌었는지만 보고, 바뀌었으면 '변경됨' 배지로 사람이 날짜를 다시 맞추게 한다('확인했어요'로 내린다).
- * 동아리·부트캠프·커뮤니티는 오른쪽 탭(?kind=)으로 나눠 보고, 수집 방법은 한 표 안의 배지로 구분한다.
+ * 동아리·부트캠프·커뮤니티는 제목 아래 탭(?kind=)으로 나눠 보고, 수집 방법은 한 표 안의 배지로 구분한다.
  * 커뮤니티 목록은 src/data/communities.json 에 있다 — 모집 일정이 없어 수집 대상이 아니다.
  */
 export default async function ClubsPage({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
@@ -91,10 +91,10 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
         <h1 className={console.pageTitle}>
           {TITLE[kind]} 수집처 · {counts[kind]}곳
         </h1>
-        <div className={styles.titleActions}>
-          <ClubKindTabs kind={kind} counts={counts} />
-          {kind !== 'community' && <CollectClubsButton />}
-        </div>
+        {kind !== 'community' && <CollectClubsButton />}
+      </div>
+      <div className={styles.kindTabs}>
+        <ClubKindTabs kind={kind} />
       </div>
       <p className={shared.mutedText} style={{ marginBottom: 16 }}>
         {DESCRIPTION[kind]}

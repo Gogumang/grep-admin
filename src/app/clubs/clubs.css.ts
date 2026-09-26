@@ -32,7 +32,7 @@ export const titleRow = style({
   gap: vars.space.md,
 })
 
-export const titleActions = style({ display: 'flex', alignItems: 'center', gap: vars.space.sm })
+export const kindTabs = style({ margin: `${vars.space.md} 0` })
 
 export const sectionTitle = style({
   margin: `0 0 ${vars.space.sm}`,
