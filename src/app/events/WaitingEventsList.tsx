@@ -8,7 +8,6 @@ import type { SiteEvent } from '@/lib/events'
 import * as shared from '@/components/shared.css'
 import * as review from '../review/ReviewWorkbench.css'
 import * as styles from '../jobs/jobReview.css'
-import * as eventStyles from './events.css'
 import { type ActionResult, rejectEvents } from './actions'
 import { EventFeatureControl } from './EventFeatureControl'
 import { EventListRow, EventRow } from './EventRow'
@@ -17,7 +16,8 @@ import { EventListRow, EventRow } from './EventRow'
  * 검토를 기다리는 행사. 두 곳에서 온 행사를 시작일 순으로 한 목록에 섞는다.
  *  - 새로 모은 행사(collector 검증 대기): 수집할 때 찾아 둔 공식 사이트 이미지가 있으면 썸네일로 보인다. '올리기'를 누르면 이미지 창(공식 사이트 이미지를 미리 채움)이 뜨고, 확인하면
  *    후보 등록과 이벤트 페이지 반영을 한 번에 한다. 올리지 않을 행사는 여러 건을 골라 한 번에 치운다.
- *  - 두 단계로 나뉘어 있던 때(2026-09-25 전) 후보로만 올려 둔 사이트 행사: 이미지만 넣으면 된다. 치우기 대상이 아니라 고르기 칸이 없다.
+ *  - 두 단계로 나뉘어 있던 때(2026-09-25 전) 후보로만 올려 둔 사이트 행사: 이미지만 넣으면 된다. 이것도 골라 치울 수 있다 —
+ *    collector 는 게시된 행사를 거절하면 사이트 후보 목록에서 내린다.
  * 자세한 내용은 제목을 눌러 원문(판매처 페이지)에서 본다 — 설명은 약관상 옮기지 않는다.
  */
 export function WaitingEventsList({
@@ -46,7 +46,7 @@ export function WaitingEventsList({
   const sources = useMemo(() => [...new Set(rows.map((row) => row.source))], [rows])
 
   const visibleRows = source ? rows.filter((row) => row.source === source) : rows
-  const visibleEvents = visibleRows.flatMap((row) => (row.kind === 'pending' ? [row.event] : []))
+  const visibleEvents = visibleRows.map((row) => row.event)
   // 판매처를 바꿔도 고른 것은 남긴다. 처리 대상은 지금 보이는 행사로만 — 안 보이는 것을 함께 올리면 놀란다.
   const selectedVisibleIds = visibleEvents.filter((event) => selected.has(event.id)).map((event) => event.id)
   const isAllVisibleSelected = visibleEvents.length > 0 && selectedVisibleIds.length === visibleEvents.length
@@ -126,25 +126,26 @@ export function WaitingEventsList({
 
       {failure && <p className={review.errorNotice}>{failure}</p>}
 
-      {visibleRows.map((row) =>
-        row.kind === 'site' ? (
-          <EventRow key={row.event.id} event={row.event} isEnded={false} leading={<span className={eventStyles.checkboxSpace} />} />
+      {visibleRows.map((row) => {
+        const checkbox = (
+          <Checkbox.Line
+            size={20}
+            checked={selected.has(row.event.id)}
+            onCheckedChange={(checked) => toggle(row.event.id, checked)}
+            aria-label={`${row.event.title} 고르기`}
+          />
+        )
+        return row.kind === 'site' ? (
+          <EventRow key={row.event.id} event={row.event} isEnded={false} leading={checkbox} />
         ) : (
           <EventListRow
             key={row.event.id}
             event={row.event}
-            leading={
-              <Checkbox.Line
-                size={20}
-                checked={selected.has(row.event.id)}
-                onCheckedChange={(checked) => toggle(row.event.id, checked)}
-                aria-label={`${row.event.title} 고르기`}
-              />
-            }
+            leading={checkbox}
             right={<EventFeatureControl eventId={row.event.id} title={row.event.title} isFeatured={false} isNew />}
           />
-        ),
-      )}
+        )
+      })}
     </div>
   )
 }

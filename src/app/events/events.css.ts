@@ -27,9 +27,6 @@ export const thumbnail = style({
 /** 고르기 칸과 썸네일을 한 덩어리로 왼쪽에 둔다. */
 export const leading = style({ display: 'inline-flex', alignItems: 'center', gap: vars.space.md })
 
-/** 고르기 칸이 없는 줄(치울 수 없는 행사)도 썸네일이 같은 자리에서 시작하게 칸 너비만큼 비워 둔다. */
-export const checkboxSpace = style({ display: 'block', width: 20, flexShrink: 0 })
-
 export const titleLink = style({
   color: 'inherit',
   textDecoration: 'none',
