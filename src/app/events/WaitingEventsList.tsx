@@ -14,7 +14,7 @@ import { EventFeatureControl } from './EventFeatureControl'
 import { EventListRow, EventRow } from './EventRow'
 
 /**
- * 이미지를 기다리는 행사. 두 곳에서 온 행사를 시작일 순으로 한 목록에 섞는다.
+ * 검토를 기다리는 행사. 두 곳에서 온 행사를 시작일 순으로 한 목록에 섞는다.
  *  - 새로 모은 행사(collector 검증 대기): 수집할 때 찾아 둔 공식 사이트 이미지가 있으면 썸네일로 보인다. '올리기'를 누르면 이미지 창(공식 사이트 이미지를 미리 채움)이 뜨고, 확인하면
  *    후보 등록과 이벤트 페이지 반영을 한 번에 한다. 올리지 않을 행사는 여러 건을 골라 한 번에 치운다.
  *  - 두 단계로 나뉘어 있던 때(2026-09-25 전) 후보로만 올려 둔 사이트 행사: 이미지만 넣으면 된다. 치우기 대상이 아니라 고르기 칸이 없다.
@@ -89,7 +89,7 @@ export function WaitingEventsList({
   if (rows.length === 0) {
     return (
       <div className={shared.card}>
-        <p className={review.emptyState}>이미지를 기다리는 행사가 없습니다. 매일 08:30 수집이 돌면 여기에 쌓입니다.</p>
+        <p className={review.emptyState}>검토를 기다리는 행사가 없습니다. 매일 08:30 수집이 돌면 여기에 쌓입니다.</p>
       </div>
     )
   }
