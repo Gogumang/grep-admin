@@ -16,10 +16,10 @@ const REQUEST_TIMEOUT_MS = 10_000
 const REVALIDATE_SECONDS = 300
 
 /** 행사를 가져온 곳. collector 의 EventSourceKind.label 과 같아야 한다. */
-export type EventSourceLabel = '티켓타코' | '이벤터스' | 'Dev-Event'
+export type EventSourceLabel = '티켓타코' | '이벤터스' | 'Dev-Event' | 'Meetup' | 'Luma'
 
 export interface SiteEvent {
-  /** 티켓타코는 행사 코드, 이벤터스는 eventus-{번호}, Dev-Event 는 dev-event-{주소 해시 12자}. */
+  /** 티켓타코는 행사 코드, 이벤터스는 eventus-{번호}, Dev-Event 는 dev-event-{주소 해시 12자}, Meetup 은 meetup-{번호}, Luma 는 luma-{행사 id}. */
   id: string
   title: string
   url: string

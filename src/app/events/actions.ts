@@ -65,7 +65,7 @@ export async function unfeatureEvent(eventId: string): Promise<ActionResult> {
 }
 
 /**
- * 판매처(티켓타코·이벤터스)와 Dev-Event 를 지금 다시 읽는다. 매일 08:30 에 DAG 가 하는 일을 기다리지 않고 한 번 돌린다.
+ * 판매처(티켓타코·이벤터스)와 Dev-Event·Meetup·Luma 를 지금 다시 읽는다. 매일 08:30 에 DAG 가 하는 일을 기다리지 않고 한 번 돌린다.
  *
  * 모은 목록은 사이트 저장소 파일이라 화면은 GitHub 캐시(최대 5분)가 풀린 뒤 바뀐다 — 그래서 결과를 숫자로 알린다.
  */

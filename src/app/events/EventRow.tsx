@@ -4,7 +4,13 @@ import type { EventSourceLabel, SiteEvent } from '@/lib/events'
 import * as styles from './events.css'
 import { EventFeatureControl } from './EventFeatureControl'
 
-const SOURCE_COLORS: Record<EventSourceLabel, BadgeColor> = { 티켓타코: 'elephant', 이벤터스: 'teal', 'Dev-Event': 'green' }
+const SOURCE_COLORS: Record<EventSourceLabel, BadgeColor> = {
+  티켓타코: 'elephant',
+  이벤터스: 'teal',
+  'Dev-Event': 'green',
+  Meetup: 'red',
+  Luma: 'yellow',
+}
 
 /** YYYY-MM-DD → 9/14(월). 행사는 요일이 중요하다 — 평일이면 휴가를 내야 한다. */
 function shortDate(date: string): string {
