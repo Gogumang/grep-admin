@@ -17,10 +17,6 @@ export default async function BlogsPage() {
     return (
       <>
         <h1 className={console.pageTitle}>블로그 수집처</h1>
-        <p className={styles.mutedText} style={{ marginBottom: 20 }}>
-          수집을 실행하면 블로그를 하나씩 돌며 새 글을 모은 뒤, 마지막에 한 번에 저장합니다.
-          블로그 하나가 실패해도 나머지는 계속 진행됩니다.
-        </p>
         <BlogManager feeds={feeds} />
       </>
     )
