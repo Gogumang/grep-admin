@@ -33,6 +33,11 @@ const COLLECT_EVENTS_TIMEOUT_MILLISECONDS = 120_000
 const FEATURE_EVENT_TIMEOUT_MILLISECONDS = 60_000
 /** 이미지 찾기는 행사 페이지와 공식 사이트 몇 곳을 연다. 창을 연 사람을 오래 세워 두지 않게 짧게 끊는다 — 못 찾으면 직접 넣으면 된다. */
 const SUGGEST_EVENT_IMAGE_TIMEOUT_MILLISECONDS = 20_000
+/**
+ * 블로그 수집을 저장할 때는 새 글마다 원문 본문·이미지를 읽는다. 새로 넣은 블로그는 글 열 개가 한꺼번에 들어와 15초를 넘긴다
+ * (2026-09-26 카카오페이 — 서버는 끝까지 저장했는데 어드민이 먼저 끊어 '연결하지 못했습니다'로 보였다).
+ */
+const COMMIT_COLLECTION_TIMEOUT_MILLISECONDS = 110_000
 
 export interface BlogFeed {
   blogName: string
@@ -590,7 +595,11 @@ export const collector = {
     }),
 
   commitCollectionRun: (runId: string) =>
-    request<{ committedPostCount: number; blogNames: string[] }>(`/api/collections/${runId}/commit`, { method: 'POST' }),
+    request<{ committedPostCount: number; blogNames: string[] }>(
+      `/api/collections/${runId}/commit`,
+      { method: 'POST' },
+      COMMIT_COLLECTION_TIMEOUT_MILLISECONDS,
+    ),
 
   /** 검토를 기다리는 열린 공고. 본문은 싣지 않는다. */
   listPendingJobs: () => request<ReviewedJob[]>('/api/admin/jobs/pending'),

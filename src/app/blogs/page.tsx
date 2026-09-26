@@ -6,6 +6,9 @@ import { BlogManager } from './BlogManager'
 
 export const dynamic = 'force-dynamic'
 
+/** 저장 단계(서버 액션)가 새 글 본문을 다 읽을 때까지 기다린다. 기본 제한 시간으로는 중간에 끊긴다. */
+export const maxDuration = 120
+
 export default async function BlogsPage() {
   await requireAdmin()
 
