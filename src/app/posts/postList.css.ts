@@ -16,11 +16,11 @@ export const tabs = style({
   display: 'flex',
   alignItems: 'center',
   gap: vars.space.lg,
-  marginBottom: vars.space.xl,
+  marginBottom: vars.space.md,
 })
 
-/** 회사 필터는 갈래 줄 오른쪽 끝에 둔다 — 갈래(전체/숨긴 글만)와 함께 걸리는 조건이다. */
-export const filter = style({ marginLeft: 'auto' })
+/** 회사 필터는 갈래 줄 바로 아래 왼쪽에 둔다 — 갈래(전체/숨긴 글만)와 함께 걸리는 조건이다. */
+export const filter = style({ display: 'flex', marginBottom: vars.space.xl })
 
 export const tab = style({
   border: 0,

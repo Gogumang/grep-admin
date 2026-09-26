@@ -159,14 +159,14 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
         >
           숨긴 글만
         </button>
-        <div className={list.filter}>
-          <FilterSelect
-            label="회사"
-            options={blogNames.map((name) => ({ value: name, label: name }))}
-            value={blogName}
-            onChange={selectBlog}
-          />
-        </div>
+      </div>
+      <div className={list.filter}>
+        <FilterSelect
+          label="회사"
+          options={blogNames.map((name) => ({ value: name, label: name }))}
+          value={blogName}
+          onChange={selectBlog}
+        />
       </div>
 
       <div className={styles.card}>
