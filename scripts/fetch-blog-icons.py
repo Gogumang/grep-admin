@@ -54,6 +54,18 @@ SITE_OVERRIDES = {
     "techblog-yogiyo-co-kr": "https://www.yogiyo.co.kr",
     # 블로그는 SVG 아이콘만 선언한다 (Pillow가 못 읽는다).
     "hyperconnect-github-io": "https://hyperconnect.com",
+    # 2026-09-26 더한 블로그. Medium·feedburner·티스토리는 호스팅 쪽 로고가 나와 회사 사이트에서 받는다.
+    "medium-com-catchtable": "https://www.catchtable.co.kr",
+    "medium-com-tving-team": "https://www.tving.com",
+    "medium-com-ssgtech": "https://www.ssg.com",
+    "feeds-feedburner-com-googledeveloperskorea": "https://developers.google.com",
+    "aws-amazon-com-tech": "https://aws.amazon.com",
+    "kakaoentertainment-tech-tistory-com": "https://www.kakaoent.com",
+    # 기술 블로그가 Medium 사용자 도메인이라 Medium 로고가 나온다.
+    "tech-remember-co-kr": "https://rememberapp.co.kr",
+    "blog-myrealtrip-com": "https://www.myrealtrip.com",
+    "blog-bespinglobal-com": "https://www.bespinglobal.com",
+    "tech-channel-io": "https://channel.io",
 }
 
 # 본 사이트가 봇 차단으로 HTML을 403으로 막아 아이콘 선언을 읽을 수 없는 곳 (아이콘 파일은 열려 있다).
@@ -62,6 +74,8 @@ ICON_OVERRIDES = {
     "medium-com-musinsa-tech": "https://image.msscdn.net/static/assets/bi/favicon/favicon-192x192.png",
     # 쿠팡은 HTML이 막혔다 풀렸다 한다.
     "medium-com-coupang-engineering": "https://image7.coupangcdn.com/image/coupang/favicon/favicon.ico",
+    # 기술 블로그는 보안 규칙이 스크립트 요청을 막고 아이콘도 16px 하나뿐이다. 회사 CDN 의 큰 아이콘을 쓴다.
+    "techblog-woowahan-com": "https://woowahan-cdn.woowahan.com/favicon/ko/android-chrome-192x192.png",
 }
 
 ICON_LINK = re.compile(r"<link\b[^>]*>", re.I)
