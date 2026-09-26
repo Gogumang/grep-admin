@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
-import { FilterSelect, Result, useToast } from '@/shared'
+import { FilterSelect, type FilterSelectOption, Result, useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
 import { SiteImage } from '@/components/SiteImage'
 import { togglePostHidden, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
-import { POST_CATEGORY_OPTIONS } from '@/lib/postCategories'
 import * as list from './postList.css'
 
 /** 처음 그리는 글 수. 스크롤이 끝에 닿을 때마다 이만큼씩 잇는다. */
@@ -51,7 +50,14 @@ export interface PostListItem {
 /** 사이트는 분류가 없는 글을 Engineering 으로 보여 준다 — 어드민 필터도 같게 걸러야 둘을 대조할 수 있다. */
 const UNCATEGORIZED_AS = 'Engineering'
 
-export function PostManager({ posts }: { posts: PostListItem[] }) {
+export function PostManager({
+  posts,
+  categoryOptions,
+}: {
+  posts: PostListItem[]
+  /** 분류 필터 선택지. 못 읽었으면 null 이고 분류 필터를 숨긴다. */
+  categoryOptions: FilterSelectOption[] | null
+}) {
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
   /** 고른 회사(블로그 이름). null이면 모든 회사. 숨김 갈래와 함께 걸린다. */
   const [blogName, setBlogName] = useState<string | null>(null)
@@ -181,7 +187,7 @@ export function PostManager({ posts }: { posts: PostListItem[] }) {
           value={blogName}
           onChange={selectBlog}
         />
-        <FilterSelect label="분류" options={POST_CATEGORY_OPTIONS} value={category} onChange={selectCategory} />
+        {categoryOptions && <FilterSelect label="분류" options={categoryOptions} value={category} onChange={selectCategory} />}
       </div>
 
       <div className={styles.card}>

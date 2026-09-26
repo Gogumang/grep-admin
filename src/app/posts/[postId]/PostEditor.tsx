@@ -2,9 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { ArticlePreview, type ArticleDraft } from '@/components/preview/ArticlePreview'
-import { Badge, Button, FilterSelect, useToast } from '@/shared'
+import { Badge, Button, FilterSelect, type FilterSelectOption, useToast } from '@/shared'
 import type { PendingPostEdit, PostDetail } from '@/lib/collector'
-import { POST_CATEGORY_OPTIONS } from '@/lib/postCategories'
 import * as console from '@/styles/console.css'
 import { savePost } from './actions'
 import * as styles from './postDetail.css'
@@ -45,7 +44,14 @@ function toEdit(draft: ArticleDraft, original: ArticleDraft): PendingPostEdit {
  * 배워야 한다. 다른 점은 여기가 '이미 나간 글'이라는 것뿐이고, 그 무게는 저장 문구
  * ("다음 배포부터 반영됩니다")와 숨김 배지가 말한다.
  */
-export function PostEditor({ detail }: { detail: PostDetail }) {
+export function PostEditor({
+  detail,
+  categoryOptions,
+}: {
+  detail: PostDetail
+  /** 분류 선택지. 못 읽었으면 null 이고 분류 칸을 숨긴다. */
+  categoryOptions: FilterSelectOption[] | null
+}) {
   const loaded = toDraft(detail)
   const { openToast } = useToast()
 
@@ -93,13 +99,15 @@ export function PostEditor({ detail }: { detail: PostDetail }) {
         <span className={styles.editHint}>
           {dirty ? '고친 내용이 있습니다' : '미리보기의 글자를 눌러 고칩니다'}
         </span>
-        <FilterSelect
-          label="분류"
-          options={POST_CATEGORY_OPTIONS}
-          value={draft.category || null}
-          onChange={(category) => setDraft((previous) => ({ ...previous, category: category ?? '' }))}
-          hasAllOption={false}
-        />
+        {categoryOptions && (
+          <FilterSelect
+            label="분류"
+            options={categoryOptions}
+            value={draft.category || null}
+            onChange={(category) => setDraft((previous) => ({ ...previous, category: category ?? '' }))}
+            hasAllOption={false}
+          />
+        )}
         <Button color="primary" variant="weak" size="small" disabled={!dirty || isPending} onClick={save}>
           {dirty ? '저장' : '고친 내용 없음'}
         </Button>

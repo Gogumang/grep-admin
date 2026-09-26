@@ -1,4 +1,5 @@
 import { collector } from '@/lib/collector'
+import { loadPostCategoryOptions } from '@/lib/postCategories'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
@@ -13,8 +14,9 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ p
   const { postId } = await params
 
   try {
-    const detail = await collector.findPending(postId)
-    return <ReviewEditor detail={detail} />
+    // 분류 선택지는 보조다 — 못 읽으면 분류 칸만 숨긴다(loadPostCategoryOptions 가 삼킨다).
+    const [detail, categoryOptions] = await Promise.all([collector.findPending(postId), loadPostCategoryOptions()])
+    return <ReviewEditor detail={detail} categoryOptions={categoryOptions} />
   } catch (error) {
     // 이미 공개했거나 치운 글일 수 있다. 목록으로 돌아갈 길을 함께 준다.
     return (

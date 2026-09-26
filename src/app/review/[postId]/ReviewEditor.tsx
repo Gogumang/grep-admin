@@ -3,9 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { ArticlePreview, type ArticleDraft } from '@/components/preview/ArticlePreview'
-import { Button, FilterSelect, useToast } from '@/shared'
+import { Button, FilterSelect, type FilterSelectOption, useToast } from '@/shared'
 import type { PendingPost, PendingPostDetail, PendingPostEdit } from '@/lib/collector'
-import { POST_CATEGORY_OPTIONS } from '@/lib/postCategories'
 import * as console from '@/styles/console.css'
 import * as styles from '../ReviewWorkbench.css'
 import { publishPending, rejectPending, savePending } from '../actions'
@@ -46,7 +45,14 @@ function toEdit(draft: ArticleDraft, original: ArticleDraft): PendingPostEdit {
  * 일이라 고치는 내내 나갈 모습이 보여야 한다. 탭을 오가면 고친 결과를 확인하려고 매번
  * 되돌아가야 했다. 이제 미리보기의 글자를 그대로 눌러 고친다.
  */
-export function ReviewEditor({ detail }: { detail: PendingPostDetail }) {
+export function ReviewEditor({
+  detail,
+  categoryOptions,
+}: {
+  detail: PendingPostDetail
+  /** 분류 선택지. 못 읽었으면 null 이고 분류 칸을 숨긴다. */
+  categoryOptions: FilterSelectOption[] | null
+}) {
   const router = useRouter()
   const loaded = toDraft(detail.post, detail.body)
 
@@ -102,13 +108,15 @@ export function ReviewEditor({ detail }: { detail: PendingPostDetail }) {
           <span className={styles.tabSpacer} />
 
           {/* collector 가 낱말로 추천한 분류가 채워져 온다. 확신이 없던 글은 비어 있다 — 비운 채 공개하면 사이트는 Engineering 으로 본다. */}
-          <FilterSelect
-            label="분류"
-            options={POST_CATEGORY_OPTIONS}
-            value={draft.category || null}
-            onChange={(category) => setDraft((previous) => ({ ...previous, category: category ?? '' }))}
-            hasAllOption={false}
-          />
+          {categoryOptions && (
+            <FilterSelect
+              label="분류"
+              options={categoryOptions}
+              value={draft.category || null}
+              onChange={(category) => setDraft((previous) => ({ ...previous, category: category ?? '' }))}
+              hasAllOption={false}
+            />
+          )}
 
           <Button
             color="light"

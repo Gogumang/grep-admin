@@ -1,23 +1,15 @@
-/**
- * 글 분류. 사이트(grep src/shared/types/post.ts 의 POST_CATEGORIES)와 collector(PostCategoryPolicy.CATEGORIES)와
- * 같은 14개이고 순서도 같다 — 하나를 고치면 셋을 함께 고친다. collector 는 이 밖의 이름으로 고치는 것을 400 으로 막는다.
- */
-export const POST_CATEGORIES = [
-  'Frontend',
-  'Backend',
-  'Android',
-  'iOS',
-  'Cross-platform',
-  'DevOps',
-  'Data',
-  'AI/ML',
-  'Security',
-  'QA',
-  'Engineering',
-  'Design',
-  'Product',
-  'Culture',
-] as const
+import type { FilterSelectOption } from '@/shared'
+import { collector } from './collector'
 
-/** 분류를 고르는 칸(FilterSelect)의 선택지. */
-export const POST_CATEGORY_OPTIONS = POST_CATEGORIES.map((category) => ({ value: category, label: category }))
+/**
+ * 글 분류 선택지. 목록의 정본은 collector DB 이고 어드민 '블로그 → 분류' 화면에서 고친다 — 코드에 두지 않는다.
+ *
+ * 선택지는 보조다. 못 읽으면 null 을 돌려주고, 화면은 분류 칸을 숨기거나 거르지 않은 채 나머지를 그린다.
+ */
+export async function loadPostCategoryOptions(): Promise<FilterSelectOption[] | null> {
+  try {
+    return (await collector.listPostCategories()).map(({ name }) => ({ value: name, label: name }))
+  } catch {
+    return null
+  }
+}

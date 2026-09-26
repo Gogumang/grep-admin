@@ -1,4 +1,5 @@
 import { collector, type Post } from '@/lib/collector'
+import { loadPostCategoryOptions } from '@/lib/postCategories'
 import { requireAdmin } from '@/lib/session'
 import * as styles from '@/components/shared.css'
 import * as console from '@/styles/console.css'
@@ -35,11 +36,12 @@ export default async function PostsPage() {
 
   try {
     // 숨긴 글까지 전부 읽는다 — 어드민은 숨긴 것을 다시 드러낼 수 있어야 한다.
-    const posts = await collector.listPosts()
+    // 분류 선택지는 보조다 — 못 읽으면 분류 필터만 숨긴다(loadPostCategoryOptions 가 삼킨다).
+    const [posts, categoryOptions] = await Promise.all([collector.listPosts(), loadPostCategoryOptions()])
     return (
       <>
         <h1 className={console.pageTitle}>글</h1>
-        <PostManager posts={posts.map(toPostListItem)} />
+        <PostManager posts={posts.map(toPostListItem)} categoryOptions={categoryOptions} />
       </>
     )
   } catch (error) {

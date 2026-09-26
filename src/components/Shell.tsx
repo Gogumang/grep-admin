@@ -22,6 +22,7 @@ const GROUPS = [
     items: [
       { href: '/review', label: '검증' },
       { href: '/posts', label: '글' },
+      { href: '/posts/categories', label: '분류' },
       { href: '/blogs', label: '수집처' },
     ],
   },

@@ -1,4 +1,5 @@
 import { collector } from '@/lib/collector'
+import { loadPostCategoryOptions } from '@/lib/postCategories'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
@@ -21,8 +22,9 @@ export default async function PostDetailPage({ params }: { params: Promise<{ pos
   const { postId } = await params
 
   try {
-    const detail = await collector.findPost(postId)
-    return <PostEditor detail={detail} />
+    // 분류 선택지는 보조다 — 못 읽으면 분류 칸만 숨긴다(loadPostCategoryOptions 가 삼킨다).
+    const [detail, categoryOptions] = await Promise.all([collector.findPost(postId), loadPostCategoryOptions()])
+    return <PostEditor detail={detail} categoryOptions={categoryOptions} />
   } catch (error) {
     // 목록을 띄운 뒤 지워졌을 수 있다. 목록으로 돌아갈 길을 함께 준다.
     return (
