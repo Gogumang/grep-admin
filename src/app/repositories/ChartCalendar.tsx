@@ -8,6 +8,14 @@ import * as styles from './ChartCalendar.css'
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
 const DAYS_IN_WEEK = 7
 
+const RANGE_LABELS: Record<ChartPeriod, string> = { daily: '날짜 고르기', weekly: '주 고르기', monthly: '달 고르기' }
+
+const HINTS: Record<ChartPeriod, string> = {
+  daily: '점이 있는 날만 차트가 있어요.',
+  weekly: '날을 누르면 그 주에 쌓인 마지막 차트를 보여요.',
+  monthly: '날을 누르면 그 달에 쌓인 마지막 차트를 보여요.',
+}
+
 /** 날짜는 모두 YYYY-MM-DD 문자열로 다룬다. Date 로 바꾸면 시간대에 따라 하루가 밀린다. */
 function toKey(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
@@ -26,6 +34,20 @@ function weekOf(key: string): string[] {
     const each = new Date(Date.UTC(year, month, day - mondayOffset + index))
     return toKey(each.getUTCFullYear(), each.getUTCMonth(), each.getUTCDate())
   })
+}
+
+/** 그 날이 든 달의 1일부터 말일까지. */
+function monthOf(key: string): string[] {
+  const { year, month } = parseKey(key)
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
+  return Array.from({ length: lastDay }, (_, index) => toKey(year, month, index + 1))
+}
+
+/** 달력에서 한 번에 고르는 날들. 급상승은 그날, 주간은 한 주, 월간은 한 달이다. */
+function rangeOf(period: ChartPeriod, key: string): string[] {
+  if (period === 'weekly') return weekOf(key)
+  if (period === 'monthly') return monthOf(key)
+  return [key]
 }
 
 /** 달력 한 장 — 그달 1일이 든 주 월요일부터 말일이 든 주 일요일까지. 앞뒤 달 날짜는 null 로 비운다. */
@@ -49,8 +71,9 @@ interface ChartCalendarProps {
 }
 
 /**
- * 지난 차트를 고르는 달력. 급상승·월간은 날을, 주간은 한 주를 고른다.
- * 주간 차트도 날마다 쌓이므로(그날 기준 최근 1주) 한 주를 고르면 그 주에 쌓인 마지막 차트를 보인다.
+ * 지난 차트를 고르는 달력. 급상승은 날을, 주간은 한 주를, 월간은 한 달을 고른다.
+ * 주간·월간 차트도 날마다 쌓이지만(그날 기준 최근 1주·약 4주) 날마다 고르면 겹치는 기간을 하루씩 밀어 보는 셈이라,
+ * 한 주·한 달을 고르면 그 안에 쌓인 마지막 차트를 보인다 — '9월 월간 차트'처럼 읽힌다.
  * 고른 날은 주소(?date=)에 둔다 — 새로 고치거나 링크로 들어와도 그 차트가 열린다.
  */
 export function ChartCalendar({ period, chartDate, chartDates }: ChartCalendarProps) {
@@ -59,13 +82,13 @@ export function ChartCalendar({ period, chartDate, chartDates }: ChartCalendarPr
   const [shown, setShown] = useState({ year: initial.year, month: initial.month })
 
   const available = new Set(chartDates)
-  const isWeekly = period === 'weekly'
-  const selectedDays = new Set(isWeekly ? weekOf(chartDate) : [chartDate])
+  const isRange = period !== 'daily'
+  const selectedRange = rangeOf(period, chartDate)
+  const selectedDays = new Set(selectedRange)
   const latest = chartDates.at(-1)
 
-  // 주간은 그 주에 쌓인 마지막 날, 나머지는 그날 차트를 연다.
-  const targetOf = (key: string): string | undefined =>
-    isWeekly ? weekOf(key).filter((day) => available.has(day)).at(-1) : available.has(key) ? key : undefined
+  // 주간·월간은 그 주·그 달에 쌓인 마지막 날, 급상승은 그날 차트를 연다.
+  const targetOf = (key: string): string | undefined => rangeOf(period, key).filter((day) => available.has(day)).at(-1)
 
   // 최신 차트는 주소에 날짜를 남기지 않는다 — 내일 들어와도 그날 최신이 열리게.
   const open = (target: string) => {
@@ -97,7 +120,7 @@ export function ChartCalendar({ period, chartDate, chartDates }: ChartCalendarPr
         </button>
       </div>
 
-      <div className={styles.grid} aria-label={isWeekly ? '주 고르기' : '날짜 고르기'}>
+      <div className={styles.grid} aria-label={RANGE_LABELS[period]}>
         {WEEKDAYS.map((weekday) => (
           <span key={weekday} className={styles.weekday}>
             {weekday}
@@ -114,11 +137,13 @@ export function ChartCalendar({ period, chartDate, chartDates }: ChartCalendarPr
               className={[
                 styles.day,
                 available.has(key) ? styles.hasChart : '',
-                isSelected ? (isWeekly ? styles.selectedWeek : styles.selected) : '',
+                isSelected ? (isRange ? styles.selectedRange : styles.selected) : '',
+                isRange && key === selectedRange[0] ? styles.rangeStart : '',
+                isRange && key === selectedRange.at(-1) ? styles.rangeEnd : '',
               ].join(' ')}
               disabled={!target}
               aria-pressed={isSelected}
-              aria-label={isWeekly ? `${key}이 든 주` : key}
+              aria-label={period === 'weekly' ? `${key}이 든 주` : period === 'monthly' ? `${key}이 든 달` : key}
               onClick={() => target && open(target)}
             >
               {parseKey(key).day}
@@ -128,7 +153,7 @@ export function ChartCalendar({ period, chartDate, chartDates }: ChartCalendarPr
       </div>
 
       <p className={styles.hint}>
-        {isWeekly ? '날을 누르면 그 주에 쌓인 마지막 차트를 보여요.' : '점이 있는 날만 차트가 있어요.'}
+        {HINTS[period]}
         {latest && chartDate !== latest && (
           <>
             {' '}

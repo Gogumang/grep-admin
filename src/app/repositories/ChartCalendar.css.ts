@@ -81,10 +81,10 @@ export const selected = style({
 })
 
 /**
- * 주간은 한 주가 한 띠로 이어져 보이게 모서리를 없앤다 — 월요일·일요일만 둥글게.
+ * 주간·월간은 고른 날들이 줄마다 한 띠로 이어져 보이게 모서리를 없앤다 — 월요일·일요일만 둥글게.
  * 요일 머리 일곱 칸이 먼저 오므로 칸 순서의 7n+1 이 월요일, 7n 이 일요일이다.
  */
-export const selectedWeek = style({
+export const selectedRange = style({
   background: vars.color.accentSoft,
   color: vars.color.inkStrong,
   fontWeight: vars.fontWeight.bold,
@@ -94,6 +94,18 @@ export const selectedWeek = style({
     '&:nth-child(7n + 1)': { borderRadius: `${vars.radius.md} 0 0 ${vars.radius.md}` },
     '&:nth-child(7n)': { borderRadius: `0 ${vars.radius.md} ${vars.radius.md} 0` },
   },
+})
+
+/**
+ * 한 달은 줄 중간에서 시작하고 끝나기도 한다 — 범위의 첫날·말일도 둥글게.
+ * :nth-child(n) 은 모든 칸에 맞는 빈 조건으로, 위 월요일·일요일 규칙과 우선순위를 맞춰 뒤에 오는 이 규칙이 이기게 한다.
+ */
+export const rangeStart = style({
+  selectors: { '&:nth-child(n)': { borderTopLeftRadius: vars.radius.md, borderBottomLeftRadius: vars.radius.md } },
+})
+
+export const rangeEnd = style({
+  selectors: { '&:nth-child(n)': { borderTopRightRadius: vars.radius.md, borderBottomRightRadius: vars.radius.md } },
 })
 
 export const hint = style({ margin: `${vars.space.md} 0 0`, fontSize: vars.fontSize.xs, color: vars.color.inkFaint })

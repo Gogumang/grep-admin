@@ -13,7 +13,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 /**
  * 오늘(급상승)·최근 1주·4주 동안 별이 많이 늘어난 GitHub 저장소 차트. collector가 매일 GitHub Trending 을 읽어 쌓은 것을
- * 그 앞 날과 비교해 멜론 차트처럼 순위 변동을 보여 준다. 오른쪽 달력으로 지난 차트를 고른다(?date=, 주간은 한 주 단위).
+ * 그 앞 날과 비교해 멜론 차트처럼 순위 변동을 보여 준다. 오른쪽 달력으로 지난 차트를 고른다(?date=, 주간은 한 주·월간은 한 달 단위).
  */
 export default async function RepositoriesPage({
   searchParams,
