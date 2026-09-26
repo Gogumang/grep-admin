@@ -4,6 +4,7 @@
  * 어드민은 저장소 파일을 직접 만지지 않는다 — 커밋 로직이 collector에만 있으면
  * 같은 일을 두 언어로 만들지 않아도 되고, GitHub 토큰도 한 곳에만 두면 된다.
  */
+import type { CodingLanguage } from './codingLanguages'
 import { readDeviceSession } from './deviceSession'
 import type { EventSourceLabel } from './events'
 
@@ -38,6 +39,13 @@ const SUGGEST_EVENT_IMAGE_TIMEOUT_MILLISECONDS = 20_000
  * (2026-09-26 카카오페이 — 서버는 끝까지 저장했는데 어드민이 먼저 끊어 '연결하지 못했습니다'로 보였다).
  */
 const COMMIT_COLLECTION_TIMEOUT_MILLISECONDS = 110_000
+/**
+ * 참조 풀이 돌리기는 컴파일 한 번(Kotlin·Go 는 8초 안팎, 한도 30초)에 케이스 최대 50개 실행이 붙는다.
+ * 보통 요청 15초로 끊으면 서버는 끝까지 돌았는데 화면은 '연결하지 못했습니다'가 된다.
+ */
+const RUN_REFERENCE_TIMEOUT_MILLISECONDS = 120_000
+/** 공개 중인 문제의 저장·공개·내리기는 사이트 저장소 커밋까지 한다 — 다른 커밋 요청처럼 넉넉히 기다린다. */
+const CODING_COMMIT_TIMEOUT_MILLISECONDS = 60_000
 
 export interface BlogFeed {
   blogName: string
@@ -451,6 +459,76 @@ export interface ClubRecruitments {
   recruitments: ClubRecruitment[]
 }
 
+/** draft 는 사이트(problems.json)에 실리지 않는다. 공개해야 풀이 화면에 나온다. */
+export type CodingProblemStatus = 'draft' | 'published'
+
+/** 문제 목록 한 줄. collector 의 GET /coding/problems 응답 모양이다(updatedAt 최근 것부터). */
+export interface CodingProblemSummary {
+  id: string
+  title: string
+  /** 1..3 */
+  level: number
+  tags: string[]
+  status: CodingProblemStatus
+  exampleCount: number
+  hiddenCaseCount: number
+  updatedAt: string
+  publishedAt: string | null
+}
+
+/** 입출력 한 벌. isExample 이 false 면 숨은 케이스다 — 입출력이 사이트에 나가지 않는다. */
+export interface CodingTestCase {
+  input: string
+  output: string
+  isExample: boolean
+}
+
+/** 저장(PUT)할 때 보내는 본문. 케이스는 통째로 바뀌고 배열 순서가 곧 ordinal 이다. */
+export interface CodingProblemContent {
+  title: string
+  level: number
+  tags: string[]
+  statement: string
+  inputFormat: string
+  outputFormat: string
+  timeLimitMs: number
+  memoryLimitMb: number
+  referenceLanguage: CodingLanguage
+  referenceCode: string
+  cases: CodingTestCase[]
+}
+
+/**
+ * 문제 하나 전부. collector 의 GET /coding/problems/{id} 응답 모양이다.
+ * 참조 풀이는 비어 있을 수 있다 — 풀이 없이 출력을 손으로 적은 문제도 있다.
+ */
+export interface CodingProblem extends Omit<CodingProblemContent, 'referenceLanguage' | 'referenceCode'> {
+  id: string
+  referenceLanguage: CodingLanguage | null
+  referenceCode: string | null
+  status: CodingProblemStatus
+  updatedAt: string
+  publishedAt: string | null
+}
+
+export type ReferenceRunStatus = 'ok' | 'runtime-error' | 'time-limit' | 'memory-limit' | 'output-limit' | 'judge-error'
+
+/** 참조 풀이를 입력 하나로 돌린 결과. results 는 보낸 inputs 와 같은 순서다. */
+export interface ReferenceRunResult {
+  status: ReferenceRunStatus
+  stdout: string
+  stderr: string
+  timeMs: number
+  memoryKb: number
+}
+
+export type ReferenceRun =
+  | { kind: 'compile-error'; message: string }
+  | { kind: 'ran'; results: ReferenceRunResult[] }
+
+/** 코딩테스트 어드민 경로. 다른 어드민 API 와 같은 접두사 아래 둔다. */
+const CODING_PATH = '/api/admin/coding'
+
 export const collector = {
   listClubRecruitments: () => request<ClubRecruitments[]>('/api/admin/clubs/recruitments'),
 
@@ -691,4 +769,41 @@ export const collector = {
 
   collectEvents: () =>
     request<EventCollectionResult>('/api/events/collect', { method: 'POST' }, COLLECT_EVENTS_TIMEOUT_MILLISECONDS),
+
+  listCodingProblems: () => request<CodingProblemSummary[]>(`${CODING_PATH}/problems`),
+
+  /** 없으면 problem_not_found 로 실패한다. */
+  getCodingProblem: (problemId: string) =>
+    request<CodingProblem>(`${CODING_PATH}/problems/${encodeURIComponent(problemId)}`),
+
+  /** 없으면 만들고 있으면 덮어쓴다. 공개 중인 문제면 collector 가 사이트 파일도 다시 커밋한다. */
+  saveCodingProblem: (problemId: string, content: CodingProblemContent) =>
+    request<CodingProblem>(
+      `${CODING_PATH}/problems/${encodeURIComponent(problemId)}`,
+      { method: 'PUT', body: JSON.stringify(content) },
+      CODING_COMMIT_TIMEOUT_MILLISECONDS,
+    ),
+
+  runReferenceSolution: (run: {
+    language: CodingLanguage
+    code: string
+    inputs: string[]
+    timeLimitMs: number
+    memoryLimitMb: number
+  }) => request<ReferenceRun>(`${CODING_PATH}/run-reference`, { method: 'POST', body: JSON.stringify(run) }, RUN_REFERENCE_TIMEOUT_MILLISECONDS),
+
+  /** 공개 조건(예시 1개·숨은 케이스 1개 이상, 빈 출력 없음)이 모자라면 collector 가 400 으로 거절한다. */
+  publishCodingProblem: (problemId: string) =>
+    request<CodingProblem>(
+      `${CODING_PATH}/problems/${encodeURIComponent(problemId)}/publish`,
+      { method: 'POST' },
+      CODING_COMMIT_TIMEOUT_MILLISECONDS,
+    ),
+
+  unpublishCodingProblem: (problemId: string) =>
+    request<CodingProblem>(
+      `${CODING_PATH}/problems/${encodeURIComponent(problemId)}/unpublish`,
+      { method: 'POST' },
+      CODING_COMMIT_TIMEOUT_MILLISECONDS,
+    ),
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import * as styles from '@/styles/console.css'
-import { BriefcaseIcon, CalendarIcon, DocumentIcon, MenuIcon, PeopleIcon, SlidersIcon, StarIcon } from './icons'
+import { BriefcaseIcon, CalendarIcon, CodeIcon, DocumentIcon, MenuIcon, PeopleIcon, SlidersIcon, StarIcon } from './icons'
 import { GrepLogo } from './Logo'
 
 /**
@@ -63,6 +63,13 @@ const GROUPS = [
       { href: '/repositories', label: '인기 저장소' },
       { href: '/companies', label: '회사 저장소' },
     ],
+  },
+  /* 코딩테스트는 수집하지 않고 직접 만든다 — 검증·수집처가 없고 문제 하나가 곧 편집 화면이다. */
+  {
+    key: 'coding',
+    label: '코딩테스트',
+    Icon: CodeIcon,
+    items: [{ href: '/coding', label: '문제' }],
   },
   {
     key: 'manage',

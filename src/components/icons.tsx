@@ -104,3 +104,13 @@ export function StarIcon({ size, strokeWidth }: IconProps) {
     </Glyph>
   )
 }
+
+/** 코딩테스트 갈래 — 꺾쇠 괄호 */
+export function CodeIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <Glyph size={size} strokeWidth={strokeWidth}>
+      <path d="M8.5 7L3.5 12l5 5" />
+      <path d="M15.5 7l5 5-5 5" />
+    </Glyph>
+  )
+}
