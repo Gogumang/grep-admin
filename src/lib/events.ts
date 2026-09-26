@@ -59,14 +59,23 @@ async function readSiteFile(path: string): Promise<string> {
 /**
  * 모은 행사는 저장소 파일에서, 올린 행사는 collector에서 읽는다. 올린 목록까지 저장소에서 읽으면
  * raw.githubusercontent 5분 캐시 때문에 방금 올린 행사가 한동안 안 올린 것으로 보인다.
+ *
+ * 새로 모은 행사를 한 번에 올리면 events.json 에도 그때 처음 들어간다 — 캐시된 파일에는 아직 없어 행 자체가 빠진다.
+ * 그래서 collector 가 게시한 후보를 파일에 없을 때만 덧붙인다. 보조라 못 읽으면 파일만으로 그린다.
  */
 export async function listSiteEvents(): Promise<SiteEvent[]> {
-  const [eventsSource, featuredEvents] = await Promise.all([
+  const [eventsSource, featuredEvents, publishedCandidates] = await Promise.all([
     readSiteFile('src/events/events.json'),
     collector.listFeaturedEvents(),
+    collector.listPublishedEvents().catch(() => []),
   ])
   const imageById = new Map(featuredEvents.map((featured) => [featured.id, featured.image]))
-  const { events } = JSON.parse(eventsSource) as { events: Omit<SiteEvent, 'isFeatured' | 'imageUrl'>[] }
+  const { events: fileEvents } = JSON.parse(eventsSource) as { events: Omit<SiteEvent, 'isFeatured' | 'imageUrl'>[] }
+  const fileEventIds = new Set(fileEvents.map((event) => event.id))
+  const notYetInFile = publishedCandidates
+    .filter((candidate) => !fileEventIds.has(candidate.id))
+    .map(({ firstSeenAt: _firstSeenAt, imageUrl: _imageUrl, ...event }) => event)
+  const events = [...fileEvents, ...notYetInFile]
 
   return events
     .map((event) => {
