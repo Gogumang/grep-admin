@@ -45,3 +45,7 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# 파이썬 스크립트(scripts/*.py) 실행 캐시
+__pycache__/
+*.pyc
