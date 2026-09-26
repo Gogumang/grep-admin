@@ -2,10 +2,8 @@ import clubData from '@/data/clubs.json'
 import communityData from '@/data/communities.json'
 import { collector } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
-import { Badge, type BadgeColor } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
-import { ClubCheckCell } from './ClubCheckCell'
 import { ClubIcon } from './ClubIcon'
 import { ClubKindTabs, type ClubKind, type SourceTab } from './ClubKindTabs'
 import { CommunityTable, type Community } from './CommunityTable'
@@ -33,12 +31,6 @@ const ICON_SIZE = 24
 /** 앞의 것일수록 사람 손이 덜 간다 — 표도 이 순서로 줄을 세운다. */
 const METHOD_ORDER: CollectMethod[] = ['auto', 'draft', 'manual']
 
-const METHODS: Record<CollectMethod, { label: string; color: BadgeColor; description: string }> = {
-  auto: { label: '자동', color: 'blue', description: '모집 일정(기수·시작·마감)을 사이트에서 기계적으로 읽을 수 있어요.' },
-  draft: { label: '사람이 확정', color: 'yellow', description: '날짜는 보이지만 연도나 기수가 빠져 있어 그대로 믿을 수 없어요.' },
-  manual: { label: '사람이 입력', color: 'elephant', description: '날짜를 공개하지 않거나, 학교별로 모집하거나, 인스타그램에만 공지해요.' },
-}
-
 const DESCRIPTION: Record<SourceTab, string> = {
   club: 'IT 연합 동아리의 모집 페이지예요. 자동으로 읽을 수 있는 곳은 매일 08:45에 모집 일정을 가져와요.',
   bootcamp:
@@ -52,8 +44,8 @@ const TITLE: Record<SourceTab, string> = { club: '동아리', bootcamp: '부트�
  * 개발 동아리·부트캠프 수집처. 어디서 모집 정보를 가져올 수 있는지 본다.
  * 목록은 src/data/clubs.json 에 있다(동아리 2026-09-25, 부트캠프 2026-09-26 조사). 자동으로 읽을 수 있는 곳은 collector 가
  * 매일 08:45 에 모집 일정을 읽어 쌓는다 — 여기서는 곳마다 자동 수집을 켜고 끈다. 날짜를 읽을 수 없는 곳은 같은 시각에 모집 페이지가
- * 바뀌었는지만 보고, 바뀌었으면 '변경됨' 배지로 사람이 날짜를 다시 맞추게 한다('확인했어요'로 내린다).
- * 동아리·부트캠프·커뮤니티는 제목 아래 탭(?kind=)으로 나눠 보고, 수집 방법은 한 표 안의 배지로 구분한다.
+ * 바뀌었는지만 본다. 수집·확인이 실패한 곳만 표 위에 알린다.
+ * 동아리·부트캠프·커뮤니티는 제목 아래 탭(?kind=)으로 나눠 본다.
  * 커뮤니티 목록은 src/data/communities.json 에 있다 — 모집 일정이 없어 수집 대상이 아니다.
  */
 export default async function ClubsPage({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
@@ -74,10 +66,10 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
   // 스위치 값은 보조다 — collector 가 잠깐 안 되면 스위치 칸만 비운다. 커뮤니티 탭에는 스위치가 없어 부르지 않는다.
   const sources = kind === 'community' ? [] : await collector.listClubSources().catch(() => null)
   const enabledByClub = new Map((sources ?? []).map((source) => [source.clubKey, source.enabled]))
-  // 마지막 확인 결과도 보조다 — 못 불러오면 칸만 비운다.
+  // 마지막 확인 결과도 보조다 — 못 불러오면 실패 알림만 빠진다.
   const statuses = kind === 'community' ? [] : await collector.listClubRecruitments().catch(() => null)
   const statusByClub = new Map((statuses ?? []).map((status) => [status.clubKey, status]))
-  // 확인 칸의 "실패"만으로는 지나치기 쉽다. 켜 둔 자동 수집과 모집 페이지 확인의 마지막 실패를 위에 모아 알린다.
+  // 켜 둔 자동 수집과 모집 페이지 확인의 마지막 실패를 위에 모아 알린다.
   const failures = rows.flatMap((club) => {
     const status = statusByClub.get(club.key)
     const check = status?.check ?? status?.pageCheck
@@ -115,54 +107,39 @@ export default async function ClubsPage({ searchParams }: { searchParams: Promis
             <thead>
               <tr>
                 <th className={shared.tableHead}>이름</th>
-                <th className={shared.tableHead}>수집 방법</th>
-                <th className={shared.tableHead}>자동 수집</th>
-                <th className={shared.tableHead} title="자동 수집은 모집 일정을, 사람이 입력하는 곳은 모집 페이지가 바뀌었는지를 매일 08:45에 봐요">
-                  마지막 확인
-                </th>
                 <th className={shared.tableHead}>모집 페이지</th>
+                <th className={shared.tableHead}>자동 수집</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((club) => {
-                const method = METHODS[club.method]
-                return (
-                  <tr key={club.key}>
-                    <td className={shared.tableCell}>
-                      <span className={styles.nameCell}>
-                        <ClubIcon clubKey={club.key} name={club.name} size={ICON_SIZE} />
-                        {club.siteUrl ? (
-                          <a className={styles.clubName} href={club.siteUrl} target="_blank" rel="noreferrer">
-                            {club.name}
-                          </a>
-                        ) : (
-                          <span className={styles.clubName}>{club.name}</span>
-                        )}
-                      </span>
-                    </td>
-                    <td className={shared.tableCell}>
-                      <Badge color={method.color} variant="weak" size="xsmall" title={method.description}>
-                        {method.label}
-                      </Badge>
-                    </td>
-                    <td className={shared.tableCell}>
-                      {enabledByClub.has(club.key) ? (
-                        <ClubCollectSwitch clubKey={club.key} name={club.name} enabled={enabledByClub.get(club.key) ?? true} />
+              {rows.map((club) => (
+                <tr key={club.key}>
+                  <td className={shared.tableCell}>
+                    <span className={styles.nameCell}>
+                      <ClubIcon clubKey={club.key} name={club.name} size={ICON_SIZE} />
+                      {club.siteUrl ? (
+                        <a className={styles.clubName} href={club.siteUrl} target="_blank" rel="noreferrer">
+                          {club.name}
+                        </a>
                       ) : (
-                        <span className={shared.mutedText}>{club.method === 'auto' ? '—' : '불가'}</span>
+                        <span className={styles.clubName}>{club.name}</span>
                       )}
-                    </td>
-                    <td className={shared.tableCell}>
-                      <ClubCheckCell status={statusByClub.get(club.key)} />
-                    </td>
-                    <td className={shared.tableCell}>
-                      <a href={club.recruitUrl} target="_blank" rel="noreferrer" className={shared.truncatedUrl}>
-                        {club.recruitUrl.replace(/^https:\/\/(www\.)?/, '')}
-                      </a>
-                    </td>
-                  </tr>
-                )
-              })}
+                    </span>
+                  </td>
+                  <td className={shared.tableCell}>
+                    <a href={club.recruitUrl} target="_blank" rel="noreferrer" className={shared.truncatedUrl}>
+                      {club.recruitUrl.replace(/^https:\/\/(www\.)?/, '')}
+                    </a>
+                  </td>
+                  <td className={shared.tableCell}>
+                    {enabledByClub.has(club.key) ? (
+                      <ClubCollectSwitch clubKey={club.key} name={club.name} enabled={enabledByClub.get(club.key) ?? true} />
+                    ) : (
+                      <span className={shared.mutedText}>{club.method === 'auto' ? '—' : '불가'}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

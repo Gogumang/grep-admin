@@ -43,8 +43,3 @@ export const sectionTitle = style({
 
 export const note = style({ display: 'block', marginTop: 2, fontSize: vars.fontSize.xs, color: vars.color.inkFaint })
 
-export const checkCell = style({ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: vars.space.xs })
-
-export const checkChanged = style({ display: 'inline-flex', alignItems: 'center', gap: vars.space.sm })
-
-export const checkFailed = style({ color: vars.color.brand, fontWeight: vars.fontWeight.semibold })

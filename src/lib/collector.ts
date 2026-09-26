@@ -474,9 +474,6 @@ export const collector = {
       method: 'POST',
     }),
 
-  acknowledgeClubPageChange: (clubKey: string) =>
-    request<ClubPageCheck>(`/api/admin/clubs/${encodeURIComponent(clubKey)}/page-change/acknowledge`, { method: 'PUT' }),
-
   /** 끈 회사까지 전부. /api/jobs/sources 는 켜 둔 회사만 준다. */
   listJobSources: () => request<JobSource[]>('/api/admin/jobs/sources'),
 
