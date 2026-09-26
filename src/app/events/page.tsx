@@ -43,7 +43,8 @@ export default async function EventReviewPage() {
       <h1 className={console.pageTitle}>행사 검증 {waitingCount}건</h1>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
         collector가 매일 08:30 판매처(티켓타코·이벤터스), Dev-Event(해커톤), Meetup·Luma(서울 개발 모임)에서 모은 행사가 &lsquo;검토를 기다리는 행사&rsquo;에 쌓여요.
-        이벤터스를 뺀 행사는 모을 때 공식 사이트(Meetup·Luma는 그 행사 페이지) 이미지를 미리 찾아 두고, &lsquo;올리기&rsquo;를 누르면 그 이미지를 채워 보여 줘요.
+        모을 때 공식 사이트(Meetup·Luma는 그 행사 페이지) 이미지를 미리 찾아 두고, &lsquo;올리기&rsquo;를 누르면 그 이미지를 채워 보여 줘요.
+        공식 사이트 이미지가 없는 티켓타코·이벤터스 행사는 판매처 페이지 이미지를 채우고 출처를 알려 줘요 — 쓸지는 직접 정해요.
         확인하면 바로 사이트 이벤트 페이지에 나가요.
       </p>
 
