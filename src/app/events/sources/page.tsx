@@ -2,10 +2,10 @@ import { collector, type EventSourceSummary } from '@/lib/collector'
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
+import { SourceIcon } from '@/components/SourceIcon'
 import * as blogStyles from '../../blogs/blogManager.css'
 import { RefreshEventsButton } from '../RefreshEventsButton'
 import * as clubStyles from '../../clubs/clubs.css'
-import { EventSourceIcon } from './EventSourceIcon'
 import { EventSourceSwitch } from './EventSourceSwitch'
 import * as styles from './sources.css'
 
@@ -69,7 +69,7 @@ export default async function EventSourcesPage() {
               <tr key={source.key} className={source.enabled ? undefined : blogStyles.inactiveRow}>
                 <td className={shared.tableCell}>
                   <span className={clubStyles.nameCell}>
-                    <EventSourceIcon sourceKey={source.key} name={source.label} size={ICON_SIZE} />
+                    <SourceIcon iconDirectory="event-source-icons" sourceKey={source.key} name={source.label} size={ICON_SIZE} />
                     <a className={styles.sourceLink} href={source.homepageUrl} target="_blank" rel="noreferrer">
                       {source.label}
                     </a>

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 행사 수집처(판매처) 아이콘을 받아 public/event-source-icons/<key>.png 로 굳힌다. key 는 collector 의 판매처 key
-(ticketa · eventus · dev_event · meetup · luma)다. src/app/events/sources/EventSourceIcon.tsx 가 이 파일을 쓴다.
+(ticketa · eventus · dev_event · meetup · luma)다. src/components/SourceIcon.tsx 가 이 파일을 쓴다(행사 수집처 화면).
 
 받는 방법(선언된 아이콘 → /favicon.ico, 64px PNG)은 fetch-blog-icons.py 것을 그대로 쓴다.
 
@@ -34,15 +34,15 @@ SOURCE_SITES = {
 }
 
 
-def main() -> None:
-    force = "--force" in sys.argv
+def fetch_source_icons(source_sites: dict[str, str], output_dir: Path, force: bool) -> None:
+    """수집처 key → 사이트 목록의 아이콘을 output_dir/<key>.png 로 받는다. 코딩테스트 수집처 스크립트도 이 함수를 쓴다."""
     session = requests.Session()
     session.headers["User-Agent"] = blog_icons.BROWSER_USER_AGENT
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     missing: list[str] = []
-    for source_key, site_url in SOURCE_SITES.items():
-        target = OUTPUT_DIR / f"{source_key}.png"
+    for source_key, site_url in source_sites.items():
+        target = output_dir / f"{source_key}.png"
         if target.exists() and not force:
             continue
         fetched = blog_icons.fetch_icon(session, site_url)
@@ -55,9 +55,13 @@ def main() -> None:
 
     if missing:
         # 받지 못한 곳은 화면에서 이름 첫 글자로 남는다. 조용히 넘기지 않고 사람이 보게 적는다.
-        print("\n아이콘을 받지 못한 판매처 (SOURCE_SITES 에 다른 주소를 적어 보세요):")
+        print("\n아이콘을 받지 못한 수집처 (SOURCE_SITES 에 다른 주소를 적어 보세요):")
         for entry in missing:
             print(f"  - {entry}")
+
+
+def main() -> None:
+    fetch_source_icons(SOURCE_SITES, OUTPUT_DIR, force="--force" in sys.argv)
 
 
 if __name__ == "__main__":

@@ -2,13 +2,18 @@ import { collector, type CodingSourceRun, type CodingSourceSummary } from '@/lib
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
+import { SourceIcon } from '@/components/SourceIcon'
 import * as blogStyles from '../../blogs/blogManager.css'
+import * as clubStyles from '../../clubs/clubs.css'
 import { CodingSourceSwitch } from './CodingSourceSwitch'
 import { CollectCodingButton } from './CollectCodingButton'
 
 export const dynamic = 'force-dynamic'
 
-/** '지금 가져오기'(서버 액션)가 수집처 네 곳을 다 읽을 때까지 기다린다. collector 쪽 제한(3분)보다 길게 둔다. */
+/** 행사·채용 수집처 로고와 같은 크기. */
+const ICON_SIZE = 24
+
+/** '지금 가져오기'(서버 액션)가 수집처를 다 읽을 때까지 기다린다. collector 쪽 제한(3분)보다 길게 둔다. */
 export const maxDuration = 200
 
 function formatDateTime(isoDateTime: string): string {
@@ -79,9 +84,12 @@ export default async function CodingSourcesPage() {
             {sources.map((source) => (
               <tr key={source.key} className={source.enabled ? undefined : blogStyles.inactiveRow}>
                 <td className={shared.tableCell}>
-                  <a href={source.homepageUrl} target="_blank" rel="noreferrer">
-                    {source.label}
-                  </a>
+                  <span className={clubStyles.nameCell}>
+                    <SourceIcon iconDirectory="coding-source-icons" sourceKey={source.key} name={source.label} size={ICON_SIZE} />
+                    <a href={source.homepageUrl} target="_blank" rel="noreferrer">
+                      {source.label}
+                    </a>
+                  </span>
                 </td>
                 <td className={shared.tableCell}>
                   <a href={`/coding/candidates?source=${source.key}`}>{source.candidateCount.toLocaleString()}문제</a>
