@@ -66,6 +66,8 @@ SITE_OVERRIDES = {
     "blog-myrealtrip-com": "https://www.myrealtrip.com",
     "blog-bespinglobal-com": "https://www.bespinglobal.com",
     "tech-channel-io": "https://channel.io",
+    # 블로그 이름이 'NHN Cloud Meetup' 이라 아이콘이 M 이다. 회사 아이콘(N)을 쓴다.
+    "meetup-nhncloud-com": "https://www.nhn.com",
 }
 
 # 본 사이트가 봇 차단으로 HTML을 403으로 막아 아이콘 선언을 읽을 수 없는 곳 (아이콘 파일은 열려 있다).
