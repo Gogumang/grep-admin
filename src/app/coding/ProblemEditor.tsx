@@ -61,6 +61,7 @@ export function ProblemEditor({ problem }: { problem: CodingProblem | null }) {
 
   function applyProblemResult(result: ProblemActionResult) {
     if (!result.ok || !result.problem) {
+      // saved 를 그대로 둔다 — collector 는 사이트 커밋이 성공한 뒤에만 DB 에 쓰므로, 실패(github_unavailable 포함)면 저장된 값도 그대로다.
       setFailure(result.message)
       return
     }

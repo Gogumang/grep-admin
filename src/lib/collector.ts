@@ -462,7 +462,7 @@ export interface ClubRecruitments {
 /** draft 는 사이트(problems.json)에 실리지 않는다. 공개해야 풀이 화면에 나온다. */
 export type CodingProblemStatus = 'draft' | 'published'
 
-/** 문제 목록 한 줄. collector 의 GET /coding/problems 응답 모양이다(updatedAt 최근 것부터). */
+/** 문제 목록 한 줄. collector 의 GET /api/admin/coding/problems 응답 모양이다(updatedAt 최근 것부터). */
 export interface CodingProblemSummary {
   id: string
   title: string
@@ -499,7 +499,7 @@ export interface CodingProblemContent {
 }
 
 /**
- * 문제 하나 전부. collector 의 GET /coding/problems/{id} 응답 모양이다.
+ * 문제 하나 전부. collector 의 GET /api/admin/coding/problems/{id} 응답 모양이다.
  * 참조 풀이는 비어 있을 수 있다 — 풀이 없이 출력을 손으로 적은 문제도 있다.
  */
 export interface CodingProblem extends Omit<CodingProblemContent, 'referenceLanguage' | 'referenceCode'> {
