@@ -188,6 +188,24 @@ export interface EventCollectionResult {
   skippedReason: string | null
 }
 
+/** 행사 수집 한 번의 단계 하나. 판매처마다 한 단계, 그 뒤로 대기 쌓기(pending)·이미지 찾기(images)·사이트 반영(site). */
+export interface EventCollectionStep {
+  /** 판매처는 수집처 key(ticketa · eventus · dev_event · meetup · luma), 나머지는 pending · images · site. */
+  key: string
+  label: string
+  state: 'WAITING' | 'RUNNING' | 'DONE' | 'FAILED' | 'SKIPPED'
+  /** 끝난 단계의 결과("행사 12건 읽음")나 실패 이유. */
+  message: string | null
+}
+
+/** 도는(또는 마지막으로 돈) 행사 수집. collector 의 /api/admin/events/collect-progress 응답 모양이다. */
+export interface EventCollectionSnapshot {
+  startedAt: string
+  /** 도는 중이면 null. */
+  finishedAt: string | null
+  steps: EventCollectionStep[]
+}
+
 /** daily 는 급상승 — 오늘 늘어난 별. collector 가 3시간마다 다시 쌓는다. */
 export type ChartPeriod = 'weekly' | 'monthly' | 'daily'
 
@@ -228,6 +246,8 @@ export interface FeaturedEvent {
 export interface EventImageSuggestion {
   officialSiteUrl: string
   imageUrl: string
+  /** 공식 사이트가 아니라 티켓타코 행사 페이지 이미지다. 약관상 쓸지는 사람이 정한다 — 창에서 출처를 밝힌다. */
+  isEventPageImage: boolean
 }
 
 /** collector가 실패를 알려주는 모양. 그대로 화면에 옮긴다. */
@@ -669,6 +689,9 @@ export const collector = {
     request<{ dates: string[] }>(`/api/admin/repository-chart/dates?period=${period}`),
 
   /** 행사 판매처를 지금 다시 읽어 사이트 목록을 맞춘다. 매일 08:30 DAG 가 하는 일을 바로 한 번 한다. */
+  /** collector 가 뜬 뒤 한 번도 수집하지 않았으면 undefined(204). */
+  eventCollectionProgress: () => request<EventCollectionSnapshot | undefined>('/api/admin/events/collect-progress'),
+
   collectEvents: () =>
     request<EventCollectionResult>('/api/events/collect', { method: 'POST' }, COLLECT_EVENTS_TIMEOUT_MILLISECONDS),
 }

@@ -4,6 +4,8 @@ import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import * as blogStyles from '../../blogs/blogManager.css'
 import { RefreshEventsButton } from '../RefreshEventsButton'
+import * as clubStyles from '../../clubs/clubs.css'
+import { EventSourceIcon } from './EventSourceIcon'
 import { EventSourceSwitch } from './EventSourceSwitch'
 import * as styles from './sources.css'
 
@@ -11,6 +13,9 @@ export const dynamic = 'force-dynamic'
 
 /** 갱신 버튼(서버 액션)이 판매처를 다 읽을 때까지 기다린다. 기본 제한 시간으로는 중간에 끊긴다. */
 export const maxDuration = 120
+
+/** 채용 수집처 회사 로고와 같은 크기. */
+const ICON_SIZE = 24
 
 /**
  * 행사를 어디서 가져오는지. collector 가 매일 08:30 에 켜 둔 판매처마다 행사를 읽어 검증 대기에 넣는다.
@@ -71,9 +76,12 @@ export default async function EventSourcesPage() {
             {sources.map((source) => (
               <tr key={source.key} className={source.enabled ? undefined : blogStyles.inactiveRow}>
                 <td className={shared.tableCell}>
-                  <a className={styles.sourceLink} href={source.homepageUrl} target="_blank" rel="noreferrer">
-                    {source.label}
-                  </a>
+                  <span className={clubStyles.nameCell}>
+                    <EventSourceIcon sourceKey={source.key} name={source.label} size={ICON_SIZE} />
+                    <a className={styles.sourceLink} href={source.homepageUrl} target="_blank" rel="noreferrer">
+                      {source.label}
+                    </a>
+                  </span>
                 </td>
                 <td className={shared.tableCell}>
                   <span className={shared.truncatedUrl} title={source.homepageUrl}>
