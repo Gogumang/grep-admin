@@ -9,7 +9,7 @@ import { WaitingEventsList } from './WaitingEventsList'
 export const dynamic = 'force-dynamic'
 
 /**
- * 행사 검증. 판매처(티켓타코·이벤터스)에서 모은 행사를 사람이 보고 이미지를 넣어 올리거나 치운다.
+ * 행사 검증. 판매처(티켓타코·이벤터스)와 Dev-Event(해커톤)에서 모은 행사를 사람이 보고 이미지를 넣어 올리거나 치운다.
  *   이미지를 기다리는 행사 → 올리기(이미지 확인) → '공개한 행사'
  * 두 단계로 나뉘어 있던 때(2026-09-25 전) 후보로만 올려 둔 사이트 행사도 같은 목록에 섞여 보인다 — 남아 있을 때만.
  * 자동으로 올라가는 단계는 없다.
@@ -32,7 +32,7 @@ export default async function EventReviewPage() {
     <>
       <h1 className={console.pageTitle}>행사 검증 {waitingCount}건</h1>
       <p className={shared.mutedText} style={{ marginBottom: 20 }}>
-        collector가 매일 08:30 판매처(티켓타코·이벤터스)에서 모은 행사가 &lsquo;이미지를 기다리는 행사&rsquo;에 쌓여요.
+        collector가 매일 08:30 판매처(티켓타코·이벤터스)와 Dev-Event(해커톤)에서 모은 행사가 &lsquo;이미지를 기다리는 행사&rsquo;에 쌓여요.
         줄마다 &lsquo;올리기&rsquo;를 누르면 공식 사이트 이미지를 찾아 채워 두고, 확인하면 바로 사이트 이벤트 페이지에 나가요.
       </p>
 

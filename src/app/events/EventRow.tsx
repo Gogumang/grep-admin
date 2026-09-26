@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react'
-import { Badge, ListRow } from '@/shared'
-import type { SiteEvent } from '@/lib/events'
+import { Badge, ListRow, type BadgeColor } from '@/shared'
+import type { EventSourceLabel, SiteEvent } from '@/lib/events'
 import * as styles from './events.css'
 import { EventFeatureControl } from './EventFeatureControl'
+
+const SOURCE_COLORS: Record<EventSourceLabel, BadgeColor> = { 티켓타코: 'elephant', 이벤터스: 'teal', 'Dev-Event': 'green' }
 
 /** YYYY-MM-DD → 9/14(월). 행사는 요일이 중요하다 — 평일이면 휴가를 내야 한다. */
 function shortDate(date: string): string {
@@ -72,7 +74,7 @@ export function EventListRow({
                 {event.title}
               </a>
               <span className={styles.badges}>
-                <Badge color={event.source === '이벤터스' ? 'teal' : 'elephant'} variant="weak" size="xsmall">
+                <Badge color={SOURCE_COLORS[event.source ?? '티켓타코']} variant="weak" size="xsmall">
                   {event.source ?? '티켓타코'}
                 </Badge>
                 {badges}

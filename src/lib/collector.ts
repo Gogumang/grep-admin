@@ -5,6 +5,7 @@
  * 같은 일을 두 언어로 만들지 않아도 되고, GitHub 토큰도 한 곳에만 두면 된다.
  */
 import { readDeviceSession } from './deviceSession'
+import type { EventSourceLabel } from './events'
 
 const baseUrl = process.env.COLLECTOR_BASE_URL ?? 'http://localhost:8081'
 
@@ -319,7 +320,7 @@ export interface CompanySummary {
 
 /** 판매처를 한 번 읽은 기록. isCollected 가 false 면 못 읽어 이미 실린 행사를 그대로 둔 날이다. */
 export interface EventSourceRun {
-  source: 'TICKETA' | 'EVENTUS'
+  source: 'TICKETA' | 'EVENTUS' | 'DEV_EVENT'
   ranAt: string
   isCollected: boolean
   /** 판매처에서 읽은 행사(지난 행사·개발 외 포함) */
@@ -359,7 +360,7 @@ export interface EventCandidate {
   isOnline: boolean
   lowestPrice: number | null
   highestPrice: number | null
-  source: '티켓타코' | '이벤터스'
+  source: EventSourceLabel
   firstSeenAt: string
   /**
    * 수집할 때 찾아 둔 공식 사이트 대표 이미지. 못 찾았으면 null.
