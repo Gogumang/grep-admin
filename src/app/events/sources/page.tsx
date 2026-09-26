@@ -45,11 +45,6 @@ export default async function EventSourcesPage() {
   return (
     <>
       <h1 className={console.pageTitle}>행사 수집처</h1>
-      <p className={shared.mutedText} style={{ marginBottom: 20 }}>
-        매일 08:30에 켜 둔 판매처마다 행사를 읽어 검증 대기로 모아요. 티켓타코는 전부, 이벤터스는 개발 행사만, Dev-Event(개발자 행사 모음)는 해커톤만, Meetup·Luma는 서울의 개발 모임만 모아요. 한 곳을
-        못 읽으면 그곳 행사는 전날 것을 그대로 둬요. 여러 곳에 같은 행사가 있으면 티켓타코 → 이벤터스 → Dev-Event → Meetup → Luma 순으로 앞의 것을 남겨요.
-      </p>
-
       <div className={shared.formRow} style={{ justifyContent: 'flex-end' }}>
         <RefreshEventsButton />
       </div>
