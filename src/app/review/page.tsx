@@ -13,7 +13,7 @@ export default async function ReviewPage() {
     const pending = await collector.listPending()
     return (
       <>
-        <h1 className={console.pageTitle}>검토 {pending.length}건</h1>
+        <h1 className={console.pageTitle}>검토</h1>
         <ReviewList pending={pending} />
       </>
     )
