@@ -67,6 +67,8 @@ const ICON_PATH_BY_COMPANY: Record<string, string> = {
   ncsoft: '/company-icons/ncsoft.png',
   pearlabyss: '/company-icons/pearlabyss.png',
   'woowa-youths': '/company-icons/woowa-youths.png',
+  bunjang: '/company-icons/bunjang.png',
+  ridi: '/company-icons/ridi.png',
 }
 
 export function CompanyIcon({ companyKey, name, size }: { companyKey: string; name: string; size: number }) {
