@@ -4,7 +4,18 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import * as styles from '@/styles/console.css'
-import { BriefcaseIcon, CalendarIcon, ChatIcon, CodeIcon, DocumentIcon, MenuIcon, PeopleIcon, SlidersIcon, StarIcon } from './icons'
+import {
+  BriefcaseIcon,
+  BuildingIcon,
+  CalendarIcon,
+  ChatIcon,
+  CodeIcon,
+  DocumentIcon,
+  MenuIcon,
+  PeopleIcon,
+  SlidersIcon,
+  StarIcon,
+} from './icons'
 import { GrepLogo } from './Logo'
 
 /**
@@ -77,6 +88,15 @@ const GROUPS = [
       { href: '/coding/candidates', label: '문제 후보' },
       { href: '/coding/sources', label: '수집처' },
     ],
+  },
+  /*
+   * 회사 정보(국민연금 인원·DART 손익)도 어드민에서만 본다 — 사이트에는 나중에 가공한 결과만 따로 낸다.
+   */
+  {
+    key: 'company',
+    label: '회사',
+    Icon: BuildingIcon,
+    items: [{ href: '/company-profiles', label: '회사 정보' }],
   },
   /*
    * 면접 후기는 어드민에서만 본다 — 검증·공개 단계가 없고, 사이트에는 나중에 가공한 결과만 따로 낸다.

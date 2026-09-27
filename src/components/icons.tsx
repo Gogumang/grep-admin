@@ -115,6 +115,18 @@ export function CodeIcon({ size, strokeWidth }: IconProps) {
   )
 }
 
+/** 회사 갈래 — 건물 */
+export function BuildingIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <Glyph size={size} strokeWidth={strokeWidth}>
+      <path d="M4.5 20.5V5.5l8-2.5v17.5" />
+      <path d="M12.5 9h7v11.5" />
+      <path d="M3 20.5h18" />
+      <path d="M7.5 8.5h2M7.5 12h2M7.5 15.5h2M15.5 13h1M15.5 16.5h1" />
+    </Glyph>
+  )
+}
+
 /** 면접 갈래 — 말풍선 */
 export function ChatIcon({ size, strokeWidth }: IconProps) {
   return (
