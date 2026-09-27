@@ -70,8 +70,10 @@ function ImageUrlField({ eventId, control }: { eventId: string; control: RefObje
           `${siteName}의 대표 이미지를 채워 뒀어요. 맞는지 보고 올려 주세요.`}
         {suggestion.status === 'found' && suggestion.isEventPageImage && (
           <span className={styles.fieldWarning}>
-            공식 사이트 이미지를 찾지 못해 티켓타코 행사 페이지 이미지를 채워 뒀어요. 티켓타코 약관(제11조)상 옮기면 안 되는
-            콘텐츠일 수 있으니, 주최 측 이미지가 있으면 바꿔 넣어 주세요.
+            {/* 이벤터스·Dev-Event 행사도 행사 페이지 이미지로 채워진다 — 어느 곳 이미지인지는 주소로 밝힌다. */}
+            {siteName === 'ticketa.co'
+              ? '공식 사이트 이미지를 찾지 못해 티켓타코 행사 페이지 이미지를 채워 뒀어요. 티켓타코 약관(제11조)상 옮기면 안 되는 콘텐츠일 수 있으니, 주최 측 이미지가 있으면 바꿔 넣어 주세요.'
+              : `공식 사이트 이미지를 찾지 못해 ${siteName} 행사 페이지 이미지를 채워 뒀어요. 판매처 콘텐츠일 수 있으니, 주최 측 이미지가 있으면 바꿔 넣어 주세요.`}
           </span>
         )}
         {suggestion.status === 'none' && '주최 측 공식 사이트의 이미지 주소를 넣어 주세요. 티켓타코 포스터는 약관상 쓸 수 없습니다.'}
