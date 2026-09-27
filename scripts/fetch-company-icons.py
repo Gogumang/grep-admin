@@ -32,6 +32,8 @@ COMPANY_SITES = {
     "kakaoent": "https://www.kakaoent.com",
     # 네이버 블로그 아이콘은 D2 로고라 채용 수집처(네이버)에는 맞지 않는다.
     "naver": "https://www.navercorp.com",
+    # 에이블리는 기술 블로그를 모으지 않아 블로그 아이콘이 없다.
+    "ably": "https://ably.team",
 }
 
 

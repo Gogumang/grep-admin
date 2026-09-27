@@ -19,10 +19,14 @@ const ICON_PATH_BY_COMPANY: Record<string, string> = {
   gangnamunni: '/blog-icons/blog-gangnamunni-com.png',
   yanolja: '/blog-icons/medium-com-yanolja.png',
   coupang: '/blog-icons/medium-com-coupang-engineering.png',
+  kakaopay: '/blog-icons/tech-kakaopay-com.png',
+  kakaobank: '/blog-icons/tech-kakaobank-com.png',
+  channel: '/blog-icons/tech-channel-io.png',
   naver: '/company-icons/naver.png',
   woowahan: '/company-icons/woowahan.png',
   line: '/company-icons/line.png',
   kakaoent: '/company-icons/kakaoent.png',
+  ably: '/company-icons/ably.png',
 }
 
 export function CompanyIcon({ companyKey, name, size }: { companyKey: string; name: string; size: number }) {
