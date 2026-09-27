@@ -23,7 +23,7 @@ export const sectionTitle = style({
   color: vars.color.inkStrong,
 })
 
-/** 회사 목록의 로고 + 이름(아래 법인명). */
+/** 로고 + 이름(아래 법인명). 회사 목록 줄과 회사 정보 검색 결과가 같이 쓴다. */
 export const companyNameCell = style({ display: 'flex', alignItems: 'center', gap: vars.space.sm })
 
 /**

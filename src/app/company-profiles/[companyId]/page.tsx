@@ -9,6 +9,7 @@ import {
   type CompanyProfile,
 } from '@/lib/companyProfiles'
 import { requireAdmin } from '@/lib/session'
+import { CompanyIcon } from '@/components/CompanyIcon'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import { HeadcountFlowChart } from '../HeadcountFlowChart'
@@ -144,6 +145,7 @@ export default async function CompanyProfilePage({ params }: { params: Promise<{
     <>
       <a className={styles.backLink} href="/company-profiles">← 회사 검색</a>
       <div className={styles.titleRow}>
+        <CompanyIcon companyKey={company.id} name={company.name} size={36} />
         <h1 className={`${console.pageTitle} ${styles.titleRowTitle}`}>{company.name}</h1>
         {overview && <span className={shared.mutedText}>{overview.corporationName}</span>}
         <a className={`${styles.hint} ${styles.pushRight}`} href={`/company-profiles/companies/${encodeURIComponent(company.id)}`}>

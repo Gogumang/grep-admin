@@ -12,6 +12,7 @@ import {
   type CompanyProfileSummary,
 } from '@/lib/companyProfiles'
 import * as shared from '@/components/shared.css'
+import { CompanyIcon } from '@/components/CompanyIcon'
 import { Unverified } from './YearlyAmountChart'
 import * as styles from './companyProfiles.css'
 
@@ -78,9 +79,12 @@ export function CompanySearch({ summaries, initialQuery }: { summaries: CompanyP
           {results.map((summary) => (
             <li key={summary.company.id}>
               <a className={`${shared.card} ${styles.resultItem}`} href={companyHref(summary.company.id)}>
-                <span>
-                  <span className={styles.resultName}>{summary.company.name}</span>
-                  {summary.corporationName && <div className={styles.hint}>{summary.corporationName}</div>}
+                <span className={styles.companyNameCell}>
+                  <CompanyIcon companyKey={summary.company.id} name={summary.company.name} size={36} />
+                  <span>
+                    <span className={styles.resultName}>{summary.company.name}</span>
+                    {summary.corporationName && <div className={styles.hint}>{summary.corporationName}</div>}
+                  </span>
                 </span>
                 <span className={styles.resultFacts}>
                   <Fact label="직원">
