@@ -34,6 +34,28 @@ COMPANY_SITES = {
     "naver": "https://www.navercorp.com",
     # 에이블리는 기술 블로그를 모으지 않아 블로그 아이콘이 없다.
     "ably": "https://ably.team",
+    # 아래는 2026-09-27 이직 후보에서 더한 채용 수집처 — 모으는 기술 블로그가 없어 회사 사이트 아이콘을 받는다.
+    "naver-webtoon": "https://recruit.webtoonscorp.com",
+    "naver-cloud": "https://www.ncloud.com",
+    "snow": "https://recruit.snowcorp.com",
+    "naver-financial": "https://recruit.naverfincorp.com",
+    "krafton": "https://www.krafton.com",
+    "furiosa": "https://furiosa.ai",
+    "moloco": "https://www.moloco.com",
+    "sendbird": "https://sendbird.com",
+    "bithumb": "https://www.bithumb.com",
+    "upstage": "https://www.upstage.ai",
+    "wrtn": "https://wrtn.io",
+    "rebellions": "https://rebellions.ai",
+    "hyundai-autoever": "https://www.hyundai-autoever.com",
+    "eleven-street": "https://www.11st.co.kr",
+    "mathpresso": "https://qanda.ai",
+    "kakao-enterprise": "https://www.kakaoenterprise.com",
+    "class101": "https://class101.net",
+    "coinone": "https://coinone.co.kr",
+    "bunjang": "https://m.bunjang.co.kr",
+    "netmarble": "https://company.netmarble.com",
+    "smilegate": "https://www.smilegate.com",
 }
 
 
