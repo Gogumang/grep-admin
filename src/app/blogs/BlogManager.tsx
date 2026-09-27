@@ -15,7 +15,7 @@ interface BlogDraft {
 }
 
 /**
- * 추가·고치기 창의 확인 버튼은 창 바깥(OverlayProvider)이 그린다.
+ * 추가·수정 창의 확인 버튼은 창 바깥(OverlayProvider)이 그린다.
  * 그래서 값을 읽고 실패를 돌려줄 통로를 창 안쪽에서 이 모양으로 남긴다.
  */
 interface AddBlogControl {
@@ -128,9 +128,9 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
   /** 블로그가 주소를 옮겼을 때 쓴다. blogKey 는 그대로라 지난 글이 같은 블로그에 남는다. */
   function openEditDialog(feed: BlogFeed) {
     void openAsyncConfirm({
-      title: `${feed.blogName} 고치기`,
+      title: `${feed.blogName} 수정`,
       description: <AddBlogFields control={addControl} initial={{ blogName: feed.blogName, feedUrl: feed.feedUrl }} />,
-      confirmButton: '고치기',
+      confirmButton: '수정',
       closeOnDimmerClick: true,
       onConfirmClick: async () => {
         const draft = addControl.current?.read() ?? { blogName: feed.blogName, feedUrl: feed.feedUrl }
@@ -169,7 +169,7 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
             <tr>
               <th className={styles.tableHead}>블로그</th>
               <th className={styles.tableHead}>피드 주소</th>
-              <th className={`${styles.tableHead} ${local.switchCell}`}>고치기</th>
+              <th className={`${styles.tableHead} ${local.switchCell}`}>수정</th>
               <th className={`${styles.tableHead} ${local.switchCell}`}>수집</th>
             </tr>
           </thead>
@@ -187,7 +187,7 @@ export function BlogManager({ feeds }: { feeds: BlogFeed[] }) {
                 </td>
                 <td className={`${styles.tableCell} ${local.switchCell}`}>
                   <Button color="dark" variant="weak" size="small" onClick={() => openEditDialog(feed)}>
-                    고치기
+                    수정
                   </Button>
                 </td>
                 <td className={`${styles.tableCell} ${local.switchCell}`}>
