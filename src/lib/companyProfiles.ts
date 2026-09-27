@@ -54,6 +54,8 @@ export interface CompanyOverview {
 
 export interface CompanyProfileSummary {
   company: ProfiledCompany
+  /** DART 법인명 (비바리퍼블리카). 공시가 없거나 아직 못 모았으면 null. 검색에 함께 쓴다. */
+  corporationName: string | null
   latestHeadcount: MonthlyHeadcount | null
   /** 가장 최근 달부터 12개월 합. 받은 달이 없으면 null. */
   hiredLastYear: number | null
@@ -94,15 +96,44 @@ export interface CompanyProfileCollectionResult {
   notes: string[]
 }
 
+/** 값을 얻지 못한 칸. 0 으로 두면 "매출 0원"·"아무도 안 나갔다"로 읽힌다. */
+export const UNVERIFIED = '확인 안 됨'
+
+/** 손익이 통째로 없는 이유. 공시가 아예 없는 회사와, 공시는 있지만 구조화 재무제표가 없는 회사를 나눈다. */
+export function financialsUnverifiedReason(company: ProfiledCompany): string {
+  return company.dartCorpCode === null
+    ? 'DART 공시가 없는 회사입니다 (외부감사 대상이 아님).'
+    : 'DART 에 구조화된 재무제표가 없습니다 — 감사보고서만 내는 회사는 공시 원문을 읽어야 해서 아직 비어 있습니다.'
+}
+
+/** 손익은 있는데 한 항목만 없을 때. 은행·증권은 매출액 계정이 없다. */
+export const MISSING_ACCOUNT_REASON = '이 회사 재무제표에 해당 계정이 없습니다 (은행·증권 등).'
+
+export const HEADCOUNT_UNVERIFIED_REASON = '국민연금에서 사업장을 찾지 못했거나 아직 모으지 않았습니다.'
+
+/** 법인 표기·빈칸·대소문자를 걷는다 — "(주)카카오"를 "카카오"로, "NAVER"를 "naver"로 찾게. */
+function normalizeForSearch(text: string): string {
+  return text.replace(/주식회사|\(주\)|（주）|㈜|\s/g, '').toLowerCase()
+}
+
+/** 화면 이름·법인명·id 중 하나라도 검색어를 품으면 맞는다. 빈 검색어는 아무것도 고르지 않는다. */
+export function matchesCompanySearch(summary: CompanyProfileSummary, query: string): boolean {
+  const needle = normalizeForSearch(query)
+  if (needle === '') return false
+  return [summary.company.name, summary.corporationName ?? '', summary.company.id].some((text) =>
+    normalizeForSearch(text).includes(needle),
+  )
+}
+
 const TRILLION = 1_000_000_000_000
 const HUNDRED_MILLION = 100_000_000
 
 /**
  * 원 단위 금액을 조·억으로 줄인다 (2.7조, 3,360억, -2,065억). 1억 아래는 만 원 단위로.
- * null 은 "—" — 0원과 구분돼야 한다.
+ * null 은 "확인 안 됨" — 0원과 구분돼야 한다.
  */
 export function formatWon(amount: number | null): string {
-  if (amount === null) return '—'
+  if (amount === null) return UNVERIFIED
   const sign = amount < 0 ? '-' : ''
   const absolute = Math.abs(amount)
   if (absolute >= TRILLION) return `${sign}${(absolute / TRILLION).toFixed(1)}조`
@@ -111,7 +142,7 @@ export function formatWon(amount: number | null): string {
 }
 
 export function formatCount(count: number | null): string {
-  return count === null ? '—' : count.toLocaleString('ko-KR')
+  return count === null ? UNVERIFIED : count.toLocaleString('ko-KR')
 }
 
 /** YYYY-MM → 26.08 (막대 이름표는 좁다). */

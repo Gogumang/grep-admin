@@ -87,7 +87,7 @@ export function CompanyProfileForm({
       confirmButton: '빼기',
     })
     if (!confirmed) return
-    run(() => removeCompanyProfile(input.id), () => router.push('/company-profiles'))
+    run(() => removeCompanyProfile(input.id), () => router.push('/company-profiles/companies'))
   }
 
   return (
@@ -113,9 +113,9 @@ export function CompanyProfileForm({
           />
         </label>
         <div className={styles.field}>
-          <span className={styles.fieldLabel}>묶음</span>
+          <span className={styles.fieldLabel}>분류</span>
           <FilterSelect
-            label="묶음"
+            label="분류"
             hasAllOption={false}
             options={categories.map((category) => ({ value: category.id, label: category.label }))}
             value={input.category || null}

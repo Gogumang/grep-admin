@@ -1,9 +1,11 @@
 import { companyProfiles } from '@/lib/companyProfileClient'
 import {
+  financialsUnverifiedReason,
   formatCount,
   formatShortMonth,
-  formatWon,
-  type CompanyCategory,
+  HEADCOUNT_UNVERIFIED_REASON,
+  UNVERIFIED,
+  type AnnualFinancials,
   type CompanyOverview,
   type CompanyProfile,
 } from '@/lib/companyProfiles'
@@ -11,13 +13,21 @@ import { requireAdmin } from '@/lib/session'
 import { BarChart } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
-import { CompanyProfileForm } from '../CompanyProfileForm'
+import { YearlyAmountChart } from '../YearlyAmountChart'
 import * as styles from '../companyProfiles.css'
 
 export const dynamic = 'force-dynamic'
 
-function Money({ amount }: { amount: number | null }) {
-  return <span className={amount !== null && amount < 0 ? styles.loss : undefined}>{formatWon(amount)}</span>
+const DART_OVERVIEW_UNVERIFIED_REASON = 'DART 공시가 없는 회사이거나 아직 모으지 않았습니다.'
+
+/** 섹션이 통째로 비었을 때. "확인 안 됨" 표시와 이유를 한 줄로. */
+function UnverifiedNotice({ reason }: { reason: string }) {
+  return (
+    <p className={`${shared.card} ${styles.unverifiedNotice}`}>
+      <span className={styles.unverifiedTag}>{UNVERIFIED}</span>
+      {reason}
+    </p>
+  )
 }
 
 function OverviewCard({ overview }: { overview: CompanyOverview }) {
@@ -37,11 +47,40 @@ function OverviewCard({ overview }: { overview: CompanyOverview }) {
         {rows.map(([label, value]) => (
           <div key={label} style={{ display: 'contents' }}>
             <dt className={styles.overviewLabel}>{label}</dt>
-            <dd className={styles.overviewValue}>{value ?? '—'}</dd>
+            <dd className={styles.overviewValue}>{value ?? <span className={styles.hint}>{UNVERIFIED}</span>}</dd>
           </div>
         ))}
       </dl>
     </div>
+  )
+}
+
+/**
+ * 매출·영업이익·순이익을 그래프 셋으로 나눠 연도별로 — 셋은 크기가 달라(조 단위 매출, 억 단위 이익) 한 축에 두면 이익이 바닥에 붙는다.
+ * 모은 해 사이에 빈 해가 있으면 그 해도 칸을 두고 "확인 안 됨"으로 채운다 — 건너뛰면 추세가 이어진 것처럼 보인다.
+ */
+function FinancialCharts({ financials }: { financials: AnnualFinancials[] }) {
+  const byYear = new Map(financials.map((financial) => [financial.fiscalYear, financial]))
+  const first = Math.min(...byYear.keys())
+  const last = Math.max(...byYear.keys())
+  const years = Array.from({ length: last - first + 1 }, (_, index) => first + index)
+  const series = (pick: (financial: AnnualFinancials) => number | null) =>
+    years.map((fiscalYear) => {
+      const financial = byYear.get(fiscalYear)
+      return { fiscalYear, amount: financial ? pick(financial) : null }
+    })
+
+  return (
+    <>
+      <div className={styles.chartGrid}>
+        <YearlyAmountChart title="매출" points={series((financial) => financial.revenue)} />
+        <YearlyAmountChart title="영업이익" points={series((financial) => financial.operatingIncome)} />
+        <YearlyAmountChart title="당기순이익" points={series((financial) => financial.netIncome)} />
+      </div>
+      <p className={styles.hint} style={{ marginTop: 8 }}>
+        {byYear.get(last)?.isConsolidated ? '연결재무제표' : '별도재무제표'} 기준. 적자는 0 선 아래로 내려가고 금액 앞에 &lsquo;-&rsquo;가 붙습니다.
+      </p>
+    </>
   )
 }
 
@@ -102,76 +141,44 @@ function HeadcountTable({ profile }: { profile: CompanyProfile }) {
   )
 }
 
-function FinancialsTable({ profile }: { profile: CompanyProfile }) {
-  const newestFirst = [...profile.financials].reverse()
-  return (
-    <div className={`${shared.card} ${styles.tableScroller}`}>
-      <table className={shared.table}>
-        <thead>
-          <tr>
-            <th className={shared.tableHead}>사업연도</th>
-            <th className={`${shared.tableHead} ${styles.numberHead}`}>매출</th>
-            <th className={`${shared.tableHead} ${styles.numberHead}`}>영업이익</th>
-            <th className={`${shared.tableHead} ${styles.numberHead}`}>당기순이익</th>
-            <th className={shared.tableHead}>기준</th>
-          </tr>
-        </thead>
-        <tbody>
-          {newestFirst.map((financials) => (
-            <tr key={financials.fiscalYear}>
-              <td className={shared.tableCell}>{financials.fiscalYear}</td>
-              <td className={`${shared.tableCell} ${styles.numberCell}`}><Money amount={financials.revenue} /></td>
-              <td className={`${shared.tableCell} ${styles.numberCell}`}><Money amount={financials.operatingIncome} /></td>
-              <td className={`${shared.tableCell} ${styles.numberCell}`}><Money amount={financials.netIncome} /></td>
-              <td className={`${shared.tableCell} ${styles.hint}`}>{financials.isConsolidated ? '연결' : '별도'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-/** 회사 하나. 기업개황 → 직원 추이 → 손익 → 연결 설정 순서 — 위에서부터 "어떤 회사인가 → 사람이 드나드나 → 돈을 버나". */
+/** 회사 하나. 위에서부터 "돈을 버나 → 사람이 드나드나 → 어떤 회사인가". 연결 설정은 회사 목록 화면에서 고친다. */
 export default async function CompanyProfilePage({ params }: { params: Promise<{ companyId: string }> }) {
   await requireAdmin()
   const { companyId } = await params
 
   let profile: CompanyProfile
-  let categories: CompanyCategory[]
   try {
-    ;[profile, categories] = await Promise.all([companyProfiles.get(companyId), companyProfiles.categories()])
+    profile = await companyProfiles.get(companyId)
   } catch (error) {
     return (
       <>
-        <a className={styles.backLink} href="/company-profiles">← 회사 정보</a>
+        <a className={styles.backLink} href="/company-profiles">← 회사 검색</a>
         <p className={shared.errorNotice}>{(error as Error).message}</p>
       </>
     )
   }
 
   const { company, overview } = profile
+  const financials = profile.financials.filter(
+    (financial) => financial.revenue !== null || financial.operatingIncome !== null || financial.netIncome !== null,
+  )
   return (
     <>
-      <a className={styles.backLink} href="/company-profiles">← 회사 정보</a>
+      <a className={styles.backLink} href="/company-profiles">← 회사 검색</a>
       <div className={styles.titleRow}>
         <h1 className={`${console.pageTitle} ${styles.titleRowTitle}`}>{company.name}</h1>
-        <span className={shared.mutedText}>
-          {company.categoryLabel}
-          {profile.collectedAt && ` · ${new Date(profile.collectedAt).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })} 모음`}
-        </span>
+        {overview && <span className={shared.mutedText}>{overview.corporationName}</span>}
+        <a className={`${styles.hint} ${styles.pushRight}`} href={`/company-profiles/companies/${encodeURIComponent(company.id)}`}>
+          연결 설정 고치기 →
+        </a>
       </div>
 
-      <h2 className={styles.sectionTitle}>기업개황 (DART)</h2>
-      {overview ? (
-        <OverviewCard overview={overview} />
-      ) : (
-        <p className={shared.mutedText}>DART 공시가 없는 회사이거나 아직 모으지 않았습니다.</p>
-      )}
+      <h2 className={styles.sectionTitle}>연도별 손익 (DART 사업보고서)</h2>
+      {financials.length === 0 ? <UnverifiedNotice reason={financialsUnverifiedReason(company)} /> : <FinancialCharts financials={financials} />}
 
-      <h2 className={styles.sectionTitle}>직원 수 (국민연금)</h2>
+      <h2 className={styles.sectionTitle}>직원 수 (국민연금, 최근 12개월)</h2>
       {profile.headcounts.length === 0 ? (
-        <p className={shared.mutedText}>아직 모은 달이 없습니다. 아래에서 지금 모으기를 누르세요.</p>
+        <UnverifiedNotice reason={HEADCOUNT_UNVERIFIED_REASON} />
       ) : (
         <>
           <HeadcountChart profile={profile} />
@@ -180,17 +187,14 @@ export default async function CompanyProfilePage({ params }: { params: Promise<{
         </>
       )}
 
-      <h2 className={styles.sectionTitle}>손익 (DART 사업보고서)</h2>
-      {profile.financials.length === 0 ? (
-        <p className={shared.mutedText}>
-          DART 에 구조화된 재무제표가 없습니다 — 감사보고서만 내는 회사는 공시 원문에서 읽어야 합니다.
-        </p>
-      ) : (
-        <FinancialsTable profile={profile} />
-      )}
+      <h2 className={styles.sectionTitle}>기업개황 (DART)</h2>
+      {overview ? <OverviewCard overview={overview} /> : <UnverifiedNotice reason={DART_OVERVIEW_UNVERIFIED_REASON} />}
 
-      <h2 className={styles.sectionTitle}>연결 설정</h2>
-      <CompanyProfileForm categories={categories} company={company} />
+      {profile.collectedAt && (
+        <p className={styles.hint} style={{ marginTop: 16 }}>
+          {new Date(profile.collectedAt).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}에 모았습니다.
+        </p>
+      )}
     </>
   )
 }

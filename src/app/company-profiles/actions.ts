@@ -11,6 +11,14 @@ export interface CompanyProfileActionResult {
   message: string
 }
 
+/** 회사 정보(검색)·회사 목록·그 회사의 두 화면을 함께 새로 그린다 — 한쪽에서 고친 것이 다른 쪽에 옛 값으로 남지 않게. */
+function refreshPages(companyId: string) {
+  revalidatePath('/company-profiles')
+  revalidatePath('/company-profiles/companies')
+  revalidatePath(`/company-profiles/${companyId}`)
+  revalidatePath(`/company-profiles/companies/${companyId}`)
+}
+
 function describe(error: unknown): string {
   if (error instanceof CollectorRequestError) return error.message
   return `알 수 없는 오류: ${(error as Error).message}`
@@ -40,10 +48,10 @@ export async function addCompanyProfile(input: ProfiledCompanyInput): Promise<Co
   }
   try {
     const result = await companyProfiles.collect(input.id)
-    revalidatePath('/company-profiles')
+    refreshPages(input.id)
     return { ok: true, message: `더했습니다. ${describeCollection(result)}` }
   } catch (error) {
-    revalidatePath('/company-profiles')
+    refreshPages(input.id)
     return { ok: true, message: `더했지만 모으지 못했습니다: ${describe(error)}` }
   }
 }
@@ -53,8 +61,7 @@ export async function updateCompanyProfile(input: ProfiledCompanyInput): Promise
 
   try {
     await companyProfiles.update(input)
-    revalidatePath('/company-profiles')
-    revalidatePath(`/company-profiles/${input.id}`)
+    refreshPages(input.id)
     return { ok: true, message: '저장했습니다. 바뀐 연결로 보려면 지금 모으기를 누르세요.' }
   } catch (error) {
     return { ok: false, message: describe(error) }
@@ -66,8 +73,7 @@ export async function collectCompanyProfile(companyId: string): Promise<CompanyP
 
   try {
     const result = await companyProfiles.collect(companyId)
-    revalidatePath('/company-profiles')
-    revalidatePath(`/company-profiles/${companyId}`)
+    refreshPages(companyId)
     return { ok: result.errors.length === 0, message: describeCollection(result) }
   } catch (error) {
     return { ok: false, message: describe(error) }
@@ -79,7 +85,7 @@ export async function removeCompanyProfile(companyId: string): Promise<CompanyPr
 
   try {
     await companyProfiles.remove(companyId)
-    revalidatePath('/company-profiles')
+    refreshPages(companyId)
     return { ok: true, message: '목록에서 뺐습니다.' }
   } catch (error) {
     return { ok: false, message: describe(error) }

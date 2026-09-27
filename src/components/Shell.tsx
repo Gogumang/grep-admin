@@ -91,12 +91,16 @@ const GROUPS = [
   },
   /*
    * 회사 정보(국민연금 인원·DART 손익)도 어드민에서만 본다 — 사이트에는 나중에 가공한 결과만 따로 낸다.
+   * 보는 곳(검색해서 한 회사를 연다)과 고르는 곳(어떤 회사를 모을지)을 나눈다.
    */
   {
     key: 'company',
     label: '회사',
     Icon: BuildingIcon,
-    items: [{ href: '/company-profiles', label: '회사 정보' }],
+    items: [
+      { href: '/company-profiles', label: '회사 정보' },
+      { href: '/company-profiles/companies', label: '회사 목록' },
+    ],
   },
   /*
    * 면접 후기는 어드민에서만 본다 — 검증·공개 단계가 없고, 사이트에는 나중에 가공한 결과만 따로 낸다.
