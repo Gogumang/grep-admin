@@ -43,9 +43,15 @@ const EMPTY_INPUT: ProfiledCompanyInput = {
 export function CompanyProfileForm({
   categories,
   company,
+  isInDialog = false,
+  onAdded,
 }: {
   categories: CompanyCategory[]
   company?: ProfiledCompany
+  /** 창 안에서는 창이 테두리 역할을 하므로 카드로 한 번 더 감싸지 않는다. */
+  isInDialog?: boolean
+  /** 더하기에 성공했을 때 — 목록의 '회사 더하기' 창이 스스로 닫는다. */
+  onAdded?: () => void
 }) {
   const router = useRouter()
   const { openToast } = useToast()
@@ -74,7 +80,9 @@ export function CompanyProfileForm({
     run(
       () => (isEditing ? updateCompanyProfile(input) : addCompanyProfile(input)),
       () => {
-        if (!isEditing) setInput(EMPTY_INPUT)
+        if (isEditing) return
+        setInput(EMPTY_INPUT)
+        onAdded?.()
       },
     )
 
@@ -91,7 +99,7 @@ export function CompanyProfileForm({
   }
 
   return (
-    <div className={shared.card}>
+    <div className={isInDialog ? undefined : shared.card}>
       <div className={styles.fieldGrid}>
         <label className={styles.field}>
           <span className={styles.fieldLabel}>id (영문 소문자·숫자·-)</span>

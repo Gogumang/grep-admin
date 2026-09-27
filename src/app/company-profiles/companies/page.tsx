@@ -3,7 +3,7 @@ import { UNVERIFIED, type CompanyCategory, type CompanyProfileSummary } from '@/
 import { requireAdmin } from '@/lib/session'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
-import { CompanyProfileForm } from '../CompanyProfileForm'
+import { AddCompanyButton } from '../AddCompanyButton'
 import * as styles from '../companyProfiles.css'
 
 export const dynamic = 'force-dynamic'
@@ -40,9 +40,12 @@ export default async function CompanyListPage() {
     <>
       <div className={styles.titleRow}>
         <h1 className={`${console.pageTitle} ${styles.titleRowTitle}`}>회사 목록 {summaries.length}곳</h1>
+        <div className={styles.pushRight}>
+          <AddCompanyButton categories={categories} />
+        </div>
       </div>
       <p className={styles.lead}>
-        월요일마다 이 회사들의 국민연금 인원과 DART 손익을 모읍니다. 새 회사는 맨 아래에서 더하면 바로 한 번 모읍니다.
+        월요일마다 이 회사들의 국민연금 인원과 DART 손익을 모읍니다. 새 회사는 오른쪽 위 '회사 더하기'로 더하면 바로 한 번 모읍니다.
       </p>
 
       <div className={`${shared.card} ${styles.tableScroller}`}>
@@ -95,9 +98,6 @@ export default async function CompanyListPage() {
           </tbody>
         </table>
       </div>
-
-      <h2 className={styles.sectionTitle}>회사 더하기</h2>
-      <CompanyProfileForm categories={categories} />
     </>
   )
 }

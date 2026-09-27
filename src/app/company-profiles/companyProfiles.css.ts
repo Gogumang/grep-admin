@@ -210,3 +210,17 @@ export const failure = style({
   color: `color-mix(in oklab, ${vars.color.brand} 75%, ${vars.color.inkStrong})`,
   whiteSpace: 'pre-wrap',
 })
+
+/** '회사 더하기' 창. 입력 칸 여섯 개가 두 줄에 들어가야 해서 확인 창(360px)보다 넓게 잡는다. */
+export const addDialog = style({
+  maxWidth: 720,
+  maxHeight: 'calc(100vh - 48px)',
+  overflowY: 'auto',
+})
+
+export const addDialogHeader = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: vars.space.lg,
+})
