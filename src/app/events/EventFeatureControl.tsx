@@ -63,21 +63,21 @@ function ImageUrlField({ eventId, control }: { eventId: string; control: RefObje
 
   return (
     <div className={styles.fieldStack}>
-      <p className={styles.fieldHint}>
-        {suggestion.status === 'searching' && '공식 사이트에서 이미지를 찾는 중이에요…'}
-        {suggestion.status === 'found' &&
-          !suggestion.isEventPageImage &&
-          `${siteName}의 대표 이미지를 채워 뒀어요. 맞는지 보고 올려 주세요.`}
-        {suggestion.status === 'found' && suggestion.isEventPageImage && (
+      {/* 공식 사이트 이미지를 찾았으면 안내 없이 미리보기만 둔다 — 알릴 것은 찾는 중·판매처 이미지·못 찾음뿐이다. */}
+      {suggestion.status === 'searching' && <p className={styles.fieldHint}>공식 사이트에서 이미지를 찾는 중이에요…</p>}
+      {suggestion.status === 'found' && suggestion.isEventPageImage && (
+        <p className={styles.fieldHint}>
           <span className={styles.fieldWarning}>
             {/* 이벤터스·Dev-Event 행사도 행사 페이지 이미지로 채워진다 — 어느 곳 이미지인지는 주소로 밝힌다. */}
             {siteName === 'ticketa.co'
               ? '공식 사이트 이미지를 찾지 못해 티켓타코 행사 페이지 이미지를 채워 뒀어요. 티켓타코 약관(제11조)상 옮기면 안 되는 콘텐츠일 수 있으니, 주최 측 이미지가 있으면 바꿔 넣어 주세요.'
               : `공식 사이트 이미지를 찾지 못해 ${siteName} 행사 페이지 이미지를 채워 뒀어요. 판매처 콘텐츠일 수 있으니, 주최 측 이미지가 있으면 바꿔 넣어 주세요.`}
           </span>
-        )}
-        {suggestion.status === 'none' && '주최 측 공식 사이트의 이미지 주소를 넣어 주세요. 티켓타코 포스터는 약관상 쓸 수 없습니다.'}
-      </p>
+        </p>
+      )}
+      {suggestion.status === 'none' && (
+        <p className={styles.fieldHint}>주최 측 공식 사이트의 이미지 주소를 넣어 주세요. 티켓타코 포스터는 약관상 쓸 수 없습니다.</p>
+      )}
       <TextField
         variant="box"
         label="이미지 주소"
@@ -126,7 +126,7 @@ export function EventFeatureControl({
 
   function openFeatureDialog() {
     void openAsyncConfirm({
-      title: isFeatured ? `${title} 이미지 바꾸기` : `${title} 올리기`,
+      title: isFeatured ? `${title} 이미지 바꾸기` : title,
       description: <ImageUrlField eventId={eventId} control={control} />,
       confirmButton: isFeatured ? '바꾸기' : '올리기',
       closeOnDimmerClick: true,

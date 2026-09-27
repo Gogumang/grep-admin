@@ -57,6 +57,8 @@ export const fieldError = style({ margin: 0, fontSize: vars.fontSize.xs, lineHei
 /** 올리기 창의 미리보기. 사이트 목록 썸네일(228:128)과 같은 비율로 잘라, 사이트에 어떻게 보일지 가늠하게 한다. */
 export const imagePreview = style({
   display: 'block',
+  alignSelf: 'center',
+  marginInline: 'auto',
   width: 228,
   height: 128,
   objectFit: 'cover',
