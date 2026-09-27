@@ -44,6 +44,8 @@ export interface ProblemDraft {
   functionName: string
   functionParameters: ParameterDraft[]
   functionReturnType: FunctionValueType
+  /** 프로그래머스 기본 코드. 화면에서 고치지 않고 들고만 있다가 저장할 때 그대로 보낸다 — 모양을 바꾸면 비운다. */
+  functionStarters: Partial<Record<CodingLanguage, string>>
 }
 
 /** collector 가 받는 범위와 같다. 서버도 다시 검사하지만, 왕복 전에 화면에서 먼저 알려준다. */
@@ -96,6 +98,7 @@ export function emptyDraft(): ProblemDraft {
     functionName: 'solution',
     functionParameters: [{ ...emptyParameter(), name: 'arr', type: 'int[]' }],
     functionReturnType: 'int',
+    functionStarters: {},
   }
 }
 
@@ -119,6 +122,7 @@ export function toDraft(problem: CodingProblem): ProblemDraft {
     functionParameters:
       problem.function?.parameters.map((parameter) => ({ key: nextKey('parameter'), ...parameter })) ?? empty.functionParameters,
     functionReturnType: problem.function?.returnType ?? empty.functionReturnType,
+    functionStarters: problem.function?.starters ?? {},
   }
 }
 
@@ -129,6 +133,7 @@ export function toFunction(draft: ProblemDraft): CodingFunction | null {
     name: draft.functionName.trim(),
     parameters: draft.functionParameters.map(({ name, type }) => ({ name: name.trim(), type })),
     returnType: draft.functionReturnType,
+    starters: draft.functionStarters,
   }
 }
 

@@ -338,7 +338,15 @@ export function ProblemEditor({ problem }: { problem: CodingProblem | null }) {
           </Button>
         </div>
         {draft.isFunction ? (
-          <FunctionSignatureEditor value={draft} onChange={patch} />
+          <>
+            <p className={styles.fieldHint}>
+              {Object.keys(draft.functionStarters).length > 0
+                ? `사이트 편집기에 프로그래머스 기본 코드를 그대로 띄웁니다 (${Object.keys(draft.functionStarters).join(' · ')}). 아래 모양을 바꾸면 기본 코드는 지워지고 모양대로 만든 뼈대를 띄웁니다.`
+                : '사이트 편집기에 아래 모양대로 만든 뼈대 코드를 띄웁니다.'}
+            </p>
+            {/* 모양이 바뀌면 가져온 기본 코드가 맞지 않는다 — 함께 비운다. */}
+            <FunctionSignatureEditor value={draft} onChange={(next) => patch({ ...next, functionStarters: {} })} />
+          </>
         ) : (
           <p className={styles.fieldHint}>풀이가 표준입력을 읽어 답을 표준출력으로 냅니다. 모든 언어로 풀 수 있습니다.</p>
         )}

@@ -36,6 +36,11 @@ export interface CodingFunction {
   name: string
   parameters: { name: string; type: FunctionValueType }[]
   returnType: FunctionValueType
+  /**
+   * 프로그래머스에서 가져온 언어별 기본 코드. 사이트 편집기가 이것을 그대로 띄운다(없는 언어는 collector 가 뼈대를 만든다).
+   * 받은 그대로 돌려보내야 지워지지 않는다. 모양을 바꾸면 맞지 않으니 비운다.
+   */
+  starters?: Partial<Record<CodingLanguage, string>>
 }
 
 export function isFunctionLanguage(language: CodingLanguage): boolean {
