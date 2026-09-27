@@ -250,14 +250,14 @@ export const flowLegendItem = style({ display: 'inline-flex', alignItems: 'cente
 const swatchBase = style({ display: 'inline-block', width: 10, height: 10, borderRadius: 2 })
 export const hiredSwatch = style([swatchBase, { background: gainFill }])
 export const leftSwatch = style([swatchBase, { background: lossFill }])
-export const lineSwatch = style({ display: 'inline-block', width: 14, height: 2, borderRadius: 1, background: vars.color.inkStrong })
+export const lineSwatch = style({ display: 'inline-block', width: 14, height: 2, borderRadius: 1, background: tone.blue.fill })
 
-/** 꺾은선 층. 칸 위에 겹쳐 놓고 마우스는 아래 칸이 받는다. */
+/** 꺾은선 층. 칸 위에 겹쳐 놓고 마우스는 아래 칸이 받는다. 선도 파랑이지만 입사 막대와 칸(위·아래)과 범례 모양(선·네모)이 달라 헷갈리지 않는다. */
 export const flowLineLayer = style({ position: 'absolute', top: 0, left: 0, right: 0, pointerEvents: 'none' })
 
 export const flowLineSvg = style({ display: 'block', width: '100%', height: '100%', overflow: 'visible' })
 
-export const flowLine = style({ fill: 'none', stroke: vars.color.inkStrong, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round' })
+export const flowLine = style({ fill: 'none', stroke: tone.blue.fill, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round' })
 
 /** 점은 SVG 밖 HTML 로 둔다 — 늘어나는 viewBox 안에 원을 그리면 타원이 된다. 2px 바탕색 테두리로 선과 떨어뜨린다. */
 export const flowDot = style({
@@ -267,7 +267,7 @@ export const flowDot = style({
   marginLeft: -4,
   marginTop: -4,
   borderRadius: '50%',
-  background: vars.color.inkStrong,
+  background: tone.blue.fill,
   boxShadow: `0 0 0 2px ${vars.color.surface}`,
 })
 
