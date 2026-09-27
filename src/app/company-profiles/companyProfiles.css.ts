@@ -23,6 +23,9 @@ export const sectionTitle = style({
   color: vars.color.inkStrong,
 })
 
+/** 회사 목록의 로고 + 이름(아래 법인명). */
+export const companyNameCell = style({ display: 'flex', alignItems: 'center', gap: vars.space.sm })
+
 /**
  * 표가 좁은 화면에서 넘치면 카드 안에서만 옆으로 민다 — 페이지 전체가 가로로 밀리지 않게.
  * flexShrink 0: 본문(main)이 높이가 정해진 세로 flex 라, overflow 가 있는 카드는 최소 높이가 0 이 되어
@@ -290,8 +293,31 @@ export const flowColumn = style({
   flexDirection: 'column',
   alignItems: 'center',
   borderRadius: vars.radius.sm,
-  selectors: { '&:hover': { background: `color-mix(in srgb, ${vars.color.accent} 7%, transparent)` } },
 })
+
+export const flowColumnActive = style({ background: `color-mix(in srgb, ${vars.color.accent} 7%, transparent)` })
+
+/** 마우스를 올린 달의 숫자. 꺾은선 층 위, 칸 가운데에 뜬다. 마우스를 가리지 않게 스스로는 마우스를 받지 않는다. */
+export const flowTooltip = style({
+  position: 'absolute',
+  top: 4,
+  zIndex: 1,
+  minWidth: 132,
+  padding: `${vars.space.sm} ${vars.space.md}`,
+  borderRadius: vars.radius.md,
+  border: `1px solid ${vars.color.border}`,
+  background: vars.color.surface,
+  boxShadow: '0 6px 18px rgba(0, 0, 0, 0.12)',
+  pointerEvents: 'none',
+  fontSize: vars.fontSize.xs,
+  color: vars.color.ink,
+  fontVariantNumeric: 'tabular-nums',
+  whiteSpace: 'nowrap',
+})
+
+export const flowTooltipMonth = style({ marginBottom: 4, fontWeight: vars.fontWeight.semibold, color: vars.color.inkStrong })
+
+export const flowTooltipRow = style({ display: 'flex', alignItems: 'center', gap: 6, lineHeight: 1.7 })
 
 /** 입사·퇴사 막대 둘이 나란히 자라는 자리. 막대 사이 2px 은 바탕색 틈이다. */
 export const flowBarTrack = style({

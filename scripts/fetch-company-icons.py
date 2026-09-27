@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-채용 수집처에 붙일 회사 로고 중 블로그 아이콘(public/blog-icons)으로 대신할 수 없는 곳만 받아
-public/company-icons/<companyKey>.png 로 굳힌다. 블로그 아이콘이 있는 회사는 src/app/jobs/sources/CompanyIcon.tsx 가
+채용 수집처·회사 목록에 붙일 회사 로고 중 블로그 아이콘(public/blog-icons)으로 대신할 수 없는 곳만 받아
+public/company-icons/<companyKey>.png 로 굳힌다. 블로그 아이콘이 있는 회사는 src/components/CompanyIcon.tsx 가
 그 파일을 그대로 쓴다 — 같은 로고를 두 벌 두지 않는다.
 
 받는 방법(선언된 아이콘 → /favicon.ico, 64px PNG)은 fetch-blog-icons.py 것을 그대로 쓴다. 회사 공식 사이트의 아이콘만 받는다.
@@ -64,6 +64,19 @@ COMPANY_SITES = {
     "ncsoft": "https://www.ncsoft.com",
     "pearlabyss": "https://www.pearlabyss.com",
     "woowa-youths": "https://www.woowayouths.com",
+    # 아래는 2026-09-28 회사 정보(회사 목록)에 로고를 달면서 더한 곳 — 채용 수집처가 아니고 모으는 블로그도 없다.
+    "kakao-games": "https://www.kakaogames.com",
+    "kakao-mobility": "https://www.kakaomobility.com",
+    "nol-universe": "https://nol-universe.com",
+    "dunamu": "https://www.dunamu.com",
+    "flex": "https://flex.team",
+    "nhn": "https://www.nhn.com",
+    "nexon-korea": "https://www.nexon.com",
+    "cj-olivenetworks": "https://www.cjolivenetworks.co.kr",
+    "lg-cns": "https://www.lgcns.com",
+    "samsung-sds": "https://www.samsungsds.com",
+    "samsung-electronics": "https://www.samsung.com/sec/",
+    "coupang-pay": "https://www.coupangpay.com",
 }
 
 

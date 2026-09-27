@@ -1,6 +1,7 @@
 import { companyProfiles } from '@/lib/companyProfileClient'
-import { UNVERIFIED, type CompanyCategory, type CompanyProfileSummary } from '@/lib/companyProfiles'
+import type { CompanyCategory, CompanyProfileSummary } from '@/lib/companyProfiles'
 import { requireAdmin } from '@/lib/session'
+import { CompanyIcon } from '@/components/CompanyIcon'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import { AddCompanyButton } from '../AddCompanyButton'
@@ -16,8 +17,8 @@ function Setting({ value, emptyLabel = '자동' }: { value: string | null; empty
 /**
  * 회사 목록 — 어떤 회사를 모을지 고른다. 정보를 보는 곳은 '회사 정보'(검색) 화면이다.
  *
- * 줄마다 연결(DART 고유번호·사업자번호·국민연금 검색어)과 모은 결과를 보여 준다 —
- * 직원 수가 "확인 안 됨"이면 연결이 틀린 것이라 고치기로 들어가 검색어를 적는다.
+ * 줄에는 로고·이름·DART 고유번호만 둔다(2026-09-28 사업자번호·국민연금 검색어·모은 결과 열을 뺐다).
+ * 연결이 틀려 직원 수가 "확인 안 됨"이면 수정으로 들어가 사업자번호·검색어를 적는다.
  */
 export default async function CompanyListPage() {
   await requireAdmin()
@@ -54,43 +55,29 @@ export default async function CompanyListPage() {
             <tr>
               <th className={shared.tableHead}>회사</th>
               <th className={shared.tableHead}>DART 고유번호</th>
-              <th className={shared.tableHead}>사업자번호 앞자리</th>
-              <th className={shared.tableHead}>국민연금 검색어</th>
-              <th className={shared.tableHead}>모은 결과</th>
               <th className={shared.tableHead} />
             </tr>
           </thead>
           <tbody>
-            {sorted.map(({ company, corporationName, latestHeadcount, latestFinancials, collectedAt }) => (
+            {sorted.map(({ company, corporationName }) => (
               <tr key={company.id}>
                 <td className={shared.tableCell}>
-                  <a className={styles.companyLink} href={`/company-profiles/${encodeURIComponent(company.id)}`}>
-                    {company.name}
-                  </a>
-                  {corporationName && <div className={styles.hint}>{corporationName}</div>}
+                  <div className={styles.companyNameCell}>
+                    <CompanyIcon companyKey={company.id} name={company.name} size={28} />
+                    <div>
+                      <a className={styles.companyLink} href={`/company-profiles/${encodeURIComponent(company.id)}`}>
+                        {company.name}
+                      </a>
+                      {corporationName && <div className={styles.hint}>{corporationName}</div>}
+                    </div>
+                  </div>
                 </td>
                 <td className={shared.tableCell}>
                   <Setting value={company.dartCorpCode} emptyLabel="공시 없음" />
                 </td>
-                <td className={shared.tableCell}>
-                  <Setting value={company.businessNumberPrefix} />
-                </td>
-                <td className={shared.tableCell}>
-                  <Setting value={company.pensionSearchName} />
-                </td>
-                <td className={`${shared.tableCell} ${styles.hint}`}>
-                  {collectedAt === null ? (
-                    '아직 안 모음'
-                  ) : (
-                    <>
-                      인원 {latestHeadcount ? latestHeadcount.yearMonth : UNVERIFIED} · 손익{' '}
-                      {latestFinancials ? `${latestFinancials.fiscalYear}년` : UNVERIFIED}
-                    </>
-                  )}
-                </td>
                 <td className={`${shared.tableCell} ${shared.actionCell}`}>
                   <a className={styles.companyLink} href={`/company-profiles/companies/${encodeURIComponent(company.id)}`}>
-                    고치기
+                    수정
                   </a>
                 </td>
               </tr>

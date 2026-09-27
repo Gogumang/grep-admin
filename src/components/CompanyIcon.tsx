@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import * as clubStyles from '../../clubs/clubs.css'
+import * as clubStyles from '@/app/clubs/clubs.css'
 
 /**
- * 채용 수집처 회사 로고. 기술 블로그를 모으는 회사는 그 블로그 아이콘(scripts/fetch-blog-icons.py)을 그대로 쓰고,
+ * 회사 로고 — 채용 수집처와 회사 목록이 같이 쓴다. 키는 채용 수집처 companyKey 또는 회사 정보 id 다.
+ * 기술 블로그를 모으는 회사는 그 블로그 아이콘(scripts/fetch-blog-icons.py)을 그대로 쓰고,
  * 블로그 아이콘이 없거나 회사 로고가 아닌 곳만 scripts/fetch-company-icons.py 가 따로 받아 public/company-icons 에 둔다.
  * 적어 두지 않은 회사(새로 더한 곳)나 불러오기에 실패한 곳은 동아리 수집처처럼 이름 첫 글자로 대신한다.
  */
@@ -69,6 +70,31 @@ const ICON_PATH_BY_COMPANY: Record<string, string> = {
   'woowa-youths': '/company-icons/woowa-youths.png',
   bunjang: '/company-icons/bunjang.png',
   ridi: '/company-icons/ridi.png',
+  // 회사 정보(회사 목록) id — 채용 수집처와 키가 다른 회사. 같은 계열 로고는 한 벌만 둔다.
+  'kakao-bank': '/blog-icons/tech-kakaobank-com.png',
+  'kakao-pay': '/blog-icons/tech-kakaopay-com.png',
+  'kakao-style': '/blog-icons/devblog-kakaostyle-com.png',
+  'kakao-entertainment': '/company-icons/kakaoent.png',
+  'kakao-games': '/company-icons/kakao-games.png',
+  'kakao-mobility': '/company-icons/kakao-mobility.png',
+  'toss-bank': '/blog-icons/toss-tech.png',
+  'toss-securities': '/blog-icons/toss-tech.png',
+  'toss-payments': '/blog-icons/toss-tech.png',
+  'toss-place': '/blog-icons/toss-tech.png',
+  'daangn-pay': '/blog-icons/medium-com-daangn.png',
+  'channel-corp': '/blog-icons/tech-channel-io.png',
+  wanted: '/blog-icons/medium-com-wantedjobs.png',
+  inflab: '/blog-icons/tech-inflab-com.png',
+  'coupang-pay': '/company-icons/coupang-pay.png',
+  'nol-universe': '/company-icons/nol-universe.png',
+  dunamu: '/company-icons/dunamu.png',
+  flex: '/company-icons/flex.png',
+  nhn: '/company-icons/nhn.png',
+  'nexon-korea': '/company-icons/nexon-korea.png',
+  'cj-olivenetworks': '/company-icons/cj-olivenetworks.png',
+  'lg-cns': '/company-icons/lg-cns.png',
+  'samsung-sds': '/company-icons/samsung-sds.png',
+  'samsung-electronics': '/company-icons/samsung-electronics.png',
 }
 
 export function CompanyIcon({ companyKey, name, size }: { companyKey: string; name: string; size: number }) {

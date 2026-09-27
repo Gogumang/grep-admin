@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import { formatCount, formatShortMonth, type CompanyProfile } from '@/lib/companyProfiles'
 import * as shared from '@/components/shared.css'
 import * as styles from './companyProfiles.css'
@@ -10,13 +13,20 @@ const LINE_BOTTOM_PADDING = 8
 /** 입사·퇴사 막대가 자라는 높이(px). */
 const BAR_HEIGHT = 110
 
+/** 끝 칸에서는 상자를 안쪽으로 민다 — 가운데 맞춤이면 카드 밖으로 잘린다. */
+function tooltipShift(index: number, count: number): string {
+  if (index < 2) return '-20%'
+  if (index >= count - 2) return '-80%'
+  return '-50%'
+}
+
 /**
  * 월별 직원 수(꺾은선)와 입사·퇴사(파랑·빨강 막대)를 한 카드에, 같은 달 칸으로 맞춰 그린다.
  *
  * 한 축에 겹치지 않는다 — 직원 수는 천 명대, 입사·퇴사는 수십 명이라 같은 눈금이면 막대가 바닥에 붙는다.
  * 그래서 선은 위, 막대는 아래에 각자 눈금으로 두고 달 칸만 공유한다(축 두 개 겹치기 금지).
  * 선은 변화를 보는 것이라 0 에서 시작하지 않고 가장 적은 달~가장 많은 달로 잡는다. 막대는 0 에서 시작한다.
- * 숫자는 직원 수 첫·마지막 달에만 얹고, 달마다 정확한 값은 칸에 마우스를 올리거나 아래 표에서 본다.
+ * 숫자는 직원 수 첫·마지막 달에만 얹고, 달마다 정확한 값은 칸에 마우스를 올리면 뜨는 상자나 아래 표에서 본다.
  */
 export function HeadcountFlowChart({ profile }: { profile: CompanyProfile }) {
   const months = profile.headcounts
@@ -30,6 +40,8 @@ export function HeadcountFlowChart({ profile }: { profile: CompanyProfile }) {
   const columnCenter = (index: number) => ((index + 0.5) / count) * 100
   const largestFlow = Math.max(1, ...months.flatMap((month) => [month.hiredCount, month.leftCount]))
   const last = count - 1
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const hovered = hoveredIndex === null ? null : months[hoveredIndex]
 
   return (
     <figure className={`${shared.card} ${styles.flowFigure}`}>
@@ -65,12 +77,35 @@ export function HeadcountFlowChart({ profile }: { profile: CompanyProfile }) {
           ))}
         </div>
 
-        <div className={styles.flowColumns}>
-          {months.map((month) => (
+        {hovered && hoveredIndex !== null && (
+          <div
+            className={styles.flowTooltip}
+            style={{ left: `${columnCenter(hoveredIndex)}%`, transform: `translateX(${tooltipShift(hoveredIndex, count)})` }}
+            role="status"
+          >
+            <div className={styles.flowTooltipMonth}>{hovered.yearMonth}</div>
+            <div className={styles.flowTooltipRow}>
+              <span className={styles.lineSwatch} aria-hidden="true" />
+              직원 <strong>{formatCount(hovered.employeeCount)}명</strong>
+            </div>
+            <div className={styles.flowTooltipRow}>
+              <span className={styles.hiredSwatch} aria-hidden="true" />
+              입사 <strong>{formatCount(hovered.hiredCount)}명</strong>
+            </div>
+            <div className={styles.flowTooltipRow}>
+              <span className={styles.leftSwatch} aria-hidden="true" />
+              퇴사 <strong>{formatCount(hovered.leftCount)}명</strong>
+            </div>
+          </div>
+        )}
+
+        <div className={styles.flowColumns} onMouseLeave={() => setHoveredIndex(null)}>
+          {months.map((month, index) => (
             <div
               key={month.yearMonth}
-              className={styles.flowColumn}
-              title={`${month.yearMonth} 직원 ${formatCount(month.employeeCount)}명 · 입사 ${formatCount(month.hiredCount)} · 퇴사 ${formatCount(month.leftCount)}`}
+              className={index === hoveredIndex ? `${styles.flowColumn} ${styles.flowColumnActive}` : styles.flowColumn}
+              onMouseEnter={() => setHoveredIndex(index)}
+              aria-label={`${month.yearMonth} 직원 ${formatCount(month.employeeCount)}명, 입사 ${formatCount(month.hiredCount)}명, 퇴사 ${formatCount(month.leftCount)}명`}
             >
               <div style={{ height: LINE_HEIGHT }} />
               <div className={styles.flowBarTrack} style={{ height: BAR_HEIGHT }} aria-hidden="true">
