@@ -4,7 +4,7 @@
  * 어드민은 저장소 파일을 직접 만지지 않는다 — 커밋 로직이 collector에만 있으면
  * 같은 일을 두 언어로 만들지 않아도 되고, GitHub 토큰도 한 곳에만 두면 된다.
  */
-import type { CodingLanguage } from './codingLanguages'
+import type { CodingFunction, CodingLanguage } from './codingLanguages'
 import { readDeviceSession } from './deviceSession'
 import type { EventSourceLabel } from './events'
 
@@ -513,6 +513,8 @@ export interface CodingProblemContent {
   referenceLanguage: CodingLanguage
   referenceCode: string
   cases: CodingTestCase[]
+  /** 함수 방식(프로그래머스식)이면 채울 함수, 표준입출력 방식이면 null. */
+  function: CodingFunction | null
 }
 
 /**
@@ -865,13 +867,22 @@ export const collector = {
       CODING_COMMIT_TIMEOUT_MILLISECONDS,
     ),
 
+  /** function 이 있으면 채점과 같은 하네스로 돌려 stdout 에 반환값 JSON 만 돌아온다. */
   runReferenceSolution: (run: {
     language: CodingLanguage
     code: string
     inputs: string[]
     timeLimitMs: number
     memoryLimitMb: number
+    function: CodingFunction | null
   }) => request<ReferenceRun>(`${CODING_PATH}/run-reference`, { method: 'POST', body: JSON.stringify(run) }, RUN_REFERENCE_TIMEOUT_MILLISECONDS),
+
+  /** 함수 모양으로 만든 언어별 뼈대 코드(언어 id → 코드). 사이트 편집기가 띄우는 것과 같다. */
+  getFunctionStarters: (codingFunction: CodingFunction) =>
+    request<Partial<Record<CodingLanguage, string>>>(`${CODING_PATH}/function-starters`, {
+      method: 'POST',
+      body: JSON.stringify(codingFunction),
+    }),
 
   /** 공개 조건(예시 1개·숨은 케이스 1개 이상, 빈 출력 없음)이 모자라면 collector 가 400 으로 거절한다. */
   publishCodingProblem: (problemId: string) =>

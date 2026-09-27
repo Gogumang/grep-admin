@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { CODING_LANGUAGES, type CodingLanguage } from '@/lib/codingLanguages'
+import { CODING_LANGUAGES, type CodingLanguage, FUNCTION_LANGUAGES, isFunctionLanguage } from '@/lib/codingLanguages'
 import type { CodingProblem, CodingProblemStatus, ReferenceRunResult } from '@/lib/collector'
-import { Badge, Button, FilterSelect, useToast } from '@/shared'
+import { Badge, Button, FilterSelect, useDialog, useToast } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
 import {
+  loadFunctionStarters,
   publishCodingProblem,
   runReferenceSolution,
   saveCodingProblem,
@@ -15,6 +16,7 @@ import {
   type ProblemActionResult,
 } from './actions'
 import * as styles from './coding.css'
+import { FunctionSignatureEditor } from './FunctionSignatureEditor'
 import { MarkdownField } from './MarkdownField'
 import {
   countCases,
@@ -24,12 +26,15 @@ import {
   isSameContent,
   toContent,
   toDraft,
+  toFunction,
   type ProblemDraft,
 } from './problemDraft'
 import { TestCaseEditor } from './TestCaseEditor'
 
 const LEVEL_OPTIONS = ['1', '2', '3'].map((level) => ({ value: level, label: `Lv. ${level}` }))
 const LANGUAGE_OPTIONS = CODING_LANGUAGES.map((language) => ({ value: language, label: language }))
+/** 함수 방식 문제는 하네스가 있는 언어로만 참조 풀이를 쓴다. */
+const FUNCTION_LANGUAGE_OPTIONS = FUNCTION_LANGUAGES.map((language) => ({ value: language, label: language }))
 
 /**
  * 문제 하나를 만들고 고치는 화면. problem 이 null 이면 새 문제다.
@@ -40,6 +45,7 @@ const LANGUAGE_OPTIONS = CODING_LANGUAGES.map((language) => ({ value: language, 
 export function ProblemEditor({ problem }: { problem: CodingProblem | null }) {
   const router = useRouter()
   const { openToast } = useToast()
+  const { openConfirm } = useDialog()
   const isNew = problem === null
 
   const [draft, setDraft] = useState<ProblemDraft>(() => (problem ? toDraft(problem) : emptyDraft()))
@@ -106,6 +112,7 @@ export function ProblemEditor({ problem }: { problem: CodingProblem | null }) {
         inputs: content.cases.map((testCase) => testCase.input),
         timeLimitMs: content.timeLimitMs,
         memoryLimitMb: content.memoryLimitMb,
+        function: content.function,
       })
       if (!result.ok || !result.run) {
         setFailure(result.message)
@@ -146,6 +153,38 @@ export function ProblemEditor({ problem }: { problem: CodingProblem | null }) {
           ? `케이스 ${caseKeys.length}개의 출력을 채웠습니다.`
           : `${caseKeys.length - failedCount}개를 채웠고 ${failedCount}개는 실행이 실패해 그대로 두었습니다.`,
       )
+    })
+  }
+
+  /** 함수 방식으로 바꾸면 참조 풀이 언어를 하네스가 있는 언어로 맞춘다 — 그대로 두면 저장이 막힌다. */
+  function changeMode(isFunction: boolean) {
+    patch({
+      isFunction,
+      referenceLanguage: isFunction && !isFunctionLanguage(draft.referenceLanguage) ? 'python' : draft.referenceLanguage,
+    })
+  }
+
+  /** 참조 풀이를 지금 함수 모양의 뼈대로 바꾼다. 적어 둔 풀이가 있으면 먼저 묻는다 — 되돌릴 수 없다. */
+  async function replaceReferenceWithStarter() {
+    const codingFunction = toFunction(draft)
+    if (!codingFunction) return
+    if (draft.referenceCode.trim()) {
+      const confirmed = await openConfirm({
+        title: '참조 풀이를 뼈대로 바꿀까요?',
+        description: '지금 적어 둔 참조 풀이는 지워집니다.',
+        confirmButton: '바꾸기',
+      })
+      if (!confirmed) return
+    }
+    startTransition(async () => {
+      const result = await loadFunctionStarters(codingFunction)
+      const starter = result.starters?.[draft.referenceLanguage]
+      if (!result.ok || starter === undefined) {
+        setFailure(result.ok ? `${draft.referenceLanguage} 뼈대를 받지 못했습니다.` : result.message)
+        return
+      }
+      setFailure(null)
+      patch({ referenceCode: starter })
     })
   }
 
@@ -275,9 +314,13 @@ export function ProblemEditor({ problem }: { problem: CodingProblem | null }) {
         </div>
         <div className={styles.caseList}>
           <MarkdownField label="문제" value={draft.statement} onChange={(statement) => patch({ statement })} />
-          <MarkdownField label="입력 형식" value={draft.inputFormat} onChange={(inputFormat) => patch({ inputFormat })} />
           <MarkdownField
-            label="출력 형식"
+            label={draft.isFunction ? '매개변수 설명' : '입력 형식'}
+            value={draft.inputFormat}
+            onChange={(inputFormat) => patch({ inputFormat })}
+          />
+          <MarkdownField
+            label={draft.isFunction ? '반환값 설명' : '출력 형식'}
             value={draft.outputFormat}
             onChange={(outputFormat) => patch({ outputFormat })}
           />
@@ -286,14 +329,36 @@ export function ProblemEditor({ problem }: { problem: CodingProblem | null }) {
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>풀이 방식</h2>
+          <Button color="dark" variant={draft.isFunction ? 'weak' : 'fill'} size="small" onClick={() => changeMode(false)}>
+            표준입출력 (백준식)
+          </Button>
+          <Button color="dark" variant={draft.isFunction ? 'fill' : 'weak'} size="small" onClick={() => changeMode(true)}>
+            함수 채우기 (프로그래머스식)
+          </Button>
+        </div>
+        {draft.isFunction ? (
+          <FunctionSignatureEditor value={draft} onChange={patch} />
+        ) : (
+          <p className={styles.fieldHint}>풀이가 표준입력을 읽어 답을 표준출력으로 냅니다. 모든 언어로 풀 수 있습니다.</p>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>참조 풀이</h2>
           <FilterSelect
             label="언어"
-            options={LANGUAGE_OPTIONS}
+            options={draft.isFunction ? FUNCTION_LANGUAGE_OPTIONS : LANGUAGE_OPTIONS}
             value={draft.referenceLanguage}
             hasAllOption={false}
             onChange={(language) => language && patch({ referenceLanguage: language as CodingLanguage })}
           />
+          {draft.isFunction && (
+            <Button color="dark" variant="weak" size="small" disabled={isPending} onClick={replaceReferenceWithStarter}>
+              뼈대 코드로 바꾸기
+            </Button>
+          )}
         </div>
         <textarea
           className={`${shared.input} ${styles.codeArea}`}
@@ -328,6 +393,12 @@ export function ProblemEditor({ problem }: { problem: CodingProblem | null }) {
             참조 풀이로 출력 채우기
           </Button>
         </div>
+        {draft.isFunction && (
+          <p className={styles.fieldHint}>
+            입력은 매개변수마다 JSON 한 줄씩 ({draft.functionParameters.map((parameter) => parameter.name || '?').join(' → ')} 순서),
+            기대 출력은 반환값 JSON 한 줄입니다 (예: [1,2,3] · &quot;abc&quot; · 7 · true). 참조 풀이로 채우면 반환값이 들어갑니다.
+          </p>
+        )}
         <TestCaseEditor cases={draft.cases} onChange={(cases) => patch({ cases })} />
       </section>
     </>

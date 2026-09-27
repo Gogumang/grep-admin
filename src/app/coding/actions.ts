@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import type { CodingLanguage } from '@/lib/codingLanguages'
+import type { CodingFunction, CodingLanguage } from '@/lib/codingLanguages'
 import {
   collector,
   CollectorRequestError,
@@ -51,19 +51,39 @@ export async function saveCodingProblem(problemId: string, content: CodingProble
   }
 }
 
-/** 참조 풀이를 케이스 입력마다 돌린다. 기대 출력을 채우는 것은 화면의 몫이다 — 여기서는 결과만 넘긴다. */
+/**
+ * 참조 풀이를 케이스 입력마다 돌린다. 기대 출력을 채우는 것은 화면의 몫이다 — 여기서는 결과만 넘긴다.
+ * 함수 방식이면(function) 채점과 같은 하네스로 돌아 stdout 이 반환값 JSON 이다 — 그대로 정답칸에 넣으면 된다.
+ */
 export async function runReferenceSolution(run: {
   language: CodingLanguage
   code: string
   inputs: string[]
   timeLimitMs: number
   memoryLimitMb: number
+  function: CodingFunction | null
 }): Promise<ReferenceRunActionResult> {
   await requireAdmin()
 
   try {
     const result = await collector.runReferenceSolution(run)
     return { ok: true, message: '참조 풀이를 돌렸습니다.', run: result }
+  } catch (error) {
+    return { ok: false, message: describe(error) }
+  }
+}
+
+export interface FunctionStartersActionResult extends ActionResult {
+  starters?: Partial<Record<CodingLanguage, string>>
+}
+
+/** 함수 모양으로 언어별 뼈대 코드를 받는다. 이름·매개변수가 규칙에 어긋나면 collector 가 400 으로 까닭을 알려 준다. */
+export async function loadFunctionStarters(codingFunction: CodingFunction): Promise<FunctionStartersActionResult> {
+  await requireAdmin()
+
+  try {
+    const starters = await collector.getFunctionStarters(codingFunction)
+    return { ok: true, message: '뼈대 코드를 받았습니다.', starters }
   } catch (error) {
     return { ok: false, message: describe(error) }
   }

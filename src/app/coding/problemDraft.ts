@@ -1,4 +1,4 @@
-import type { CodingLanguage } from '@/lib/codingLanguages'
+import { type CodingFunction, type CodingLanguage, type FunctionValueType, isFunctionLanguage } from '@/lib/codingLanguages'
 import type { CodingProblem, CodingProblemContent, ReferenceRunResult } from '@/lib/collector'
 
 /**
@@ -15,6 +15,13 @@ export interface CaseDraft {
   run: ReferenceRunResult | null
 }
 
+/** 함수 방식 문제의 매개변수 한 줄. key 는 케이스와 같은 까닭으로 둔다. */
+export interface ParameterDraft {
+  key: string
+  name: string
+  type: FunctionValueType
+}
+
 /** 입력칸 그대로의 값. 숫자도 글자로 들고 있다 — 지우는 도중의 빈칸을 0 으로 바꾸면 고치기가 불편하다. */
 export interface ProblemDraft {
   id: string
@@ -29,6 +36,14 @@ export interface ProblemDraft {
   referenceLanguage: CodingLanguage
   referenceCode: string
   cases: CaseDraft[]
+  /**
+   * 함수 방식(프로그래머스식)인지. 끄더라도 이름·매개변수는 들고 있는다 — 잘못 눌러 끈 순간 적어 둔 것이 사라지지 않게.
+   * 저장할 때 꺼져 있으면 function 을 보내지 않는다(null).
+   */
+  isFunction: boolean
+  functionName: string
+  functionParameters: ParameterDraft[]
+  functionReturnType: FunctionValueType
 }
 
 /** collector 가 받는 범위와 같다. 서버도 다시 검사하지만, 왕복 전에 화면에서 먼저 알려준다. */
@@ -41,18 +56,26 @@ export const MAXIMUM_CASE_COUNT = 50
  */
 const RESERVED_PROBLEM_IDS = ['new']
 
+/** 함수·매개변수 이름. 다섯 언어의 코드에 그대로 들어간다 — 예약어는 collector 가 다시 거른다. */
+const IDENTIFIER_PATTERN = /^[A-Za-z][A-Za-z0-9_]{0,39}$/
+const MAXIMUM_PARAMETER_COUNT = 10
+
 const DEFAULT_TIME_LIMIT_MILLISECONDS = 1000
 const DEFAULT_MEMORY_LIMIT_MEGABYTES = 256
 const DEFAULT_LANGUAGE: CodingLanguage = 'python'
 
-let caseKeySequence = 0
-function nextCaseKey(): string {
-  caseKeySequence += 1
-  return `case-${caseKeySequence}`
+let draftKeySequence = 0
+function nextKey(prefix: string): string {
+  draftKeySequence += 1
+  return `${prefix}-${draftKeySequence}`
 }
 
 export function emptyCase(isExample: boolean): CaseDraft {
-  return { key: nextCaseKey(), input: '', output: '', isExample, run: null }
+  return { key: nextKey('case'), input: '', output: '', isExample, run: null }
+}
+
+export function emptyParameter(): ParameterDraft {
+  return { key: nextKey('parameter'), name: '', type: 'int' }
 }
 
 export function emptyDraft(): ProblemDraft {
@@ -69,10 +92,15 @@ export function emptyDraft(): ProblemDraft {
     referenceLanguage: DEFAULT_LANGUAGE,
     referenceCode: '',
     cases: [emptyCase(true), emptyCase(false)],
+    isFunction: false,
+    functionName: 'solution',
+    functionParameters: [{ ...emptyParameter(), name: 'arr', type: 'int[]' }],
+    functionReturnType: 'int',
   }
 }
 
 export function toDraft(problem: CodingProblem): ProblemDraft {
+  const empty = emptyDraft()
   return {
     id: problem.id,
     title: problem.title,
@@ -85,7 +113,22 @@ export function toDraft(problem: CodingProblem): ProblemDraft {
     memoryLimitMb: String(problem.memoryLimitMb),
     referenceLanguage: problem.referenceLanguage ?? DEFAULT_LANGUAGE,
     referenceCode: problem.referenceCode ?? '',
-    cases: problem.cases.map((testCase) => ({ key: nextCaseKey(), ...testCase, run: null })),
+    cases: problem.cases.map((testCase) => ({ key: nextKey('case'), ...testCase, run: null })),
+    isFunction: problem.function != null,
+    functionName: problem.function?.name ?? empty.functionName,
+    functionParameters:
+      problem.function?.parameters.map((parameter) => ({ key: nextKey('parameter'), ...parameter })) ?? empty.functionParameters,
+    functionReturnType: problem.function?.returnType ?? empty.functionReturnType,
+  }
+}
+
+/** 함수 방식이면 채울 함수, 아니면 null. 이름의 앞뒤 공백은 걷는다. */
+export function toFunction(draft: ProblemDraft): CodingFunction | null {
+  if (!draft.isFunction) return null
+  return {
+    name: draft.functionName.trim(),
+    parameters: draft.functionParameters.map(({ name, type }) => ({ name: name.trim(), type })),
+    returnType: draft.functionReturnType,
   }
 }
 
@@ -102,6 +145,7 @@ export function toContent(draft: ProblemDraft): CodingProblemContent {
     referenceLanguage: draft.referenceLanguage,
     referenceCode: draft.referenceCode,
     cases: draft.cases.map(({ input, output, isExample }) => ({ input, output, isExample })),
+    function: toFunction(draft),
   }
 }
 
@@ -113,6 +157,25 @@ export function isSameContent(left: ProblemDraft, right: ProblemDraft): boolean 
 function isIntegerInRange(value: string, range: { minimum: number; maximum: number }): boolean {
   const number = Number(value)
   return value.trim() !== '' && Number.isInteger(number) && number >= range.minimum && number <= range.maximum
+}
+
+/** 함수 방식 문제만의 저장 조건. collector(CodingProblemRules.requireValidFunction)와 같다. */
+function findFunctionProblems(draft: ProblemDraft): string[] {
+  const problems: string[] = []
+  if (!IDENTIFIER_PATTERN.test(draft.functionName.trim())) {
+    problems.push(`함수 이름은 영문자로 시작하는 영문·숫자·밑줄이어야 합니다 (예: solution), 입력값: "${draft.functionName}"`)
+  }
+  if (draft.functionParameters.length === 0 || draft.functionParameters.length > MAXIMUM_PARAMETER_COUNT) {
+    problems.push(`매개변수는 1~${MAXIMUM_PARAMETER_COUNT}개여야 합니다, 지금 ${draft.functionParameters.length}개`)
+  }
+  const names = draft.functionParameters.map((parameter) => parameter.name.trim())
+  const badNames = names.filter((name) => !IDENTIFIER_PATTERN.test(name))
+  if (badNames.length > 0) problems.push(`매개변수 이름이 규칙에 맞지 않습니다 (예: numbers), 입력값: "${badNames.join('", "')}"`)
+  if (new Set(names).size !== names.length) problems.push('매개변수 이름이 겹칩니다.')
+  if (!isFunctionLanguage(draft.referenceLanguage)) {
+    problems.push(`함수 방식 문제의 참조 풀이는 java·kotlin·python·javascript·cpp 로 씁니다, 지금: ${draft.referenceLanguage}`)
+  }
+  return problems
 }
 
 /** 저장하기 전에 걸러낼 문제들. 비어 있으면 저장할 수 있다. */
@@ -134,6 +197,7 @@ export function findSaveProblems(draft: ProblemDraft): string[] {
   if (draft.cases.length > MAXIMUM_CASE_COUNT) {
     problems.push(`케이스는 ${MAXIMUM_CASE_COUNT}개까지입니다, 지금 ${draft.cases.length}개`)
   }
+  if (draft.isFunction) problems.push(...findFunctionProblems(draft))
   return problems
 }
 
@@ -142,8 +206,28 @@ export function countCases(cases: CaseDraft[]): { exampleCount: number; hiddenCo
   return { exampleCount, hiddenCount: cases.length - exampleCount }
 }
 
+/** JSON 한 줄로 읽히는지. 함수 방식 케이스의 매개변수·반환값 모양을 공개 전에 본다. */
+function isJsonLine(text: string): boolean {
+  try {
+    JSON.parse(text)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** 함수 방식 케이스 가운데 모양이 틀린 것의 번호. collector 공개 조건(매개변수 수만큼의 JSON 줄, 반환값 JSON)과 같다. */
+function findMalformedFunctionCases(draft: ProblemDraft): number[] {
+  return draft.cases.flatMap((testCase, index) => {
+    const lines = testCase.input.split('\n').filter((line) => line.trim() !== '')
+    const isWellFormed =
+      lines.length === draft.functionParameters.length && lines.every(isJsonLine) && isJsonLine(testCase.output.trim())
+    return isWellFormed ? [] : [index + 1]
+  })
+}
+
 /**
- * 공개를 막는 이유. collector 의 공개 조건(예시 ≥ 1, 숨은 ≥ 1, 빈 출력 없음)과 같다.
+ * 공개를 막는 이유. collector 의 공개 조건(예시 ≥ 1, 숨은 ≥ 1, 빈 출력 없음, 함수 방식이면 JSON 모양)과 같다.
  * 공개는 저장된 문제를 내보내므로, 고친 채 저장하지 않았으면 그것도 막는다 — 화면에 보이는 것과 나가는 것이 달라진다.
  */
 export function findPublishBlockers(draft: ProblemDraft, hasUnsavedChanges: boolean): string[] {
@@ -156,5 +240,11 @@ export function findPublishBlockers(draft: ProblemDraft, hasUnsavedChanges: bool
     .map((testCase, index) => (testCase.output.trim() === '' ? index + 1 : null))
     .filter((number) => number !== null)
   if (emptyOutputNumbers.length > 0) blockers.push(`출력이 빈 케이스가 있습니다 (#${emptyOutputNumbers.join(', #')})`)
+  if (draft.isFunction) {
+    const malformed = findMalformedFunctionCases(draft)
+    if (malformed.length > 0) {
+      blockers.push(`매개변수마다 JSON 한 줄·반환값 JSON 모양이 아닌 케이스가 있습니다 (#${malformed.join(', #')})`)
+    }
+  }
   return blockers
 }
