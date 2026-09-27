@@ -27,3 +27,21 @@ export async function togglePostHidden(postId: string, hidden: boolean): Promise
     return { ok: false, message }
   }
 }
+
+/**
+ * 글 분류 하나만 바꾼다. 글 편집 화면의 저장(savePost)과 같은 collector 통로를 쓰고,
+ * 목록에서 칩을 고르는 즉시 부른다 — 분류 하나 바꾸려고 글을 열지 않아도 된다.
+ */
+export async function changePostCategory(postId: string, category: string): Promise<ActionResult> {
+  await requireAdmin()
+
+  try {
+    await collector.editPost(postId, { category })
+    revalidatePath('/posts')
+    revalidatePath(`/posts/${postId}`)
+    return { ok: true, message: `분류를 ${category}(으)로 바꿨습니다. 사이트에는 다음 배포부터 반영됩니다.` }
+  } catch (error) {
+    const message = error instanceof CollectorRequestError ? error.message : (error as Error).message
+    return { ok: false, message }
+  }
+}

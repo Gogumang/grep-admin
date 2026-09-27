@@ -83,6 +83,9 @@ export const title = style({
   selectors: { '&:hover': { textDecoration: 'underline' } },
 })
 
+/** 카드마다 분류 칩. 제목 바로 아래에 두어 어느 글의 분류인지 헷갈리지 않게 한다. */
+export const category = style({ marginTop: vars.space.sm })
+
 export const meta = style({
   display: 'flex',
   alignItems: 'center',

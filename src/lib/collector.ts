@@ -78,7 +78,7 @@ export interface Post {
   sourceThumbnail: string | null
   tags: string[]
   hidden: boolean
-  /** 분류(어드민 '분류' 목록 중 하나). 아직 매기지 않은 글은 null — 사이트는 Engineering 으로 본다. */
+  /** 분류(collector 분류 목록 중 하나). 아직 매기지 않은 글은 null — 사이트는 Engineering 으로 본다. */
   category: string | null
   /** 최근 7일 조회수. GA4를 아직 붙이지 않았으면 0이다. */
   recentViews: number
@@ -117,16 +117,6 @@ export interface PostCategoryItem {
   /** 이 분류를 쓰는 글 수(공개 + 검증 대기). 0 이 아니면 뺄 수 없다. */
   postCount: number
 }
-
-/** 분류 목록을 저장할 때 한 줄. 이름을 바꿨으면 previousName 에 옛 이름을, 새로 더한 줄은 null 을 둔다. */
-export interface PostCategoryChange {
-  name: string
-  previousName: string | null
-  keywords: string
-}
-
-/** 이름을 바꾸면 그 분류를 쓰는 글 파일을 모두 다시 커밋한다 — 백 개가 넘으면 1분 가까이 걸린다. */
-const SAVE_POST_CATEGORIES_TIMEOUT_MILLISECONDS = 120_000
 
 /** 검토를 기다리는 글. collector의 /api/admin/pending 응답 모양이다. */
 export interface PendingPost {
@@ -766,14 +756,6 @@ export const collector = {
   findPending: (postId: string) => request<PendingPostDetail>(`/api/admin/pending/${postId}`),
 
   listPostCategories: () => request<PostCategoryItem[]>('/api/admin/post-categories'),
-
-  /** 목록을 통째로 저장한다. 사이트(categories.json·이름 바뀐 글 파일)와 collector 가 함께 바뀐다. */
-  savePostCategories: (categories: PostCategoryChange[]) =>
-    request<PostCategoryItem[]>(
-      '/api/admin/post-categories',
-      { method: 'PUT', body: JSON.stringify({ categories }) },
-      SAVE_POST_CATEGORIES_TIMEOUT_MILLISECONDS,
-    ),
 
   savePending: (postId: string, edit: PendingPostEdit) =>
     request<void>(`/api/admin/pending/${postId}`, { method: 'PUT', body: JSON.stringify(edit) }),

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { FilterSelect, type FilterSelectOption, Result, useToast } from '@/shared'
 import type { Post } from '@/lib/collector'
 import { SiteImage } from '@/components/SiteImage'
-import { togglePostHidden, type ActionResult } from './actions'
+import { changePostCategory, togglePostHidden, type ActionResult } from './actions'
 import * as styles from '@/components/shared.css'
 import * as list from './postList.css'
 
@@ -55,7 +55,7 @@ export function PostManager({
   categoryOptions,
 }: {
   posts: PostListItem[]
-  /** 분류 필터 선택지. 못 읽었으면 null 이고 분류 필터를 숨긴다. */
+  /** 분류 선택지(필터·카드마다 분류 칩). 못 읽었으면 null 이고 둘 다 숨긴다. */
   categoryOptions: FilterSelectOption[] | null
 }) {
   const [showHiddenOnly, setShowHiddenOnly] = useState(false)
@@ -76,9 +76,12 @@ export function PostManager({
    * 서버가 아는 상태로 되돌린다 — 실패를 삼키고 켜진 채 두면 거짓말이 된다.
    */
   const [justToggled, setJustToggled] = useState<Map<string, boolean>>(new Map())
+  /** 방금 고른 분류. 숨김 스위치(justToggled)와 같은 이유로 먼저 적어 두고, 실패하면 지운다. */
+  const [justCategorized, setJustCategorized] = useState<Map<string, string>>(new Map())
 
   /** 화면이 믿을 상태. 방금 누른 값이 있으면 그것이, 없으면 서버가 준 값이 이긴다. */
   const isHidden = (post: PostListItem) => justToggled.get(post.id) ?? post.hidden
+  const categoryOf = (post: PostListItem) => justCategorized.get(post.id) ?? post.category
 
   // 글이 많은 회사부터 둔다 — 자주 찾는 회사가 위에 온다.
   const blogNames = useMemo(() => {
@@ -94,10 +97,10 @@ export function PostManager({
       posts.filter(
         (post) =>
           (blogName === null || post.blogName === blogName) &&
-          (category === null || (post.category ?? UNCATEGORIZED_AS) === category) &&
+          (category === null || (categoryOf(post) ?? UNCATEGORIZED_AS) === category) &&
           (!showHiddenOnly || (justToggled.get(post.id) ?? post.hidden)),
       ),
-    [posts, blogName, category, showHiddenOnly, justToggled],
+    [posts, blogName, category, showHiddenOnly, justToggled, justCategorized],
   )
 
   const visible = matched.slice(0, visibleCount)
@@ -154,6 +157,27 @@ export function PostManager({
           const next = new Map(previous)
           next.delete(post.id)
           return next
+        })
+      }
+    })
+  }
+
+  function categorize(post: PostListItem, next: string | null) {
+    // 칩에 "전체" 줄이 없으니 null 은 오지 않지만, 분류를 비우는 길은 없으므로 무시한다.
+    if (next === null) return
+    setJustCategorized((previous) => new Map(previous).set(post.id, next))
+
+    startTransition(async () => {
+      const outcome = await changePostCategory(post.id, next)
+      if (outcome.ok) {
+        setFailure(null)
+        openToast(outcome.message)
+      } else {
+        setFailure(outcome)
+        setJustCategorized((previous) => {
+          const remaining = new Map(previous)
+          remaining.delete(post.id)
+          return remaining
         })
       }
     })
@@ -221,6 +245,18 @@ export function PostManager({
                 <a className={list.title} href={`/posts/${post.id}`}>
                   {post.title}
                 </a>
+                {/* 아직 매기지 않은 글은 칩이 "분류"로만 보인다 — 사이트는 그 글을 Engineering 으로 둔다. */}
+                {categoryOptions && (
+                  <div className={list.category}>
+                    <FilterSelect
+                      label="분류"
+                      options={categoryOptions}
+                      value={categoryOf(post)}
+                      onChange={(next) => categorize(post, next)}
+                      hasAllOption={false}
+                    />
+                  </div>
+                )}
                 <p className={list.meta}>
                   <span>{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</span>
                   {/*
