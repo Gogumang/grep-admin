@@ -23,8 +23,12 @@ export const sectionTitle = style({
   color: vars.color.inkStrong,
 })
 
-/** 표가 좁은 화면에서 넘치면 카드 안에서만 옆으로 민다 — 페이지 전체가 가로로 밀리지 않게. */
-export const tableScroller = style({ overflowX: 'auto' })
+/**
+ * 표가 좁은 화면에서 넘치면 카드 안에서만 옆으로 민다 — 페이지 전체가 가로로 밀리지 않게.
+ * flexShrink 0: 본문(main)이 높이가 정해진 세로 flex 라, overflow 가 있는 카드는 최소 높이가 0 이 되어
+ * 줄어든다 — 월별 입사·퇴사 표가 머리줄(48px)만 남고 잘렸다.
+ */
+export const tableScroller = style({ overflowX: 'auto', flexShrink: 0 })
 
 export const companyLink = style({
   color: vars.color.inkStrong,
@@ -134,8 +138,6 @@ export const resultFacts = style({
 })
 
 export const factLabel = style({ color: vars.color.inkMuted, marginRight: vars.space.xs })
-
-export const nameChips = style({ display: 'flex', flexWrap: 'wrap', gap: vars.space.xs, marginTop: vars.space.md })
 
 /* ── 연도별 손익 그래프 ──────────────────────────────── */
 
