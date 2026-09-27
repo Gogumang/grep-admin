@@ -114,3 +114,12 @@ export function CodeIcon({ size, strokeWidth }: IconProps) {
     </Glyph>
   )
 }
+
+/** 면접 갈래 — 말풍선 */
+export function ChatIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <Glyph size={size} strokeWidth={strokeWidth}>
+      <path d="M20 12.5a7.5 7.5 0 0 1-11.2 6.5L4 20l1.1-4.3A7.5 7.5 0 1 1 20 12.5z" />
+    </Glyph>
+  )
+}

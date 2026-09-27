@@ -289,7 +289,8 @@ export class CollectorRequestError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit, timeoutMilliseconds = REQUEST_TIMEOUT_MILLISECONDS): Promise<T> {
+/** 갈래가 커져 이 파일 밖에 둔 클라이언트(interviewReports.ts)도 같은 토큰·세션·타임아웃으로 부르게 내보낸다. */
+export async function request<T>(path: string, init?: RequestInit, timeoutMilliseconds = REQUEST_TIMEOUT_MILLISECONDS): Promise<T> {
   const deviceSession = await readDeviceSession()
   let response: Response
   try {

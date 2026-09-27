@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import * as styles from '@/styles/console.css'
-import { BriefcaseIcon, CalendarIcon, CodeIcon, DocumentIcon, MenuIcon, PeopleIcon, SlidersIcon, StarIcon } from './icons'
+import { BriefcaseIcon, CalendarIcon, ChatIcon, CodeIcon, DocumentIcon, MenuIcon, PeopleIcon, SlidersIcon, StarIcon } from './icons'
 import { GrepLogo } from './Logo'
 
 /**
@@ -77,6 +77,15 @@ const GROUPS = [
       { href: '/coding/candidates', label: '문제 후보' },
       { href: '/coding/sources', label: '수집처' },
     ],
+  },
+  /*
+   * 면접 후기는 어드민에서만 본다 — 검증·공개 단계가 없고, 사이트에는 나중에 가공한 결과만 따로 낸다.
+   */
+  {
+    key: 'interviews',
+    label: '면접',
+    Icon: ChatIcon,
+    items: [{ href: '/interviews', label: '면접 후기' }],
   },
   {
     key: 'manage',
