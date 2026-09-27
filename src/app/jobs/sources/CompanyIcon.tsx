@@ -32,6 +32,10 @@ const ICON_PATH_BY_COMPANY: Record<string, string> = {
   devsisters: '/blog-icons/tech-devsisters-com.png',
   remember: '/blog-icons/tech-remember-co-kr.png',
   yogiyo: '/blog-icons/techblog-yogiyo-co-kr.png',
+  hyperconnect: '/blog-icons/hyperconnect-github-io.png',
+  wantedlab: '/blog-icons/medium-com-wantedjobs.png',
+  spoqa: '/blog-icons/spoqa-github-io.png',
+  socar: '/blog-icons/tech-socar-kr.png',
   naver: '/company-icons/naver.png',
   woowahan: '/company-icons/woowahan.png',
   line: '/company-icons/line.png',
@@ -57,6 +61,12 @@ const ICON_PATH_BY_COMPANY: Record<string, string> = {
   coinone: '/company-icons/coinone.png',
   netmarble: '/company-icons/netmarble.png',
   smilegate: '/company-icons/smilegate.png',
+  bucketplace: '/company-icons/bucketplace.png',
+  lablup: '/company-icons/lablup.png',
+  lunit: '/company-icons/lunit.png',
+  ncsoft: '/company-icons/ncsoft.png',
+  pearlabyss: '/company-icons/pearlabyss.png',
+  'woowa-youths': '/company-icons/woowa-youths.png',
 }
 
 export function CompanyIcon({ companyKey, name, size }: { companyKey: string; name: string; size: number }) {

@@ -56,6 +56,13 @@ COMPANY_SITES = {
     "bunjang": "https://m.bunjang.co.kr",
     "netmarble": "https://company.netmarble.com",
     "smilegate": "https://www.smilegate.com",
+    "bucketplace": "https://ohou.se",
+    "lablup": "https://www.lablup.com",
+    "ridi": "https://ridicorp.com",
+    "lunit": "https://www.lunit.io",
+    "ncsoft": "https://www.ncsoft.com",
+    "pearlabyss": "https://www.pearlabyss.com",
+    "woowa-youths": "https://www.woowayouths.com",
 }
 
 
