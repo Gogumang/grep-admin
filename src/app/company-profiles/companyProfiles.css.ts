@@ -157,16 +157,17 @@ export const chartGrid = style({
 
 export const chartTitle = style({ margin: `0 0 ${vars.space.sm}`, fontSize: vars.fontSize.sm, fontWeight: vars.fontWeight.semibold, color: vars.color.inkStrong })
 
-export const yearlyChart = style({
+/** 파랑(흑자·입사)·빨강(적자·퇴사) 한 쌍. 손익 그래프와 직원 수 그래프가 같이 쓴다. */
+const gainLossColors = style({
   vars: { [gainFill]: tone.blue.fill, [lossFill]: tone.red.fill },
-  display: 'flex',
-  gap: vars.space.xs,
   '@media': { '(prefers-color-scheme: dark)': { vars: { [lossFill]: '#f0505e' } } },
   selectors: {
     ':root[data-theme="dark"] &': { vars: { [lossFill]: '#f0505e' } },
     ':root[data-theme="light"] &': { vars: { [lossFill]: tone.red.fill } },
   },
 })
+
+export const yearlyChart = style([gainLossColors, { display: 'flex', gap: vars.space.xs }])
 
 export const yearColumn = style({
   flex: '1 1 0',
@@ -226,3 +227,84 @@ export const addDialogHeader = style({
   justifyContent: 'space-between',
   marginBottom: vars.space.lg,
 })
+
+/* ── 직원 수 · 입사 · 퇴사 ──────────────────────────────── */
+
+/** 색은 카드 전체에 둔다 — 범례 견본도 같은 파랑·빨강을 써야 한다. */
+export const flowFigure = style([gainLossColors, { margin: 0 }])
+
+/** 위 꺾은선(직원 수)과 아래 막대(입사·퇴사)가 같은 달 칸을 쓴다. 칸 사이 간격을 두면 선의 점이 칸 가운데서 어긋난다. */
+export const flowChart = style({ position: 'relative' })
+
+export const flowLegend = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: vars.space.md,
+  margin: `0 0 ${vars.space.sm}`,
+  fontSize: vars.fontSize.xs,
+  color: vars.color.inkMuted,
+})
+
+export const flowLegendItem = style({ display: 'inline-flex', alignItems: 'center', gap: 6 })
+
+const swatchBase = style({ display: 'inline-block', width: 10, height: 10, borderRadius: 2 })
+export const hiredSwatch = style([swatchBase, { background: gainFill }])
+export const leftSwatch = style([swatchBase, { background: lossFill }])
+export const lineSwatch = style({ display: 'inline-block', width: 14, height: 2, borderRadius: 1, background: vars.color.inkStrong })
+
+/** 꺾은선 층. 칸 위에 겹쳐 놓고 마우스는 아래 칸이 받는다. */
+export const flowLineLayer = style({ position: 'absolute', top: 0, left: 0, right: 0, pointerEvents: 'none' })
+
+export const flowLineSvg = style({ display: 'block', width: '100%', height: '100%', overflow: 'visible' })
+
+export const flowLine = style({ fill: 'none', stroke: vars.color.inkStrong, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round' })
+
+/** 점은 SVG 밖 HTML 로 둔다 — 늘어나는 viewBox 안에 원을 그리면 타원이 된다. 2px 바탕색 테두리로 선과 떨어뜨린다. */
+export const flowDot = style({
+  position: 'absolute',
+  width: 8,
+  height: 8,
+  marginLeft: -4,
+  marginTop: -4,
+  borderRadius: '50%',
+  background: vars.color.inkStrong,
+  boxShadow: `0 0 0 2px ${vars.color.surface}`,
+})
+
+export const flowDotLabel = style({
+  position: 'absolute',
+  transform: 'translate(-50%, -150%)',
+  fontSize: vars.fontSize.xs,
+  fontWeight: vars.fontWeight.semibold,
+  color: vars.color.inkStrong,
+  fontVariantNumeric: 'tabular-nums',
+  whiteSpace: 'nowrap',
+})
+
+export const flowColumns = style({ display: 'flex' })
+
+export const flowColumn = style({
+  flex: '1 1 0',
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  borderRadius: vars.radius.sm,
+  selectors: { '&:hover': { background: `color-mix(in srgb, ${vars.color.accent} 7%, transparent)` } },
+})
+
+/** 입사·퇴사 막대 둘이 나란히 자라는 자리. 막대 사이 2px 은 바탕색 틈이다. */
+export const flowBarTrack = style({
+  display: 'flex',
+  alignItems: 'flex-end',
+  justifyContent: 'center',
+  gap: 2,
+  width: '100%',
+  borderBottom: `1px solid ${vars.color.borderStrong}`,
+})
+
+const flowBarBase = style({ width: '28%', maxWidth: 14, minHeight: 1, borderRadius: '4px 4px 0 0' })
+export const hiredBar = style([flowBarBase, { background: gainFill }])
+export const leftBar = style([flowBarBase, { background: lossFill }])
+
+export const flowMonth = style({ marginTop: 4, fontSize: vars.fontSize.xs, color: vars.color.inkMuted })

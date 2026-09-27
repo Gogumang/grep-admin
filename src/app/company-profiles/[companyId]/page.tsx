@@ -2,7 +2,6 @@ import { companyProfiles } from '@/lib/companyProfileClient'
 import {
   financialsUnverifiedReason,
   formatCount,
-  formatShortMonth,
   HEADCOUNT_UNVERIFIED_REASON,
   UNVERIFIED,
   type AnnualFinancials,
@@ -10,9 +9,9 @@ import {
   type CompanyProfile,
 } from '@/lib/companyProfiles'
 import { requireAdmin } from '@/lib/session'
-import { BarChart } from '@/shared'
 import * as shared from '@/components/shared.css'
 import * as console from '@/styles/console.css'
+import { HeadcountFlowChart } from '../HeadcountFlowChart'
 import { YearlyAmountChart } from '../YearlyAmountChart'
 import * as styles from '../companyProfiles.css'
 
@@ -81,27 +80,6 @@ function FinancialCharts({ financials }: { financials: AnnualFinancials[] }) {
         {byYear.get(last)?.isConsolidated ? '연결재무제표' : '별도재무제표'} 기준. 적자는 0 선 아래로 내려가고 금액 앞에 &lsquo;-&rsquo;가 붙습니다.
       </p>
     </>
-  )
-}
-
-/**
- * 월별 직원 수. 막대는 0 에서 시작한다 — 1,769명과 1,774명의 차이를 부풀리지 않는다.
- * 숫자는 처음·마지막 달에만 얹고 나머지는 마우스를 올려 본다. 입사·퇴사는 단위가 달라 아래 표로 둔다(축 두 개 금지).
- */
-function HeadcountChart({ profile }: { profile: CompanyProfile }) {
-  const last = profile.headcounts.length - 1
-  return (
-    <div className={shared.card}>
-      <BarChart
-        fill={{ type: 'single-bar', barIndex: last, theme: 'blue' }}
-        data={profile.headcounts.map((headcount, index) => ({
-          value: headcount.employeeCount,
-          label: formatShortMonth(headcount.yearMonth),
-          barAnnotation: index === 0 || index === last ? formatCount(headcount.employeeCount) : undefined,
-          title: `${headcount.yearMonth} 직원 ${formatCount(headcount.employeeCount)}명 · 입사 ${headcount.hiredCount} · 퇴사 ${headcount.leftCount}`,
-        }))}
-      />
-    </div>
   )
 }
 
@@ -176,12 +154,12 @@ export default async function CompanyProfilePage({ params }: { params: Promise<{
       <h2 className={styles.sectionTitle}>연도별 손익 (DART 사업보고서)</h2>
       {financials.length === 0 ? <UnverifiedNotice reason={financialsUnverifiedReason(company)} /> : <FinancialCharts financials={financials} />}
 
-      <h2 className={styles.sectionTitle}>직원 수 (국민연금, 최근 12개월)</h2>
+      <h2 className={styles.sectionTitle}>직원 수·입사·퇴사 (국민연금, 최근 12개월)</h2>
       {profile.headcounts.length === 0 ? (
         <UnverifiedNotice reason={HEADCOUNT_UNVERIFIED_REASON} />
       ) : (
         <>
-          <HeadcountChart profile={profile} />
+          <HeadcountFlowChart profile={profile} />
           <h2 className={styles.sectionTitle}>월별 입사·퇴사</h2>
           <HeadcountTable profile={profile} />
         </>
