@@ -73,6 +73,7 @@ const GROUPS = [
     items: [
       { href: '/repositories', label: '인기 저장소' },
       { href: '/companies', label: '회사 저장소' },
+      { href: '/organizations', label: '유명 저장소' },
     ],
   },
   /*
