@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/login/actions'
 import * as styles from '@/styles/console.css'
 import {
+  BookIcon,
   BriefcaseIcon,
   BuildingIcon,
   CalendarIcon,
@@ -88,6 +89,18 @@ const GROUPS = [
       { href: '/coding', label: '문제' },
       { href: '/coding/candidates', label: '문제 후보' },
       { href: '/coding/sources', label: '수집처' },
+    ],
+  },
+  /*
+   * 책은 다른 곳(알라딘·YES24·Amazon)의 컴퓨터 분야 목록을 모아 보기만 한다 — 검증·공개 단계가 없다.
+   */
+  {
+    key: 'books',
+    label: '책',
+    Icon: BookIcon,
+    items: [
+      { href: '/books', label: '책 목록' },
+      { href: '/books/sources', label: '수집처' },
     ],
   },
   /*

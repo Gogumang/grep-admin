@@ -115,6 +115,16 @@ export function CodeIcon({ size, strokeWidth }: IconProps) {
   )
 }
 
+/** 책 갈래 — 펼친 책 */
+export function BookIcon({ size, strokeWidth }: IconProps) {
+  return (
+    <Glyph size={size} strokeWidth={strokeWidth}>
+      <path d="M12 6.5C10.3 5 7.6 4.5 3.5 4.5v14c4.1 0 6.8.5 8.5 2 1.7-1.5 4.4-2 8.5-2v-14c-4.1 0-6.8.5-8.5 2z" />
+      <path d="M12 6.5v14" />
+    </Glyph>
+  )
+}
+
 /** 회사 갈래 — 건물 */
 export function BuildingIcon({ size, strokeWidth }: IconProps) {
   return (
