@@ -232,15 +232,15 @@ function findMalformedFunctionCases(draft: ProblemDraft): number[] {
 }
 
 /**
- * 공개를 막는 이유. collector 의 공개 조건(예시 ≥ 1, 숨은 ≥ 1, 빈 출력 없음, 함수 방식이면 JSON 모양)과 같다.
+ * 공개를 막는 이유. collector 의 공개 조건(예시 ≥ 1, 빈 출력 없음, 함수 방식이면 JSON 모양)과 같다.
+ * 숨은 케이스는 요구하지 않는다 — 가져온 문제는 예시만 들고 오는데, 그것만으로 공개할 수 있게 한다.
  * 공개는 저장된 문제를 내보내므로, 고친 채 저장하지 않았으면 그것도 막는다 — 화면에 보이는 것과 나가는 것이 달라진다.
  */
 export function findPublishBlockers(draft: ProblemDraft, hasUnsavedChanges: boolean): string[] {
   const blockers: string[] = []
   if (hasUnsavedChanges) blockers.push('저장하지 않은 변경이 있습니다')
-  const { exampleCount, hiddenCount } = countCases(draft.cases)
+  const { exampleCount } = countCases(draft.cases)
   if (exampleCount < 1) blockers.push('예시 케이스가 없습니다')
-  if (hiddenCount < 1) blockers.push('숨은 케이스가 없습니다')
   const emptyOutputNumbers = draft.cases
     .map((testCase, index) => (testCase.output.trim() === '' ? index + 1 : null))
     .filter((number) => number !== null)
